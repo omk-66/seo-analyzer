@@ -19,8 +19,10 @@ async function getPerformance(url: string) {
       }
     );
 
+    // console.log('✅ PageSpeed API response received');
     const lighthouse = res.data.lighthouse;
     const audits = lighthouse.audits;
+    console.log("audits ---> 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢", audits)
 
     // Safe extraction for performance audits only
     const getAuditValue = (auditName: string) => audits[auditName]?.displayValue ?? 'N/A';

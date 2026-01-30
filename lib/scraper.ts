@@ -137,7 +137,7 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
             }
         } catch (proxyError) {
             // Fallback: Try direct request (might work for some sites)
-            console.log('Proxy failed, trying direct request...');
+            // console.log('Proxy failed, trying direct request...');
             response = await axios.get(formattedUrl, {
                 timeout: 10000,
                 headers: {

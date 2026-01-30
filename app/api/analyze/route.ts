@@ -441,15 +441,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    console.log('Starting SEO analysis for:', url);
+    // console.log('Starting SEO analysis for:', url);
 
     // Scrape website on server-side (no CORS issues)
     const websiteContent = await scrapeWebsiteServer(url);
-    console.log('Website scraped successfully');
+    // console.log('Website scraped successfully');
 
     // Check if API key is available
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      console.log('Google Generative AI API key not found, using fallback analysis');
+      // console.log('Google Generative AI API key not found, using fallback analysis');
       return NextResponse.json({
         error: 'Google Generative AI API key not configured. Using basic SEO analysis.',
         // fallbackAnalysis: generateFallbackAnalysis(websiteContent)
@@ -1098,8 +1098,8 @@ Consider all the technical metrics provided and prioritize issues that will have
 RESPONSE FORMAT: Return ONLY the JSON object below, nothing else:
 `;
 
-      console.log('Using Vercel AI SDK with Google models...');
-      console.log('API Key available:', !!process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+      // console.log('Using Vercel AI SDK with Google models...');
+      // console.log('API Key available:', !!process.env.GOOGLE_GENERATIVE_AI_API_KEY);
 
       let text = '';
       let modelUsed = '';
@@ -1136,7 +1136,7 @@ RESPONSE FORMAT: Return ONLY the JSON object below, nothing else:
       }
 
       if (!text) {
-        console.log('All Google AI models failed, using enhanced fallback analysis');
+        // console.log('All Google AI models failed, using enhanced fallback analysis');
         return NextResponse.json({
           error: 'Google AI models are currently unavailable. Using enhanced SEO analysis.',
           // fallbackAnalysis: generateFallbackAnalysis(websiteContent)
@@ -1167,7 +1167,7 @@ RESPONSE FORMAT: Return ONLY the JSON object below, nothing else:
         analysis = JSON.parse(jsonString);
       } catch (parseError: any) {
         console.error('JSON Parse Error:', parseError.message);
-        console.log('Raw response:', text.substring(0, 500) + '...');
+        // console.log('Raw response:', text.substring(0, 500) + '...');
 
         // Return fallback analysis if JSON parsing fails
         return NextResponse.json({
@@ -1176,7 +1176,7 @@ RESPONSE FORMAT: Return ONLY the JSON object below, nothing else:
         }, { status: 200 });
       }
 
-      console.log(`Successfully used Google AI model: ${modelUsed}`);
+      // console.log(`Successfully used Google AI model: ${modelUsed}`);
 
       return NextResponse.json(analysis);
     } catch (error: any) {
