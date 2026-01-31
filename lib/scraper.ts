@@ -1,6 +1,93 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
+export interface ImageAnalysis {
+    src: string;
+    alt?: string;
+    title?: string;
+    width?: string;
+    height?: string;
+    loading?: string;
+    base64?: string;
+    size?: number;
+    format?: string;
+    aspectRatio?: string;
+    isLogo?: boolean;
+    isHero?: boolean;
+    isProduct?: boolean;
+    description?: string;
+}
+
+// Function to download and analyze images
+async function downloadAndAnalyzeImage(imageSrc: string, baseUrl: string): Promise<Partial<ImageAnalysis>> {
+    try {
+        // Convert relative URLs to absolute
+        const absoluteUrl = imageSrc.startsWith('http') ? imageSrc : new URL(imageSrc, baseUrl).href;
+
+        // Download image
+        const response = await axios.get(absoluteUrl, {
+            responseType: 'arraybuffer',
+            timeout: 5000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+
+        // Convert to base64
+        const base64 = Buffer.from(response.data, 'binary').toString('base64');
+        const mimeType = response.headers['content-type'];
+        const dataUrl = `data:${mimeType};base64,${base64}`;
+
+        // Get image format from MIME type
+        const format = mimeType.split('/')[1] || 'unknown';
+
+        // Calculate file size
+        const size = response.data.byteLength;
+
+        return {
+            base64: dataUrl,
+            size,
+            format,
+            aspectRatio: 'detected'
+        };
+    } catch (error) {
+        console.warn(`Failed to download image: ${imageSrc}`, error);
+        return {};
+    }
+}
+
+// Function to classify image type based on context and attributes
+function classifyImage(img: any, index: number, totalImages: number): Partial<ImageAnalysis> {
+    const src = img.src || '';
+    const alt = img.alt || '';
+    const className = img.className || '';
+    const id = img.id || '';
+
+    // Logo detection
+    const isLogo = src.toLowerCase().includes('logo') ||
+        alt.toLowerCase().includes('logo') ||
+        className.toLowerCase().includes('logo') ||
+        id.toLowerCase().includes('logo');
+
+    // Hero image detection (first large image)
+    const isHero = index === 0 &&
+        (img.width && parseInt(img.width) > 400 ||
+            img.height && parseInt(img.height) > 300);
+
+    // Product image detection
+    const isProduct = src.toLowerCase().includes('product') ||
+        alt.toLowerCase().includes('product') ||
+        className.toLowerCase().includes('product') ||
+        src.toLowerCase().includes('/p/') ||
+        src.toLowerCase().includes('/products/');
+
+    return {
+        isLogo,
+        isHero,
+        isProduct
+    };
+}
+
 export interface WebsiteContent {
     url: string;
     title: string;
@@ -14,14 +101,7 @@ export interface WebsiteContent {
         h6: string[];
     };
     content: string;
-    images: Array<{
-        src: string;
-        alt: string;
-        title?: string;
-        width?: string;
-        height?: string;
-        loading?: string;
-    }>;
+    images: ImageAnalysis[];
     links: Array<{
         href: string;
         text: string;
@@ -110,44 +190,20 @@ export interface WebsiteContent {
     };
 }
 
-export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
+// Server-side scraping function
+export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
     try {
         // Ensure URL has protocol
         const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
 
-        // Add CORS proxy for browser requests
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(formattedUrl)}`;
-
-        let response;
-        let data: string;
-
-        try {
-            // Try with proxy first
-            const proxyResponse = await axios.get(proxyUrl, {
-                timeout: 10000,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            });
-
-            if (proxyResponse.data && proxyResponse.data.contents) {
-                data = proxyResponse.data.contents;
-            } else {
-                throw new Error('Proxy returned no content');
+        const response = await axios.get(formattedUrl, {
+            timeout: 10000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
-        } catch (proxyError) {
-            // Fallback: Try direct request (might work for some sites)
-            // console.log('Proxy failed, trying direct request...');
-            response = await axios.get(formattedUrl, {
-                timeout: 10000,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            });
-            data = response.data;
-        }
+        });
 
-        const $ = cheerio.load(data);
+        const $ = cheerio.load(response.data);
 
         // Extract title
         const title = $('title').text().trim() || '';
@@ -184,7 +240,7 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
         const metaRobots = $('meta[name="robots"]').attr('content') || '';
         const canonical = $('link[rel="canonical"]').attr('href') || '';
 
-        // Extract headings (all levels)
+        // Extract headings
         const headings = {
             h1: $('h1').map((_, el) => $(el).text().trim()).get(),
             h2: $('h2').map((_, el) => $(el).text().trim()).get(),
@@ -197,8 +253,11 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
         // Extract content
         const content = $('body').text().trim();
 
-        // Extract images with enhanced data
-        const images = $('img').map((_, el) => {
+        // Get base URL for resolving relative URLs
+        const baseUrl = new URL(formattedUrl).origin;
+
+        // Extract and analyze images
+        const imageElements = $('img').map((_, el) => {
             const $img = $(el);
             return {
                 src: $img.attr('src') || '',
@@ -210,8 +269,21 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
             };
         }).get();
 
-        // Extract links with enhanced analysis
-        const baseUrl = new URL(formattedUrl).origin;
+        // Analyze images
+        const images: ImageAnalysis[] = [];
+        for (let i = 0; i < imageElements.length; i++) {
+            const img = imageElements[i];
+            const classification = classifyImage(img, i, imageElements.length);
+            const downloadData = await downloadAndAnalyzeImage(img.src, baseUrl);
+            
+            images.push({
+                ...img,
+                ...classification,
+                ...downloadData
+            });
+        }
+
+        // Extract links
         const links = $('a[href]').map((_, el) => {
             const $link = $(el);
             const href = $link.attr('href') || '';
@@ -276,46 +348,34 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
             (h3Count > 0 && h4Count === 0 && (h5Count > 0 || h6Count > 0)) ||
             (h4Count > 0 && h5Count === 0 && h6Count > 0);
 
-        // Estimate domain authority based on various factors
+        // Estimate domain authority
         const estimateDomainAuthority = (): number => {
-            let score = 30; // Base score
+            let score = 30;
 
-            // Factor in HTTPS
             if (formattedUrl.startsWith('https://')) score += 10;
-
-            // Factor in content quality indicators
             if (title.length > 0 && title.length <= 60) score += 5;
             if (metaDescription.length > 0 && metaDescription.length <= 160) score += 5;
             if (structuredData) score += 8;
             if (hasH1 && !hasMultipleH1) score += 5;
-
-            // Factor in technical SEO
             if (canonical) score += 3;
             if (metaRobots) score += 2;
             if (metaViewport) score += 2;
-
-            // Factor in content depth
             if (content.length > 1000) score += 5;
             if (headings.h2.length > 3) score += 3;
             if (images.length > 3) score += 2;
-
-            // Factor in link profile
             if (externalLinks.length > 5) score += 3;
             if (internalLinks.length > 10) score += 2;
-
-            // Factor in social media optimization
             if (Object.keys(openGraph).length > 3) score += 3;
             if (Object.keys(twitter).length > 2) score += 2;
 
             return Math.min(100, Math.max(1, score));
         };
 
-        // Estimate backlinks and organic traffic based on domain authority
         const domainAuthority = estimateDomainAuthority();
         const estimatedBacklinks = Math.floor(Math.pow(domainAuthority / 10, 2.5) * 50);
         const estimatedOrganicTraffic = Math.floor(Math.pow(domainAuthority / 10, 3) * 100);
 
-        // Simulate Core Web Vitals (in real implementation, these would be measured)
+        // Simulate Core Web Vitals
         const coreWebVitals = {
             lcp: Math.round((Math.random() * 2 + 1 + (domainAuthority > 70 ? -0.5 : 0.5)) * 10) / 10,
             inp: Math.floor(Math.random() * 200 + 100 + (domainAuthority > 70 ? -50 : 50)),
@@ -354,7 +414,7 @@ export async function scrapeWebsite(url: string): Promise<WebsiteContent> {
 
         // Check technical SEO elements
         const technicalSEO = {
-            hasRobotsTxt: false, // Would need separate HTTP request
+            hasRobotsTxt: false,
             hasSitemap: $('link[rel="sitemap"]').length > 0 || $('link[type="application/xml"]').length > 0,
             hasFavicon: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0,
             hasManifest: $('link[rel="manifest"]').length > 0,
