@@ -17,8 +17,11 @@ async function getPageSpeedData(url: string) {
       return null;
     }
 
+    if (!url.startsWith('http')) {
+      url = `https://${url}`;
+    }
     const response = await axios.get(
-      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&category=performance&strategy=mobile`
+      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${url}&key=${apiKey}&category=performance&strategy=mobile`
     );
 
     return response.data;
@@ -82,7 +85,7 @@ interface WebsiteContent {
     height?: string;
     loading?: string;
   }>;
-  screenshots: {
+  screenshots?: {
     fullPage?: string;
     viewport?: string;
     mobile?: string;
@@ -509,7 +512,7 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
     };
 
     // Capture screenshots
-    const screenshots = await captureScreenshots(formattedUrl);
+    // const screenshots = await captureScreenshots(formattedUrl);
 
     return {
       url: formattedUrl,
@@ -518,7 +521,7 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
       headings,
       content,
       images,
-      screenshots,
+      // screenshots,
       links,
       meta: {
         keywords: metaKeywords,
