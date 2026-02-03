@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
+import { SEOAnalysisTabbed } from '@/components/seo-analysis-sidebar'
 import axios from 'axios'
 
 export default function Home() {

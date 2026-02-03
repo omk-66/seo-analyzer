@@ -8,22 +8,6 @@ export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: 
     return headings.slice(0, maxCount).map(h => `"${truncateText(h, 50)}"`).join(', ');
   };
 
-  const summarizeImages = (images: any[], maxCount: number = 3) => {
-    const sample = images.slice(0, maxCount);
-    return sample.map(img => ({
-      hasAlt: !!img.alt,
-      hasDimensions: !!(img.width && img.height)
-    }));
-  };
-
-  const summarizeLinks = (links: any[], maxCount: number = 5) => {
-    const sample = links.slice(0, maxCount);
-    return sample.map(link => ({
-      isExternal: link.isExternal,
-      hasText: !!link.text.trim()
-    }));
-  };
-
   // Extract key PageSpeed metrics only
   const extractKeyPageSpeedMetrics = (pageSpeedData: any) => {
     if (!pageSpeedData?.lighthouseResult) return null;
@@ -40,7 +24,7 @@ export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: 
     };
   };
 
-  return `You are an expert SEO analyst. Analyze this website data and provide actionable recommendations.
+  return `You are an expert SEO analyst providing AIOSEO-style audit results. Analyze this website and provide detailed recommendations.
 
 ## SITE DATA
 URL: ${websiteContent.url}
@@ -57,6 +41,7 @@ Has Canonical: ${websiteContent.performance.hasCanonical ? '✅' : '❌'}
 Has Viewport: ${websiteContent.performance.hasViewportMeta ? '✅' : '❌'}
 Has Structured Data: ${websiteContent.performance.hasStructuredData ? '✅' : '❌'}
 Has Open Graph: ${websiteContent.performance.hasOpenGraph ? '✅' : '❌'}
+Has Robots Meta: ${websiteContent.performance.hasRobotsMeta ? '✅' : '❌'}
 
 ## CONTENT STRUCTURE
 H1 Count: ${websiteContent.technical.headingStructure.h1Count} (should be 1)
@@ -96,65 +81,61 @@ FCP: ${extractKeyPageSpeedMetrics(pageSpeedData)?.fcp || 'N/A'}
 ` : ''}
 
 ## TASK
-Provide JSON response with this exact structure:
+Provide AIOSEO-style audit report with this exact structure:
+
 {
   "overallScore": 0-100,
   "siteType": "website type",
   "criticalIssues": [
     {
-      "category": "technical",
-      "issue": "specific issue",
-      "impact": "why it matters",
-      "evidence": "what we found",
-      "recommendation": "how to fix",
-      "priority": "critical"
+      "category": "technical|on-page|content|advanced",
+      "issue": "specific issue name",
+      "impact": "why it matters - 1-2 sentences",
+      "evidence": "what we found on the page",
+      "recommendation": "how to fix - specific action",
+      "priority": "critical|high|medium|low"
     }
   ],
   "strengths": [
     {
-      "area": "what area",
-      "description": "why it's good"
+      "area": "what area is working well",
+      "description": "why it's good - 1-2 sentences",
+      "status": "good"
     }
   ],
   "quickWins": [
     {
-      "improvement": "what to do",
-      "impact": "benefit expected",
-      "effort": "low/medium/high"
+      "improvement": "quick fix to implement",
+      "impact": "expected benefit",
+      "effort": "low|medium|high"
     }
   ],
   "detailedRecommendations": {
     "title": {
-      "current": "current title",
-      "suggested": "better title",
-      "reason": "why better"
+      "current": "current title or empty string",
+      "suggested": "better title under 60 chars",
+      "reason": "why this is better"
     },
     "metaDescription": {
-      "current": "current meta",
-      "suggested": "better meta", 
-      "reason": "why better"
+      "current": "current meta or empty string",
+      "suggested": "better meta under 160 chars",
+      "reason": "why this is better"
     },
     "headings": {
       "issues": ["issue1", "issue2"],
       "suggestions": ["suggestion1", "suggestion2"]
     },
     "content": {
-      "wordCount": "assessment",
-      "keywordUsage": "assessment",
-      "readability": "assessment"
+      "wordCount": "assessment of content length",
+      "keywordUsage": "assessment of keyword usage",
+      "readability": "assessment of readability"
     },
     "technical": {
-      "imageOptimization": "assessment",
-      "internalLinking": "assessment",
-      "urlStructure": "assessment",
-      "structuredData": "assessment",
-      "metaTags": "assessment",
-      "schemaMarkup": {
-        "organization": "Add Organization schema for business knowledge panel",
-        "service": "Implement Service schema for service-based businesses",
-        "product": "Use Product schema for e-commerce items",
-        "review": "Add Review/ReviewRating schema for customer testimonials"
-      }
+      "imageOptimization": "assessment of image optimization",
+      "internalLinking": "assessment of internal linking",
+      "urlStructure": "assessment of URL structure",
+      "structuredData": "assessment of structured data",
+      "metaTags": "assessment of meta tags"
     }
   },
   "seoMetrics": {
@@ -164,13 +145,35 @@ Provide JSON response with this exact structure:
     "accessibilityScore": 0-100,
     "coreWebVitals": {
       "lcp": "2.5s",
-      "fid": "100ms", 
+      "fid": "100ms",
       "cls": "0.1",
       "fcp": "1.8s"
     }
   },
-  "nextSteps": ["step1", "step2"]
+  "nextSteps": ["step1", "step2", "step3"]
 }
 
-Focus on actionable technical issues. Keep response concise.`;
+## AIOSEO STYLE REQUIREMENTS:
+
+For Basic SEO section:
+- Title: Include current title with character count, then suggested improved title
+- Meta Description: Include current meta with character count, then suggested improved version
+- Headings: Analyze H1, H2, H3 tags and their hierarchy
+- Keywords: Identify keywords found and their usage
+- Content: Assess word count, readability, and keyword density
+
+For Advanced SEO section:
+- Canonical URL: Check if present
+- Open Graph: Check og:title, og:description, og:image tags
+- Twitter Cards: Check twitter:card, twitter:title, twitter:description
+- Robots.txt: Check if accessible and properly configured
+- Sitemap: Check if sitemap.xml exists
+- Schema.org: Check for structured data markup
+
+For Keywords section:
+- List most common keywords found on the page
+- Analyze keyword density and placement
+- Suggest target keywords for title and description
+
+Focus on actionable technical issues. Keep response concise but comprehensive.`;
 };

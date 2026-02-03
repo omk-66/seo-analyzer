@@ -299,21 +299,15 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                            <span className="text-sm font-medium">FID</span>
+                                            <span className="text-sm font-medium">INP</span>
                                             <span className="text-sm font-mono bg-blue-100 px-2 py-1 rounded">
-                                                {safeAnalysis.seoMetrics.coreWebVitals?.fid || 'N/A'}ms
+                                                {safeAnalysis.seoMetrics.coreWebVitals?.inp || 'N/A'}ms
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
                                             <span className="text-sm font-medium">CLS</span>
                                             <span className="text-sm font-mono bg-blue-100 px-2 py-1 rounded">
                                                 {safeAnalysis.seoMetrics.coreWebVitals?.cls || 'N/A'}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                                            <span className="text-sm font-medium">FCP</span>
-                                            <span className="text-sm font-mono bg-blue-100 px-2 py-1 rounded">
-                                                {safeAnalysis.seoMetrics.coreWebVitals?.fcp || 'N/A'}s
                                             </span>
                                         </div>
                                     </div>
