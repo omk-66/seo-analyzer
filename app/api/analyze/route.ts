@@ -1,14 +1,210 @@
 import { NextRequest, NextResponse } from 'next/server';
 // import { google } from '@ai-sdk/google';
-import { generateText } from 'ai';
+import { generateText, generateObject, Output } from 'ai';
 import { cohere } from '@ai-sdk/cohere';
+import { z } from 'zod';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { jsonrepair } from 'jsonrepair';
 // import puppeteer from 'puppeteer';
 import { generateSEOPrompt } from '@/lib/seo-prompt';
 import { generateOptimizedSEOPrompt } from '@/lib/seo-prompt-optimized';
 import { optimizeWebsiteContent, optimizePageSpeedData, optimizeSitemapData } from '@/lib/data-optimizer';
 import { deepseek } from '@ai-sdk/deepseek';
+import { SeoAuditResponseSchema } from '@/lib/types/llm-response';
+
+// ============================================
+// ZOD SCHEMA FOR TYPE-SAFE JSON GENERATION
+// ============================================
+
+const CriticalIssueSchema = z.object({
+  category: z.enum(['technical', 'on-page', 'content', 'security', 'performance']),
+  issue: z.string(),
+  impact: z.string(),
+  evidence: z.string(),
+  recommendation: z.string(),
+  priority: z.enum(['critical', 'high', 'medium', 'low'])
+});
+
+const StrengthSchema = z.object({
+  area: z.string(),
+  description: z.string()
+});
+
+const QuickWinSchema = z.object({
+  improvement: z.string(),
+  impact: z.string(),
+  effort: z.enum(['low', 'medium', 'high'])
+});
+
+const DetailedRecommendationsSchema = z.object({
+  title: z.object({
+    current: z.string(),
+    suggested: z.string(),
+    reason: z.string()
+  }),
+  metaDescription: z.object({
+    current: z.string(),
+    suggested: z.string(),
+    reason: z.string()
+  }),
+  headings: z.object({
+    issues: z.array(z.string()),
+    suggestions: z.array(z.string())
+  }),
+  content: z.object({
+    wordCount: z.string(),
+    keywordUsage: z.string(),
+    readability: z.string(),
+    LSIKeywords: z.array(z.string()).optional(),
+    contentGaps: z.array(z.string()).optional(),
+    contentStructure: z.string().optional()
+  }),
+  keywords: z.object({
+    primaryKeywords: z.array(z.object({
+      keyword: z.string(),
+      count: z.number(),
+      density: z.string(),
+      placement: z.array(z.string())
+    })),
+    secondaryKeywords: z.array(z.object({
+      keyword: z.string(),
+      count: z.number(),
+      density: z.string()
+    })),
+    longTailKeywords: z.array(z.object({
+      keyword: z.string(),
+      count: z.number()
+    })),
+    missingKeywords: z.array(z.string()),
+    keywordStuffing: z.boolean()
+  }).optional(),
+  links: z.object({
+    internalLinks: z.array(z.object({
+      url: z.string(),
+      anchor: z.string(),
+      isContextual: z.boolean()
+    })),
+    externalLinks: z.array(z.object({
+      url: z.string(),
+      anchor: z.string(),
+      isNofollow: z.boolean()
+    })),
+    brokenLinks: z.array(z.object({
+      url: z.string(),
+      status: z.string()
+    })),
+    orphanedPages: z.array(z.string()),
+    linkEquity: z.string()
+  }).optional(),
+  technical: z.object({
+    imageOptimization: z.string(),
+    internalLinking: z.string(),
+    urlStructure: z.string(),
+    structuredData: z.string(),
+    metaTags: z.string()
+  })
+});
+
+const CoreWebVitalsSchema = z.object({
+  lcp: z.number(),
+  inp: z.number(),
+  cls: z.number(),
+  fcp: z.number().optional(),
+  ttfb: z.number().optional()
+});
+
+const PageSpeedSchema = z.object({
+  desktop: z.number(),
+  mobile: z.number(),
+  firstContentfulPaint: z.number(),
+  largestContentfulPaint: z.number(),
+  timeToInteractive: z.number(),
+  speedIndex: z.number(),
+  totalBlockingTime: z.number()
+});
+
+const TopKeywordSchema = z.object({
+  keyword: z.string(),
+  position: z.number(),
+  volume: z.number(),
+  difficulty: z.number()
+});
+
+const AdditionalMetricsSchema = z.object({
+  domainAuthority: z.number(),
+  pageAuthority: z.number(),
+  backlinksCount: z.number(),
+  referringDomains: z.number(),
+  organicKeywords: z.number(),
+  organicTraffic: z.number(),
+  bounceRate: z.number(),
+  dwellTime: z.number(),
+  conversionRate: z.number()
+});
+
+const SEOMetricsSchema = z.object({
+  technicalScore: z.number(),
+  contentScore: z.number(),
+  performanceScore: z.number(),
+  accessibilityScore: z.number(),
+  securityScore: z.number(),
+  mobileSpeedScore: z.number(),
+  readabilityScore: z.number(),
+  wordCount: z.number(),
+  contentDepthScore: z.number(),
+  keywordScore: z.number(),
+  structuredDataScore: z.number(),
+  internalLinkingScore: z.number(),
+  externalLinkingScore: z.number(),
+  userExperienceScore: z.number(),
+  socialSharingScore: z.number(),
+  sslStatus: z.enum(['valid', 'invalid', 'missing']),
+  mobileFriendliness: z.boolean(),
+  contentFreshness: z.string(),
+  topKeywords: z.array(TopKeywordSchema),
+  schemaTypes: z.array(z.string()),
+  coreWebVitals: CoreWebVitalsSchema,
+  pageSpeed: PageSpeedSchema,
+  additionalMetrics: AdditionalMetricsSchema
+});
+
+// Main SEO Analysis Schema
+const SEOAnalysisSchema = z.object({
+  overallScore: z.number().min(0).max(100),
+  siteType: z.enum(['blog', 'e-commerce', 'business', 'portfolio', 'educational', 'news', 'other']),
+  url: z.string(),
+  criticalIssues: z.array(CriticalIssueSchema),
+  strengths: z.array(StrengthSchema),
+  quickWins: z.array(QuickWinSchema),
+  detailedRecommendations: DetailedRecommendationsSchema,
+  seoMetrics: SEOMetricsSchema,
+  nextSteps: z.array(z.string())
+});
+
+// Logger utility for structured logging
+const log = {
+  step: (step: string, message: string) => {
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`[STEP ${step}] ${message}`);
+    console.log(`${'='.repeat(60)}\n`);
+  },
+  info: (message: string, data?: any) => {
+    console.log(`[INFO] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data) : '');
+  },
+  warn: (message: string, data?: any) => {
+    console.warn(`[WARN] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data) : '');
+  },
+  error: (message: string, data?: any) => {
+    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data) : '');
+  },
+  debug: (message: string, data?: any) => {
+    console.debug(`[DEBUG] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data) : '');
+  },
+  success: (message: string, data?: any) => {
+    console.log(`[SUCCESS] ${new Date().toISOString()} - ${message}`, data ? JSON.stringify(data) : '');
+  }
+};
 // import { fireworks } from '@ai-sdk/fireworks';
 
 // Function to fetch Google PageSpeed Insights data
@@ -343,179 +539,15 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
     const structuredDataTypes: string[] = [];
     $('script[type="application/ld+json"]').each((_, el) => {
       try {
-        const jsonData = JSON.parse($(el).html() || '{}');
-        if (jsonData['@type']) {
-          if (Array.isArray(jsonData['@type'])) {
-            structuredDataTypes.push(...jsonData['@type']);
-          } else {
-            structuredDataTypes.push(jsonData['@type']);
-          }
+        const scriptContent = $(el).html() || '';
+        const typeMatch = scriptContent.match(/"@type"\s*:\s*"([^"]+)"/);
+        if (typeMatch) {
+          structuredDataTypes.push(typeMatch[1]);
         }
       } catch (e) {
-        // Invalid JSON, skip
+        // Skip invalid JSON
       }
     });
-
-    // Enhanced heading structure analysis
-    const hasH1 = headings.h1.length > 0;
-    const hasMultipleH1 = headings.h1.length > 1;
-    const h1Count = headings.h1.length;
-    const h2Count = headings.h2.length;
-    const h3Count = headings.h3.length;
-    const h4Count = headings.h4.length;
-    const h5Count = headings.h5.length;
-    const h6Count = headings.h6.length;
-
-    // Check for proper heading hierarchy
-    const properHierarchy = h1Count === 1 && (
-      (h2Count > 0 && h3Count === 0 && h4Count === 0 && h5Count === 0 && h6Count === 0) ||
-      (h2Count > 0 && h3Count > 0 && h4Count === 0 && h5Count === 0 && h6Count === 0) ||
-      (h2Count > 0 && h3Count > 0 && h4Count > 0 && h5Count === 0 && h6Count === 0) ||
-      (h2Count > 0 && h3Count > 0 && h4Count > 0 && h5Count > 0 && h6Count === 0) ||
-      (h2Count > 0 && h3Count > 0 && h4Count > 0 && h5Count > 0 && h6Count > 0)
-    );
-
-    // Check for skipped heading levels
-    const skippedLevels = (h1Count > 0 && h2Count === 0 && (h3Count > 0 || h4Count > 0 || h5Count > 0 || h6Count > 0)) ||
-      (h2Count > 0 && h3Count === 0 && (h4Count > 0 || h5Count > 0 || h6Count > 0)) ||
-      (h3Count > 0 && h4Count === 0 && (h5Count > 0 || h6Count > 0)) ||
-      (h4Count > 0 && h5Count === 0 && h6Count > 0);
-
-    // Estimate domain authority
-    const estimateDomainAuthority = (): number => {
-      let score = 30;
-
-      if (formattedUrl.startsWith('https://')) score += 10;
-      if (title.length > 0 && title.length <= 60) score += 5;
-      if (metaDescription.length > 0 && metaDescription.length <= 160) score += 5;
-      if (structuredData) score += 8;
-      if (hasH1 && !hasMultipleH1) score += 5;
-      if (canonical) score += 3;
-      if (metaRobots) score += 2;
-      if (metaViewport) score += 2;
-      if (content.length > 1000) score += 5;
-      if (headings.h2.length > 3) score += 3;
-      if (images.length > 3) score += 2;
-      if (externalLinks.length > 5) score += 3;
-      if (internalLinks.length > 10) score += 2;
-      if (Object.keys(openGraph).length > 3) score += 3;
-      if (Object.keys(twitter).length > 2) score += 2;
-
-      return Math.min(100, Math.max(1, score));
-    };
-
-    const domainAuthority = estimateDomainAuthority();
-    const estimatedBacklinks = Math.floor(Math.pow(domainAuthority / 10, 2.5) * 50);
-    const estimatedOrganicTraffic = Math.floor(Math.pow(domainAuthority / 10, 3) * 100);
-
-    // Simulate Core Web Vitals
-    const coreWebVitals = {
-      lcp: Math.round((Math.random() * 2 + 1 + (domainAuthority > 70 ? -0.5 : 0.5)) * 10) / 10,
-      inp: Math.floor(Math.random() * 200 + 100 + (domainAuthority > 70 ? -50 : 50)),
-      cls: Math.round((Math.random() * 0.2 + 0.05 + (domainAuthority > 70 ? -0.02 : 0.02)) * 100) / 100
-    };
-
-    // Calculate readability scores
-    const calculateReadability = (text: string) => {
-      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      const words = text.split(/\s+/).filter(w => w.length > 0);
-      const syllables = words.reduce((count, word) => {
-        return count + Math.max(1, word.toLowerCase().replace(/[^aeiouy]/g, '').length);
-      }, 0);
-
-      const avgWordsPerSentence = words.length / sentences.length;
-      const avgSyllablesPerWord = syllables / words.length;
-
-      const fleschKincaid = 0.39 * avgWordsPerSentence + 11.8 * avgSyllablesPerWord - 15.59;
-
-      let readingLevel = 'Easy';
-      if (fleschKincaid > 12) readingLevel = 'Very Difficult';
-      else if (fleschKincaid > 10) readingLevel = 'Difficult';
-      else if (fleschKincaid > 8) readingLevel = 'Fairly Difficult';
-      else if (fleschKincaid > 6) readingLevel = 'Standard';
-      else if (fleschKincaid > 4) readingLevel = 'Fairly Easy';
-
-      return {
-        fleschKincaid: Math.round(fleschKincaid * 10) / 10,
-        readingLevel,
-        avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10
-      };
-    };
-
-    const readabilityScore = calculateReadability(content);
-
-    // Check technical SEO elements
-    const technicalSEO = {
-      hasRobotsTxt: false,
-      hasSitemap: $('link[rel="sitemap"]').length > 0 || $('link[type="application/xml"]').length > 0,
-      hasFavicon: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0,
-      hasManifest: $('link[rel="manifest"]').length > 0,
-      languageDeclared: $('html').attr('lang') !== undefined
-    };
-
-    // Social sharing analysis
-    const socialSharing = {
-      facebookShareable: Object.keys(openGraph).length > 2,
-      twitterShareable: Object.keys(twitter).length > 1,
-      linkedinShareable: Object.keys(openGraph).length > 1
-    };
-
-    const performance = {
-      contentLength: content.length,
-      wordCount: content.split(/\s+/).filter(word => word.length > 0).length,
-      headingCount: headings.h1.length + headings.h2.length + headings.h3.length + headings.h4.length + headings.h5.length + headings.h6.length,
-      imageCount: images.length,
-      linkCount: links.length,
-      internalLinkCount: internalLinks.length,
-      externalLinkCount: externalLinks.length,
-      nofollowLinkCount: nofollowLinks.length,
-      hasStructuredData: structuredData,
-      hasViewportMeta: !!metaViewport,
-      hasRobotsMeta: !!metaRobots,
-      hasCanonical: !!canonical,
-      hasOpenGraph: Object.keys(openGraph).length > 0,
-      hasTwitterCards: Object.keys(twitter).length > 0,
-      structuredDataTypes
-    };
-
-    const technical = {
-      hasHttps: formattedUrl.startsWith('https://'),
-      hasH1,
-      hasMultipleH1,
-      hasTitle: title.length > 0,
-      hasMetaDescription: metaDescription.length > 0,
-      titleLength: title.length,
-      metaDescriptionLength: metaDescription.length,
-      imagesWithoutAlt,
-      imagesWithAlt,
-      imagesWithoutDimensions,
-      headingStructure: {
-        hasH1,
-        h1Count,
-        h2Count,
-        h3Count,
-        h4Count,
-        h5Count,
-        h6Count,
-        properHierarchy,
-        skippedLevels
-      },
-      domainAuthority,
-      estimatedBacklinks,
-      estimatedOrganicTraffic,
-      coreWebVitals,
-      mobileFriendliness: !!metaViewport,
-      pageSpeed: {
-        desktop: Math.max(40, Math.min(100, 90 - (coreWebVitals.lcp * 10) + (domainAuthority > 70 ? 10 : 0))),
-        mobile: Math.max(30, Math.min(100, 80 - (coreWebVitals.lcp * 15) + (domainAuthority > 70 ? 5 : 0)))
-      },
-      readabilityScore,
-      socialSharing,
-      technicalSEO
-    };
-
-    // Capture screenshots
-    // const screenshots = await captureScreenshots(formattedUrl);
 
     return {
       url: formattedUrl,
@@ -524,7 +556,6 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
       headings,
       content,
       images,
-      // screenshots,
       links,
       meta: {
         keywords: metaKeywords,
@@ -533,307 +564,350 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
         robots: metaRobots,
         canonical,
         openGraph,
-        twitter
+        twitter,
       },
-      performance,
-      technical
-    };
-
-  } catch (error) {
-    console.error('Scraping error:', error);
-    throw new Error(`Failed to scrape website: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
-}
-
-// Fallback function to generate minimal analysis when AI parsing fails
-function generateMinimalAnalysis(websiteContent: any, pageSpeedData: any) {
-  const issues: any[] = [];
-  const strengths: any[] = [];
-  let score = 70;
-
-  // Title check
-  if (!websiteContent.title) {
-    issues.push({
-      category: 'on-page',
-      issue: 'Missing page title',
-      impact: 'Critical for search engine ranking and click-through rates',
-      evidence: 'No title tag found',
-      recommendation: 'Add a descriptive title tag (50-60 characters)',
-      priority: 'critical'
-    });
-    score -= 15;
-  } else {
-    strengths.push({
-      area: 'Title Optimization',
-      description: 'Page title is present'
-    });
-  }
-
-  // Meta description check
-  if (!websiteContent.metaDescription) {
-    issues.push({
-      category: 'on-page',
-      issue: 'Missing meta description',
-      impact: 'Important for click-through rates',
-      evidence: 'No meta description found',
-      recommendation: 'Add a compelling meta description (150-160 characters)',
-      priority: 'high'
-    });
-    score -= 10;
-  } else {
-    strengths.push({
-      area: 'Meta Description',
-      description: 'Meta description is present'
-    });
-  }
-
-  // H1 check
-  if (!websiteContent.technical.hasH1) {
-    issues.push({
-      category: 'on-page',
-      issue: 'Missing H1 tag',
-      impact: 'Critical for content structure and SEO',
-      evidence: 'No H1 tags found',
-      recommendation: 'Add one H1 tag with main keyword',
-      priority: 'critical'
-    });
-    score -= 15;
-  }
-
-  return {
-    overallScore: Math.max(0, Math.min(100, score)),
-    siteType: 'website',
-    url: websiteContent.url,
-    criticalIssues: issues,
-    strengths,
-    quickWins: [],
-    detailedRecommendations: {
-      title: {
-        current: websiteContent.title || '',
-        suggested: websiteContent.title ? websiteContent.title.substring(0, 55) : 'Add a descriptive title',
-        reason: 'Title tags are critical for SEO'
-      },
-      metaDescription: {
-        current: websiteContent.metaDescription || '',
-        suggested: websiteContent.metaDescription ? websiteContent.metaDescription.substring(0, 155) : 'Add a compelling description',
-        reason: 'Meta descriptions improve click-through rates'
-      },
-      headings: {
-        issues: websiteContent.technical.hasH1 ? [] : ['Missing H1 tag'],
-        suggestions: websiteContent.technical.hasH1 ? [] : ['Add one H1 tag per page']
-      },
-      content: {
-        wordCount: websiteContent.performance.wordCount > 300 ? 'Adequate content length' : 'Content may be too thin',
-        keywordUsage: 'Review keyword placement and density',
-        readability: 'Ensure content is well-structured'
+      performance: {
+        contentLength: content.length,
+        wordCount: content.split(/\s+/).filter(Boolean).length,
+        headingCount: headings.h1.length + headings.h2.length + headings.h3.length,
+        imageCount: images.length,
+        linkCount: links.length,
+        internalLinkCount: internalLinks.length,
+        externalLinkCount: externalLinks.length,
+        nofollowLinkCount: nofollowLinks.length,
+        hasStructuredData: structuredData,
+        hasViewportMeta: !!metaViewport,
+        hasRobotsMeta: !!metaRobots,
+        hasCanonical: !!canonical,
+        hasOpenGraph: Object.keys(openGraph).length > 0,
+        hasTwitterCards: Object.keys(twitter).length > 0,
+        structuredDataTypes,
       },
       technical: {
-        imageOptimization: 'Review image alt tags',
-        internalLinking: 'Add internal links to related content',
-        urlStructure: 'URLs are readable and descriptive',
-        structuredData: websiteContent.performance.hasStructuredData ? 'Structured data found' : 'Consider adding schema markup',
-        metaTags: 'Meta tags are properly configured'
+        hasHttps: formattedUrl.startsWith('https://'),
+        hasH1: headings.h1.length > 0,
+        hasMultipleH1: headings.h1.length > 1,
+        hasTitle: !!title,
+        hasMetaDescription: !!metaDescription,
+        titleLength: title.length,
+        metaDescriptionLength: metaDescription.length,
+        imagesWithoutAlt,
+        imagesWithAlt,
+        imagesWithoutDimensions,
+        headingStructure: {
+          hasH1: headings.h1.length > 0,
+          h1Count: headings.h1.length,
+          h2Count: headings.h2.length,
+          h3Count: headings.h3.length,
+          h4Count: headings.h4.length,
+          h5Count: headings.h5.length,
+          h6Count: headings.h6.length,
+          properHierarchy: true,
+          skippedLevels: false,
+        },
+        domainAuthority: 0,
+        estimatedBacklinks: 0,
+        estimatedOrganicTraffic: 0,
+        coreWebVitals: { lcp: 0, inp: 0, cls: 0 },
+        mobileFriendliness: true,
+        pageSpeed: { desktop: 0, mobile: 0 },
+        readabilityScore: { fleschKincaid: 0, readingLevel: 'Unknown', avgWordsPerSentence: 0 },
+        socialSharing: { facebookShareable: true, twitterShareable: true, linkedinShareable: true },
+        technicalSEO: { hasRobotsTxt: false, hasSitemap: false, hasFavicon: false, hasManifest: false, languageDeclared: true },
       },
-      keywords: {
-        primaryKeywords: [],
-        secondaryKeywords: [],
-        longTailKeywords: [],
-        missingKeywords: ['Add relevant keywords based on content'],
-        keywordStuffing: false
-      },
-      links: {
-        internalLinks: [],
-        externalLinks: [],
-        brokenLinks: [],
-        orphanedPages: [],
-        linkEquity: 'Review internal linking structure'
-      }
-    },
-    seoMetrics: {
-      technicalScore: Math.max(0, Math.min(100, score + 10)),
-      contentScore: Math.max(0, Math.min(100, score)),
-      performanceScore: 70,
-      accessibilityScore: 75,
-      securityScore: websiteContent.technical.hasHttps ? 90 : 40,
-      mobileSpeedScore: 70,
-      readabilityScore: 70,
-      wordCount: websiteContent.performance.wordCount,
-      contentDepthScore: websiteContent.performance.wordCount > 500 ? 80 : 60,
-      keywordScore: 65,
-      structuredDataScore: websiteContent.performance.hasStructuredData ? 80 : 30,
-      internalLinkingScore: Math.min(100, websiteContent.performance.internalLinkCount * 10),
-      externalLinkingScore: Math.min(100, websiteContent.performance.externalLinkCount * 10),
-      userExperienceScore: 70,
-      sslStatus: websiteContent.technical.hasHttps ? 'valid' : 'missing',
-      mobileFriendliness: !!websiteContent.meta.viewport,
-      contentFreshness: 'Recent',
-      topKeywords: [],
-      schemaTypes: websiteContent.performance.structuredDataTypes || [],
-      coreWebVitals: {
-        lcp: 2.5,
-        inp: 100,
-        cls: 0.1
-      },
-      pageSpeed: {
-        desktop: 75,
-        mobile: 70,
-        firstContentfulPaint: 1.8,
-        largestContentfulPaint: 2.5,
-        timeToInteractive: 3.2,
-        speedIndex: 2.8,
-        totalBlockingTime: 150
-      }
-    },
-    nextSteps: [
-      'Fix critical on-page SEO issues',
-      'Add missing meta tags',
-      'Improve content quality'
-    ]
-  };
+    };
+  } catch (error: any) {
+    throw new Error(`Failed to scrape website: ${error.message}`);
+  }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { url } = await request.json();
+    log.step('1', 'Starting SEO Analysis');
+
+    const body = await req.json();
+    const { url } = body;
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    // Scrape website on server-side
-    const websiteContent = await scrapeWebsiteServer(url);
+    log.info('Analyzing URL', { url });
 
-    // Fetch additional data
-    const [pageSpeedData, sitemapData] = await Promise.all([
+    // Fetch data in parallel
+    log.step('2', 'Fetching website data');
+    const [websiteContent, pageSpeedData, sitemapData] = await Promise.all([
+      scrapeWebsiteServer(url),
       getPageSpeedData(url),
       checkSitemap(url)
     ]);
 
-    // Check if API key is available
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    log.success('Data fetched', {
+      hasContent: !!websiteContent,
+      hasPageSpeed: !!pageSpeedData,
+      hasSitemap: sitemapData.found
+    });
+
+    // Check if scraping was successful
+    if (!websiteContent || !websiteContent.title) {
+      log.warn('Could not extract meaningful content from URL');
       return NextResponse.json({
-        error: 'Google Generative AI API key not configured. Using basic SEO analysis.',
+        error: 'Could not analyze this URL. Please check if it is accessible.',
       }, { status: 200 });
     }
 
+    // Optimize data for AI consumption
+    log.step('3', 'Optimizing data for AI');
+    const optimizedWebsiteContent = optimizeWebsiteContent(websiteContent);
+    const optimizedPageSpeedData = optimizePageSpeedData(pageSpeedData);
+    const optimizedSitemapData = optimizeSitemapData(sitemapData);
+
+    log.success('Data optimized', {
+      contentLength: optimizedWebsiteContent.performance.contentLength,
+      headingCount: optimizedWebsiteContent.performance.headingCount,
+      linkCount: optimizedWebsiteContent.performance.linkCount
+    });
+
+    // Generate AI prompt
+    log.step('4', 'Generating AI prompt');
+    const prompt = generateOptimizedSEOPrompt(
+      optimizedWebsiteContent,
+      optimizedPageSpeedData,
+      optimizedSitemapData
+    );
+
+    log.info('Prompt generated', {
+      promptLength: prompt.length,
+      includesPageSpeed: !!optimizedPageSpeedData
+    });
+
+    // ============================================
+    // MULTI-STRATEGY AI ANALYSIS WITH FALLBACK
+    // ============================================
+
+    let analysis: any;
+    let modelUsed = '';
+    let parseMethod = '';
+
     try {
-      // Optimize the data to reduce token usage
-      const optimizedWebsiteContent = optimizeWebsiteContent(websiteContent);
-      const optimizedPageSpeedData = optimizePageSpeedData(pageSpeedData);
-      const optimizedSitemapData = optimizeSitemapData(sitemapData);
+      // ============================================
+      // STRATEGY 1: generateObject (Type-Safe JSON)
+      // ============================================
+      log.step('6', 'Calling AI model with structured output');
+      const startTime = Date.now();
+      log.info('Starting AI analysis with structured output', { url: optimizedWebsiteContent.url });
 
-      // Generate the optimized SEO prompt
-      const prompt = generateOptimizedSEOPrompt(optimizedWebsiteContent, optimizedPageSpeedData, optimizedSitemapData);
+      const result = await generateObject({
+        model: cohere('command-a-03-2025'),
+        schema: SEOAnalysisSchema,
+        prompt: prompt,
+      });
 
-      let text = '';
-      let modelUsed = '';
+      const endTime = Date.now();
+      log.success('AI analysis completed', {
+        duration: `${endTime - startTime}ms`,
+        modelUsed: 'cohere-command-a-03-2025',
+        method: 'generateObject'
+      });
 
+      analysis = result.object;
+      modelUsed = 'cohere-command-a-03-2025';
+      parseMethod = 'generateObject (type-safe)';
+    } catch (objectError: any) {
+      log.warn('generateObject failed, falling back to generateText', {
+        error: objectError?.message
+      });
+
+      // ============================================
+      // STRATEGY 2: generateText with JSON parsing
+      // ============================================
       try {
-        // Use Vercel AI SDK with AI model
-        const startTime = new Date().getTime();
-        console.log("starting AI analysis");
-        console.log("start time:", startTime);
+        log.info('Trying generateText fallback', { url: optimizedWebsiteContent.url });
         const { text: generatedText } = await generateText({
           model: cohere('command-a-03-2025'),
           prompt: prompt,
         });
-        console.log("end time:", new Date().getTime());
-        console.log("total time:", new Date().getTime() - startTime);
 
-        text = generatedText;
-        modelUsed = 'cohere-command-a-03-2025';
-      } catch (modelError: any) {
-        console.error('Model error with optimized prompt:', modelError);
+        log.info('generateText completed, parsing JSON', { responseLength: generatedText.length });
 
-        // If optimized prompt still fails, try ultra-minimal prompt
-        if (modelError.message?.includes('tokens')) {
-          console.log('Trying ultra-minimal prompt as fallback...');
-          const minimalPrompt = `Analyze this website SEO: URL=${optimizedWebsiteContent.url}, Title="${optimizedWebsiteContent.title}", HasH1=${optimizedWebsiteContent.technical.hasH1}, HasMetaDesc=${optimizedWebsiteContent.technical.hasMetaDescription}. Return JSON with overallScore, criticalIssues, importantImprovements, strengths, quickWins, seoScores.`;
+        // Multiple parsing strategies
+        let jsonString = generatedText;
+        let parsed = null;
 
-          try {
-            const { text: fallbackText } = await generateText({
-              model: cohere('command-a-03-2025'),
-              prompt: minimalPrompt,
-            });
-            text = fallbackText;
-            modelUsed = 'cohere-command-a-03-2025-minimal';
-          } catch (fallbackError: any) {
-            console.error('Minimal prompt also failed:', fallbackError);
-            return NextResponse.json({
-              error: 'AI service token limit exceeded. Try analyzing a smaller page.',
-            }, { status: 200 });
+        // Strategy 1: Direct JSON.parse
+        try {
+          parsed = JSON.parse(jsonString);
+          log.success('JSON parsed on first attempt');
+        } catch (e: any) {
+          log.warn('Direct parse failed, trying extraction', { error: e.message });
+        }
+
+        // Strategy 2: Extract from markdown code blocks
+        if (!parsed) {
+          const codeBlockMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+          if (codeBlockMatch) {
+            jsonString = codeBlockMatch[1];
+            try {
+              parsed = JSON.parse(jsonString);
+              log.success('JSON parsed from code block');
+            } catch (e) {
+              log.warn('Code block parse failed');
+            }
           }
-        } else {
-          return NextResponse.json({
-            error: 'AI service temporarily unavailable. Please try again later.',
-          }, { status: 200 });
         }
+
+        // Strategy 3: Extract JSON object with regex
+        if (!parsed) {
+          const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonString = jsonMatch[0];
+            // Clean JSON
+            jsonString = jsonString
+              .replace(/,\s*([}\]])/g, '$1')
+              .replace(/'/g, '"')
+              .replace(/\n/g, ' ');
+            try {
+              parsed = JSON.parse(jsonString);
+              log.success('JSON parsed after extraction');
+            } catch (e) {
+              log.warn('Regex extraction failed');
+            }
+          }
+        }
+
+        // Strategy 4: Use jsonrepair library
+        if (!parsed && typeof jsonrepair === 'function') {
+          try {
+            const repaired = jsonrepair(jsonString);
+            parsed = JSON.parse(repaired);
+            log.success('JSON repaired using jsonrepair');
+          } catch (e) {
+            log.warn('jsonrepair failed');
+          }
+        }
+
+        // Strategy 5: Generate minimal analysis from partial data
+        if (!parsed) {
+          log.warn('All parsing strategies failed, using minimal analysis');
+          parsed = {
+            overallScore: 50,
+            siteType: 'other',
+            url: optimizedWebsiteContent.url,
+            criticalIssues: [{
+              category: 'on-page',
+              issue: 'Unable to parse AI response',
+              impact: 'Limited analysis available',
+              evidence: 'All parsing strategies failed',
+              recommendation: 'Try again with a simpler URL',
+              priority: 'medium'
+            }],
+            strengths: [],
+            quickWins: [],
+            detailedRecommendations: {
+              title: { current: '', suggested: '', reason: '' },
+              metaDescription: { current: '', suggested: '', reason: '' },
+              headings: { issues: [], suggestions: [] },
+              content: { wordCount: '', keywordUsage: '', readability: '' },
+              technical: { imageOptimization: '', internalLinking: '', urlStructure: '', structuredData: '', metaTags: '' }
+            },
+            seoMetrics: {
+              technicalScore: 50,
+              contentScore: 50,
+              performanceScore: 50,
+              accessibilityScore: 50,
+              securityScore: 50,
+              mobileSpeedScore: 50,
+              readabilityScore: 50,
+              wordCount: 0,
+              contentDepthScore: 50,
+              keywordScore: 50,
+              structuredDataScore: 50,
+              internalLinkingScore: 50,
+              externalLinkingScore: 50,
+              userExperienceScore: 50,
+              socialSharingScore: 50,
+              sslStatus: 'valid',
+              mobileFriendliness: true,
+              contentFreshness: 'Unknown',
+              topKeywords: [],
+              schemaTypes: [],
+              coreWebVitals: { lcp: 0, inp: 0, cls: 0 },
+              pageSpeed: { desktop: 0, mobile: 0, firstContentfulPaint: 0, largestContentfulPaint: 0, timeToInteractive: 0, speedIndex: 0, totalBlockingTime: 0 },
+              additionalMetrics: { domainAuthority: 0, pageAuthority: 0, backlinksCount: 0, referringDomains: 0, organicKeywords: 0, organicTraffic: 0, bounceRate: 0, dwellTime: 0, conversionRate: 0 }
+            },
+            nextSteps: ['Try analyzing again', 'Check URL accessibility']
+          };
+          parseMethod = 'minimal-fallback';
+        }
+
+        analysis = parsed;
+        modelUsed = 'cohere-command-a-03-2025';
+        parseMethod = parseMethod || 'generateText + JSON parsing';
+      } catch (textError: any) {
+        log.error('generateText failed', { error: textError?.message });
+        throw new Error('AI service temporarily unavailable');
       }
-
-      if (!text) {
-        return NextResponse.json({
-          error: 'AI models are currently unavailable. Using enhanced SEO analysis.',
-        }, { status: 200 });
-      }
-
-      // Clean up the response and parse JSON
-      let analysis;
-      try {
-        // Try to extract JSON from the response
-        let jsonString = text;
-
-        // If response contains markdown code blocks, extract the JSON
-        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (codeBlockMatch) {
-          jsonString = codeBlockMatch[1];
-        }
-
-        // Try to find JSON object in the text
-        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error('No JSON found in response');
-        }
-
-        jsonString = jsonMatch[0];
-
-        // Fix common JSON issues
-        jsonString = jsonString
-          // Remove trailing commas before } or ]
-          .replace(/,\s*([}\]])/g, '$1')
-          // Fix missing colons after property names
-          .replace(/("[^"]+")\s*([^:])/g, '$1: $2')
-          // Fix unquoted values
-          .replace(/([:\s])(true|false)([\s,}\]])/g, '$1"$2"$3')
-          .replace(/([:\s])(\d+\.?\d*)([\s,}\]])/g, '$1$2$3')
-          // Fix single quotes to double quotes
-          .replace(/'([^']*)'/g, '"$1"')
-          // Fix line breaks in strings
-          .replace(/\n/g, ' ')
-          .replace(/\r/g, ' ')
-          // Remove any control characters
-          .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
-
-        analysis = JSON.parse(jsonString);
-
-        // Add the raw PageSpeed data to the response for UI display
-        if (pageSpeedData) {
-          analysis.pageSpeedData = pageSpeedData;
-        }
-      } catch (parseError: any) {
-        console.error('JSON Parse Error:', parseError.message);
-
-        // Try to create a minimal valid analysis from partial data
-        analysis = generateMinimalAnalysis(websiteContent, pageSpeedData);
-      }
-
-      return NextResponse.json(analysis);
-    } catch (error: any) {
-      console.error('AI Analysis Error:', error);
-
-      return NextResponse.json({
-        error: 'Analysis service temporarily unavailable. Please try again later.',
-      }, { status: 200 });
     }
+
+    if (!analysis) {
+      log.warn('No analysis generated, using fallback');
+      analysis = {
+        overallScore: 50,
+        siteType: 'other',
+        url: optimizedWebsiteContent.url,
+        criticalIssues: [],
+        strengths: [],
+        quickWins: [],
+        detailedRecommendations: {
+          title: { current: '', suggested: '', reason: '' },
+          metaDescription: { current: '', suggested: '', reason: '' },
+          headings: { issues: [], suggestions: [] },
+          content: { wordCount: '', keywordUsage: '', readability: '' },
+          technical: { imageOptimization: '', internalLinking: '', urlStructure: '', structuredData: '', metaTags: '' }
+        },
+        seoMetrics: {
+          technicalScore: 50,
+          contentScore: 50,
+          performanceScore: 50,
+          accessibilityScore: 50,
+          securityScore: 50,
+          mobileSpeedScore: 50,
+          readabilityScore: 50,
+          wordCount: 0,
+          contentDepthScore: 50,
+          keywordScore: 50,
+          structuredDataScore: 50,
+          internalLinkingScore: 50,
+          externalLinkingScore: 50,
+          userExperienceScore: 50,
+          socialSharingScore: 50,
+          sslStatus: 'valid',
+          mobileFriendliness: true,
+          contentFreshness: 'Unknown',
+          topKeywords: [],
+          schemaTypes: [],
+          coreWebVitals: { lcp: 0, inp: 0, cls: 0 },
+          pageSpeed: { desktop: 0, mobile: 0, firstContentfulPaint: 0, largestContentfulPaint: 0, timeToInteractive: 0, speedIndex: 0, totalBlockingTime: 0 },
+          additionalMetrics: { domainAuthority: 0, pageAuthority: 0, backlinksCount: 0, referringDomains: 0, organicKeywords: 0, organicTraffic: 0, bounceRate: 0, dwellTime: 0, conversionRate: 0 }
+        },
+        nextSteps: []
+      };
+      parseMethod = 'fallback';
+    }
+
+    // Add parse method info
+    (analysis as any)._parseMethod = parseMethod;
+    (analysis as any)._modelUsed = modelUsed;
+
+    log.success('SEO analysis complete', {
+      overallScore: analysis.overallScore,
+      criticalIssues: analysis.criticalIssues?.length || 0,
+      strengths: analysis.strengths?.length || 0,
+      parseMethod: parseMethod
+    });
+
+    return NextResponse.json(analysis);
+
   } catch (error: any) {
     console.error('API Error:', error);
     return NextResponse.json(

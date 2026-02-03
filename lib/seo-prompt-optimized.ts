@@ -27,6 +27,15 @@ export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: 
 
   return `You are an expert SEO analyst providing comprehensive AIOSEO-style deep audit results. Analyze this website thoroughly.
 
+## CRITICAL JSON FORMATTING RULES - READ CAREFULLY:
+1. Use ONLY double quotes " for all strings and property names
+2. NEVER use single quotes ' inside strings
+3. For HTML examples, use \" to escape quotes inside strings, like: {\"@type\": \"Organization\"}
+4. Escape special characters properly (newlines as \\n, tabs as \\t)
+5. Ensure all arrays and objects are properly closed
+6. NO trailing commas before } or ]
+7. All property values must be properly typed (strings in quotes, numbers without quotes, booleans as true/false)
+
 ## SITE DATA
 URL: ${websiteContent.url}
 Title: "${truncateText(websiteContent.title, 100)}"
@@ -280,9 +289,10 @@ Provide a COMPREHENSIVE SEO audit report with detailed analysis in this JSON for
 - URL structure analysis
 - Internal linking assessment
 - External linking quality
-- Schema markup evaluation
+- Schema markup evaluation (check for Organization, WebSite, WebPage, BreadcrumbList, Article, Product, LocalBusiness schemas)
 - Core Web Vitals analysis
-- Mobile friendliness check
+- Mobile friendliness check\n\n### SCHEMA MARKUP GUIDANCE\nWhen recommending schema markup, provide:\n1. Which schema types should be implemented based on the site type\n2. Specific JSON-LD code examples using ONLY double quotes for strings\n3. Example of properly escaped JSON-LD: {\"@context\": \"https://schema.org\", \"@type\": \"Organization\", \"name\": \"Company Name\", \"url\": \"https://example.com\"}
 
 Provide detailed, actionable, and specific recommendations. Use technical evidence from the data provided.`;
 };
+

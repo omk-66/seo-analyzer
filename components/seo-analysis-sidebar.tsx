@@ -1129,6 +1129,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                 ${isMobile ? (mobileMenuOpen ? 'block' : 'hidden') : 'block'} 
                 ${sidebarOpen ? 'w-full md:w-64' : 'w-16'} 
                 shrink-0 transition-all duration-300
+                ${!isMobile ? 'sticky top-4 h-fit' : ''}
             `}>
                 <SidebarContent />
             </div>
