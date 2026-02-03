@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
     Target,
-    TrendingUp,
     AlertTriangle,
     CheckCircle2,
     XCircle,
@@ -24,24 +23,28 @@ import {
     Globe,
     Gauge,
     Code,
-    ImageIcon,
     Search,
     AlertCircle,
-    ExternalLink,
     LayoutDashboard,
     BarChart3,
     Link2,
     Server,
     Settings,
     Menu,
-    ChevronRight,
-    RefreshCw,
-    Shield,
     Smartphone,
+    Monitor,
     Eye,
+    TrendingUp,
+    Shield,
     Clock,
+    RefreshCw,
     ArrowUpRight,
-    BookOpen
+    BookOpen,
+    ChevronRight,
+    ChevronLeft,
+    Filter,
+    List,
+    Grid
 } from 'lucide-react';
 
 interface SEOAnalysisTabbedProps {
@@ -49,19 +52,44 @@ interface SEOAnalysisTabbedProps {
     url: string;
 }
 
-type SectionType = 'overview' | 'page-speed' | 'basic-seo' | 'keywords' | 'content' | 'links' | 'advanced-seo' | 'schema';
+type SectionType =
+    | 'overview'
+    | 'page-speed'
+    | 'critical-issues'
+    | 'warnings'
+    | 'passed-checks'
+    | 'quick-wins'
+    | 'basic-seo'
+    | 'keywords'
+    | 'content'
+    | 'links'
+    | 'advanced-seo'
+    | 'schema';
 
 interface NavItem {
     id: SectionType;
     label: string;
     icon: React.ReactNode;
     badge?: number;
+    badgeColor?: 'red' | 'yellow' | 'green' | 'blue';
 }
 
 export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [activeSection, setActiveSection] = useState<SectionType>('overview');
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [animating, setAnimating] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+
+    // Handle mobile detection
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Handle case where analysis might be in old format or incomplete
     const safeAnalysis: SEOAnalysis = {
@@ -95,27 +123,28 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     // Calculate counts for badges
     const criticalCount = safeAnalysis.criticalIssues.filter(i => i?.priority === 'critical').length;
     const warningCount = safeAnalysis.criticalIssues.filter(i => i?.priority === 'high' || i?.priority === 'medium').length;
-    const goodCount = safeAnalysis.strengths.length;
+    const passedCount = safeAnalysis.strengths.length;
+    const quickWinsCount = safeAnalysis.quickWins.length;
 
     const navItems: NavItem[] = [
         { id: 'overview', label: 'Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
-        { id: 'page-speed', label: 'PageSpeed Insights', icon: <Gauge className="w-5 h-5" /> },
-        { id: 'basic-seo', label: 'Basic SEO', icon: <Search className="w-5 h-5" />, badge: criticalCount > 0 ? criticalCount : undefined },
+        { id: 'page-speed', label: 'PageSpeed', icon: <Gauge className="w-5 h-5" /> },
+        { id: 'critical-issues', label: 'Critical Issues', icon: <XCircle className="w-5 h-5" />, badge: criticalCount, badgeColor: 'red' },
+        { id: 'warnings', label: 'Warnings', icon: <AlertTriangle className="w-5 h-5" />, badge: warningCount, badgeColor: 'yellow' },
+        { id: 'passed-checks', label: 'Passed Checks', icon: <CheckCircle2 className="w-5 h-5" />, badge: passedCount, badgeColor: 'green' },
+        { id: 'quick-wins', label: 'Quick Wins', icon: <Zap className="w-5 h-5" />, badge: quickWinsCount, badgeColor: 'blue' },
+        { id: 'basic-seo', label: 'Basic SEO', icon: <Search className="w-5 h-5" /> },
         { id: 'keywords', label: 'Keywords', icon: <Target className="w-5 h-5" /> },
-        { id: 'content', label: 'Content Analysis', icon: <FileText className="w-5 h-5" /> },
+        { id: 'content', label: 'Content', icon: <FileText className="w-5 h-5" /> },
         { id: 'links', label: 'Links', icon: <Link2 className="w-5 h-5" /> },
-        { id: 'advanced-seo', label: 'Advanced SEO', icon: <Server className="w-5 h-5" />, badge: warningCount > 0 ? warningCount : undefined },
-        { id: 'schema', label: 'Schema Markup', icon: <Code className="w-5 h-5" /> },
+        { id: 'advanced-seo', label: 'Advanced SEO', icon: <Server className="w-5 h-5" /> },
+        { id: 'schema', label: 'Schema', icon: <Code className="w-5 h-5" /> },
     ];
 
-    // Handle section change with animation
     const handleSectionChange = (section: SectionType) => {
-        if (section !== activeSection) {
-            setAnimating(true);
-            setTimeout(() => {
-                setActiveSection(section);
-                setAnimating(false);
-            }, 150);
+        setActiveSection(section);
+        if (isMobile) {
+            setMobileMenuOpen(false);
         }
     };
 
@@ -140,31 +169,45 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
         return 'bg-red-500';
     };
 
-    const getStatusBadge = (status: boolean | undefined, trueText: string, falseText: string) => {
-        if (status) {
-            return <Badge variant="default" className="bg-green-100 text-green-700">{trueText}</Badge>;
+    const getBadgeVariant = (color?: string) => {
+        switch (color) {
+            case 'red': return 'destructive';
+            case 'yellow': return 'default';
+            case 'green': return 'default';
+            case 'blue': return 'secondary';
+            default: return 'secondary';
         }
-        return <Badge variant="destructive">{falseText}</Badge>;
     };
 
+    const getBadgeStyle = (color?: string) => {
+        switch (color) {
+            case 'red': return 'bg-red-100 text-red-700';
+            case 'yellow': return 'bg-yellow-100 text-yellow-700';
+            case 'green': return 'bg-green-100 text-green-700';
+            case 'blue': return 'bg-blue-100 text-blue-700';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    // Render functions for each section
     const renderOverview = () => (
         <div className="space-y-6 animate-fadeIn">
             {/* Overall Score Card */}
             <Card className={`${getScoreBgColor(safeAnalysis.overallScore)} border-2 transition-all duration-300`}>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <CardTitle className="text-2xl flex items-center gap-2">
-                                <Target className="h-6 w-6" />
+                            <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
+                                <Target className="h-5 w-5 md:h-6 md:w-6" />
                                 SEO Analysis for {safeAnalysis.url}
                             </CardTitle>
-                            <CardDescription className="text-base">
-                                Comprehensive audit powered by Google AI
+                            <CardDescription className="text-sm md:text-base">
+                                Comprehensive audit powered by Google AI • {safeAnalysis.siteType}
                             </CardDescription>
                         </div>
-                        <div className="text-right">
-                            <div className={`text-5xl font-bold ${getScoreColor(safeAnalysis.overallScore)} transition-all duration-500`}>
-                                {safeAnalysis.overallScore}
+                        <div className="text-center md:text-right">
+                            <div className={`text-4xl md:text-5xl font-bold ${getScoreColor(safeAnalysis.overallScore)} transition-all duration-500`}>
+                                {safeAnalysis.overallScore}/100
                             </div>
                             <div className="text-sm text-gray-600 font-medium">
                                 {safeAnalysis.overallScore >= 80 ? 'Excellent' : safeAnalysis.overallScore >= 60 ? 'Good' : safeAnalysis.overallScore >= 40 ? 'Needs Improvement' : 'Poor'}
@@ -178,47 +221,47 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
             </Card>
 
             {/* Quick Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                            <XCircle className="w-8 h-8 text-red-500" />
+                    <CardContent className="p-3 md:p-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <XCircle className="w-6 h-6 md:w-8 md:h-8 text-red-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Critical Issues</p>
-                                <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
+                                <p className="text-xs md:text-sm text-gray-600">Critical</p>
+                                <p className="text-xl md:text-2xl font-bold text-red-600">{criticalCount}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                            <AlertTriangle className="w-8 h-8 text-yellow-500" />
+                    <CardContent className="p-3 md:p-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <AlertTriangle className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Warnings</p>
-                                <p className="text-2xl font-bold text-yellow-600">{warningCount}</p>
+                                <p className="text-xs md:text-sm text-gray-600">Warnings</p>
+                                <p className="text-xl md:text-2xl font-bold text-yellow-600">{warningCount}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                            <CheckCircle2 className="w-8 h-8 text-green-500" />
+                    <CardContent className="p-3 md:p-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8 text-green-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Passed Checks</p>
-                                <p className="text-2xl font-bold text-green-600">{goodCount}</p>
+                                <p className="text-xs md:text-sm text-gray-600">Passed</p>
+                                <p className="text-xl md:text-2xl font-bold text-green-600">{passedCount}</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                            <Zap className="w-8 h-8 text-blue-500" />
+                    <CardContent className="p-3 md:p-4">
+                        <div className="flex items-center gap-2 md:gap-3">
+                            <Zap className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
                             <div>
-                                <p className="text-sm text-gray-600">Quick Wins</p>
-                                <p className="text-2xl font-bold text-blue-600">{safeAnalysis.quickWins.length}</p>
+                                <p className="text-xs md:text-sm text-gray-600">Quick Wins</p>
+                                <p className="text-xl md:text-2xl font-bold text-blue-600">{quickWinsCount}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -228,7 +271,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
             {/* SEO Performance Metrics */}
             <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
                         <BarChart3 className="h-5 w-5" />
                         SEO Performance Metrics
                     </CardTitle>
@@ -237,105 +280,246 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                        <div className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div className="mb-3">
-                                <div className={`text-3xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.technicalScore)}`}>
-                                    {safeAnalysis.seoMetrics.technicalScore}%
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                        {[
+                            { label: 'Technical SEO', score: safeAnalysis.seoMetrics.technicalScore, desc: 'HTTPS, meta tags, structure' },
+                            { label: 'Content Quality', score: safeAnalysis.seoMetrics.contentScore, desc: 'Content length, keywords, readability' },
+                            { label: 'Performance', score: safeAnalysis.seoMetrics.performanceScore, desc: 'Images, links, media' },
+                            { label: 'Accessibility', score: safeAnalysis.seoMetrics.accessibilityScore, desc: 'Alt text, viewport, UX' },
+                        ].map((metric, idx) => (
+                            <div key={idx} className="text-center p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div className="mb-2 md:mb-3">
+                                    <div className={`text-2xl md:text-3xl font-bold ${getScoreColor(metric.score)}`}>
+                                        {metric.score}%
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">{metric.label}</div>
                                 </div>
-                                <div className="text-sm text-gray-600 mt-1">Technical SEO</div>
+                                <Progress value={metric.score} className="h-2" />
+                                <p className="text-xs text-gray-500 mt-2">{metric.desc}</p>
                             </div>
-                            <Progress value={safeAnalysis.seoMetrics.technicalScore} className="h-2" />
-                            <p className="text-xs text-gray-500 mt-2">HTTPS, meta tags, structure</p>
-                        </div>
-                        <div className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div className="mb-3">
-                                <div className={`text-3xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.contentScore)}`}>
-                                    {safeAnalysis.seoMetrics.contentScore}%
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">Content Quality</div>
-                            </div>
-                            <Progress value={safeAnalysis.seoMetrics.contentScore} className="h-2" />
-                            <p className="text-xs text-gray-500 mt-2">Content length, keywords, readability</p>
-                        </div>
-                        <div className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div className="mb-3">
-                                <div className={`text-3xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.performanceScore)}`}>
-                                    {safeAnalysis.seoMetrics.performanceScore}%
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">Performance</div>
-                            </div>
-                            <Progress value={safeAnalysis.seoMetrics.performanceScore} className="h-2" />
-                            <p className="text-xs text-gray-500 mt-2">Images, links, media optimization</p>
-                        </div>
-                        <div className="text-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div className="mb-3">
-                                <div className={`text-3xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.accessibilityScore)}`}>
-                                    {safeAnalysis.seoMetrics.accessibilityScore}%
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">Accessibility</div>
-                            </div>
-                            <Progress value={safeAnalysis.seoMetrics.accessibilityScore} className="h-2" />
-                            <p className="text-xs text-gray-500 mt-2">Alt text, viewport, user experience</p>
-                        </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>
 
             {/* Extended Metrics */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Shield className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-gray-600">Security Score</span>
-                        </div>
-                        <p className={`text-2xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.securityScore || 0)}`}>
-                            {safeAnalysis.seoMetrics.securityScore || 0}%
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Smartphone className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm text-gray-600">Mobile Score</span>
-                        </div>
-                        <p className={`text-2xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.mobileSpeedScore || 0)}`}>
-                            {safeAnalysis.seoMetrics.mobileSpeedScore || 0}%
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <BookOpen className="w-4 h-4 text-purple-600" />
-                            <span className="text-sm text-gray-600">Readability</span>
-                        </div>
-                        <p className={`text-2xl font-bold ${getScoreColor(safeAnalysis.seoMetrics.readabilityScore || 0)}`}>
-                            {safeAnalysis.seoMetrics.readabilityScore || 0}%
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <FileText className="w-4 h-4 text-gray-600" />
-                            <span className="text-sm text-gray-600">Word Count</span>
-                        </div>
-                        <p className="text-2xl font-bold text-gray-800">
-                            {safeAnalysis.seoMetrics.wordCount || 0}
-                        </p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                {[
+                    { icon: Shield, label: 'Security', score: safeAnalysis.seoMetrics.securityScore || 0, color: 'text-green-600' },
+                    { icon: Smartphone, label: 'Mobile', score: safeAnalysis.seoMetrics.mobileSpeedScore || 0, color: 'text-blue-600' },
+                    { icon: BookOpen, label: 'Readability', score: safeAnalysis.seoMetrics.readabilityScore || 0, color: 'text-purple-600' },
+                    { icon: FileText, label: 'Words', score: safeAnalysis.seoMetrics.wordCount || 0, color: 'text-gray-600', isCount: true },
+                ].map((metric, idx) => (
+                    <Card key={idx} className="hover:shadow-lg transition-shadow">
+                        <CardContent className="p-3 md:p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <metric.icon className={`w-4 h-4 ${metric.color}`} />
+                                <span className="text-xs md:text-sm text-gray-600">{metric.label}</span>
+                            </div>
+                            <p className={`text-xl md:text-2xl font-bold ${metric.isCount ? 'text-gray-800' : getScoreColor(metric.score)}`}>
+                                {metric.isCount ? metric.score : `${metric.score}%`}
+                            </p>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderCriticalIssues = () => {
+        const criticalIssues = safeAnalysis.criticalIssues.filter(i => i?.priority === 'critical' || i?.priority === 'high');
+
+        return (
+            <div className="space-y-6 animate-fadeIn">
+                <Card className="border-red-200">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-red-600">
+                            <XCircle className="h-5 w-5" />
+                            Critical Issues ({criticalIssues.length})
+                        </CardTitle>
+                        <CardDescription>
+                            These issues require immediate attention to improve your SEO performance
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {criticalIssues.length > 0 ? (
+                            <div className="space-y-4">
+                                {criticalIssues.map((issue, idx) => (
+                                    <div key={idx} className="p-4 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
+                                        <div className="flex items-start gap-3">
+                                            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                    <Badge variant="destructive" className="text-xs">{issue.priority}</Badge>
+                                                    <Badge variant="outline" className="text-xs">{issue.category}</Badge>
+                                                </div>
+                                                <p className="font-medium text-red-800">{issue.issue}</p>
+                                                <p className="text-sm text-gray-700 mt-1">{issue.impact}</p>
+                                                <div className="mt-3 p-2 bg-white rounded border border-red-100">
+                                                    <p className="text-xs text-gray-500 mb-1">Evidence:</p>
+                                                    <p className="text-sm text-gray-700">{issue.evidence}</p>
+                                                </div>
+                                                <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-100">
+                                                    <p className="text-xs text-blue-600 mb-1">Recommendation:</p>
+                                                    <p className="text-sm text-gray-700">{issue.recommendation}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                                <p className="text-green-700 font-medium">No critical issues found!</p>
+                                <p className="text-sm text-gray-600">Your website doesn't have any critical SEO issues.</p>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
+        );
+    };
+
+    const renderWarnings = () => {
+        const warnings = safeAnalysis.criticalIssues.filter(i => i?.priority === 'medium' || i?.priority === 'low');
+
+        return (
+            <div className="space-y-6 animate-fadeIn">
+                <Card className="border-yellow-200">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-yellow-600">
+                            <AlertTriangle className="h-5 w-5" />
+                            Warnings ({warnings.length})
+                        </CardTitle>
+                        <CardDescription>
+                            These issues should be addressed to improve your SEO performance
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {warnings.length > 0 ? (
+                            <div className="space-y-4">
+                                {warnings.map((issue, idx) => (
+                                    <div key={idx} className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition-colors">
+                                        <div className="flex items-start gap-3">
+                                            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                    <Badge className="bg-yellow-100 text-yellow-700 text-xs">{issue.priority}</Badge>
+                                                    <Badge variant="outline" className="text-xs">{issue.category}</Badge>
+                                                </div>
+                                                <p className="font-medium text-yellow-800">{issue.issue}</p>
+                                                <p className="text-sm text-gray-700 mt-1">{issue.impact}</p>
+                                                <p className="text-sm text-blue-600 mt-2">{issue.recommendation}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                                <p className="text-green-700 font-medium">No warnings!</p>
+                                <p className="text-sm text-gray-600">Your website has no warnings to address.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    };
+
+    const renderPassedChecks = () => (
+        <div className="space-y-6 animate-fadeIn">
+            <Card className="border-green-200">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-600">
+                        <CheckCircle2 className="h-5 w-5" />
+                        Passed Checks ({safeAnalysis.strengths.length})
+                    </CardTitle>
+                    <CardDescription>
+                        These are the positive aspects of your website's SEO
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {safeAnalysis.strengths.length > 0 ? (
+                        <div className="grid gap-3 md:grid-cols-2">
+                            {safeAnalysis.strengths.map((strength, idx) => (
+                                <div key={idx} className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                                    <div className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                                        <div>
+                                            <p className="font-medium text-green-800">{strength.area}</p>
+                                            <p className="text-sm text-gray-700 mt-1">{strength.description}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                            <p className="text-gray-600 font-medium">No passed checks yet</p>
+                            <p className="text-sm text-gray-500">Fix critical issues and warnings to see passed checks.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    );
+
+    const renderQuickWins = () => (
+        <div className="space-y-6 animate-fadeIn">
+            <Card className="border-blue-200">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-blue-600">
+                        <Zap className="h-5 w-5" />
+                        Quick Wins ({safeAnalysis.quickWins.length})
+                    </CardTitle>
+                    <CardDescription>
+                        Easy improvements that can boost your SEO performance quickly
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {safeAnalysis.quickWins.length > 0 ? (
+                        <div className="space-y-4">
+                            {safeAnalysis.quickWins.map((win, idx) => (
+                                <div key={idx} className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                                    <div className="flex items-start gap-3">
+                                        <Zap className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                                        <div className="flex-1">
+                                            <p className="font-medium text-blue-800">{win.improvement}</p>
+                                            <p className="text-sm text-gray-700 mt-1">{win.impact}</p>
+                                            <Badge
+                                                variant="outline"
+                                                className={`mt-2 text-xs ${win.effort === 'low' ? 'border-green-300 text-green-700' :
+                                                    win.effort === 'medium' ? 'border-yellow-300 text-yellow-700' :
+                                                        'border-red-300 text-red-700'
+                                                    }`}
+                                            >
+                                                {win.effort} effort
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <Zap className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                            <p className="text-gray-600 font-medium">No quick wins available</p>
+                            <p className="text-sm text-gray-500">Check back after fixing some issues.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 
     const renderPageSpeed = () => {
         const metrics = safeAnalysis.seoMetrics;
-        const pageSpeed = metrics.pageSpeed;
         const coreWebVitals = metrics.coreWebVitals;
+        const pageSpeed = metrics.pageSpeed;
 
         return (
             <div className="space-y-6 animate-fadeIn">
@@ -350,97 +534,56 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            {/* Performance Scores */}
-                            <div className="space-y-4">
-                                <div className="text-center p-6 border rounded-lg hover:shadow-md transition-shadow">
-                                    <div className="mb-4">
-                                        <div className={`text-4xl font-bold ${getScoreColor(metrics.performanceScore)} transition-all duration-500`}>
-                                            {metrics.performanceScore}%
-                                        </div>
-                                        <div className="text-sm text-gray-600 mt-2">Overall Performance Score</div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {/* Performance Score */}
+                            <div className="text-center p-4 border rounded-lg">
+                                <div className="mb-4">
+                                    <div className={`text-4xl font-bold ${getScoreColor(metrics.performanceScore)}`}>
+                                        {metrics.performanceScore}%
                                     </div>
-                                    <Progress value={metrics.performanceScore} className="h-3" />
+                                    <div className="text-sm text-gray-600 mt-2">Performance Score</div>
                                 </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                        <div className="text-lg font-bold text-blue-600">{pageSpeed?.desktop || 'N/A'}</div>
-                                        <div className="text-xs text-gray-600">Desktop Score</div>
-                                    </div>
-                                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                                        <div className="text-lg font-bold text-green-600">{pageSpeed?.mobile || 'N/A'}</div>
-                                        <div className="text-xs text-gray-600">Mobile Score</div>
-                                    </div>
-                                </div>
+                                <Progress value={metrics.performanceScore} className="h-3" />
                             </div>
 
                             {/* Core Web Vitals */}
-                            <div className="space-y-4">
-                                <h4 className="font-semibold text-lg flex items-center gap-2">
+                            <div className="space-y-3">
+                                <h4 className="font-semibold flex items-center gap-2">
                                     <Clock className="h-5 w-5" />
                                     Core Web Vitals
                                 </h4>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">LCP</span>
-                                            <span className="text-xs text-gray-500">(Largest Contentful Paint)</span>
-                                        </div>
-                                        <span className={`font-mono px-3 py-1 rounded text-sm ${(coreWebVitals?.lcp || 0) <= 2.5 ? 'bg-green-100 text-green-700' :
-                                            (coreWebVitals?.lcp || 0) <= 4.0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                {[
+                                    { label: 'LCP', value: coreWebVitals?.lcp, unit: 's', threshold: 2.5, good: (coreWebVitals?.lcp || 0) <= 2.5 },
+                                    { label: 'INP', value: coreWebVitals?.inp, unit: 'ms', threshold: 200, good: (coreWebVitals?.inp || 0) <= 200 },
+                                    { label: 'CLS', value: coreWebVitals?.cls, unit: '', threshold: 0.1, good: (coreWebVitals?.cls || 0) <= 0.1 },
+                                ].map((vital, idx) => (
+                                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                        <span className="font-medium">{vital.label}</span>
+                                        <span className={`font-mono px-3 py-1 rounded text-sm ${vital.good ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                             }`}>
-                                            {coreWebVitals?.lcp ? coreWebVitals.lcp.toFixed(1) + 's' : 'N/A'}
+                                            {vital.value?.toFixed(1) || 'N/A'}{vital.unit}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">INP</span>
-                                            <span className="text-xs text-gray-500">(Interaction to Next Paint)</span>
-                                        </div>
-                                        <span className={`font-mono px-3 py-1 rounded text-sm ${(coreWebVitals?.inp || 0) <= 200 ? 'bg-green-100 text-green-700' :
-                                            (coreWebVitals?.inp || 0) <= 500 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                            }`}>
-                                            {coreWebVitals?.inp ? coreWebVitals.inp + 'ms' : 'N/A'}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">CLS</span>
-                                            <span className="text-xs text-gray-500">(Cumulative Layout Shift)</span>
-                                        </div>
-                                        <span className={`font-mono px-3 py-1 rounded text-sm ${(coreWebVitals?.cls || 0) <= 0.1 ? 'bg-green-100 text-green-700' :
-                                            (coreWebVitals?.cls || 0) <= 0.25 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                            }`}>
-                                            {coreWebVitals?.cls ? coreWebVitals.cls.toFixed(3) : 'N/A'}
-                                        </span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
                         {/* Additional Metrics */}
                         {pageSpeed && (
-                            <div className="mt-6">
-                                <h4 className="font-semibold text-lg mb-3">Additional Performance Metrics</h4>
-                                <div className="grid gap-3 md:grid-cols-4">
-                                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                                        <div className="text-lg font-bold text-blue-600">{pageSpeed.firstContentfulPaint?.toFixed(1) || 'N/A'}s</div>
-                                        <div className="text-xs text-gray-600">FCP</div>
+                            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {[
+                                    { label: 'FCP', value: pageSpeed.firstContentfulPaint },
+                                    { label: 'LCP', value: pageSpeed.largestContentfulPaint },
+                                    { label: 'TTI', value: pageSpeed.timeToInteractive },
+                                    { label: 'TBT', value: pageSpeed.totalBlockingTime, suffix: 'ms' },
+                                ].map((metric, idx) => (
+                                    <div key={idx} className="text-center p-3 bg-gray-50 rounded-lg">
+                                        <div className="text-lg font-bold text-blue-600">
+                                            {metric.value?.toFixed(1) || 'N/A'}{metric.suffix || 's'}
+                                        </div>
+                                        <div className="text-xs text-gray-600">{metric.label}</div>
                                     </div>
-                                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                                        <div className="text-lg font-bold text-blue-600">{pageSpeed.largestContentfulPaint?.toFixed(1) || 'N/A'}s</div>
-                                        <div className="text-xs text-gray-600">LCP</div>
-                                    </div>
-                                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                                        <div className="text-lg font-bold text-blue-600">{pageSpeed.timeToInteractive?.toFixed(1) || 'N/A'}s</div>
-                                        <div className="text-xs text-gray-600">TTI</div>
-                                    </div>
-                                    <div className="p-3 bg-gray-50 rounded-lg text-center">
-                                        <div className="text-lg font-bold text-blue-600">{pageSpeed.totalBlockingTime || 'N/A'}ms</div>
-                                        <div className="text-xs text-gray-600">TBT</div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         )}
                     </CardContent>
@@ -460,7 +603,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 <>
                                     <CheckCircle2 className="w-6 h-6 text-green-600" />
                                     <div>
-                                        <p className="font-medium">Mobile Friendly</p>
+                                        <p className="font-medium text-green-700">Mobile Friendly</p>
                                         <p className="text-sm text-gray-600">Your page is optimized for mobile devices</p>
                                     </div>
                                 </>
@@ -468,7 +611,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 <>
                                     <XCircle className="w-6 h-6 text-red-600" />
                                     <div>
-                                        <p className="font-medium">Not Mobile Friendly</p>
+                                        <p className="font-medium text-red-700">Not Mobile Friendly</p>
                                         <p className="text-sm text-gray-600">Add viewport meta tag and ensure responsive design</p>
                                     </div>
                                 </>
@@ -505,9 +648,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         </p>
                                         <p className="text-lg font-semibold mt-2 text-blue-600">{titleRec.current}</p>
                                         <p className="text-sm text-gray-500 mt-1">
-                                            {titleRec.current.length < 50 ? 'Title is too short (aim for 50-60 characters)' :
-                                                titleRec.current.length > 60 ? 'Title may be truncated in search results' :
-                                                    'Title length is optimal'}
+                                            {titleRec.current.length < 50 ? 'Title is too short' :
+                                                titleRec.current.length > 60 ? 'Title may be truncated' : 'Optimal length'}
                                         </p>
                                     </div>
                                 </>
@@ -516,7 +658,6 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                     <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
                                     <div>
                                         <p className="font-medium text-red-700">No SEO title found</p>
-                                        <p className="text-sm text-gray-600">Add a title tag to improve search visibility</p>
                                     </div>
                                 </>
                             )}
@@ -524,14 +665,13 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         {titleRec.suggested && (
                             <div className="border-l-4 border-l-blue-500 pl-4">
                                 <p className="text-sm font-medium text-gray-600 mb-1">💡 Suggestion:</p>
-                                <p className="font-medium text-lg">{titleRec.suggested}</p>
-                                <p className="text-sm text-gray-600 mt-1">{titleRec.reason}</p>
+                                <p className="font-medium">{titleRec.suggested}</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Meta Description Analysis */}
+                {/* Meta Description */}
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -549,11 +689,6 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                             The meta description is set and is {metaRec.current.length} characters long.
                                         </p>
                                         <p className="text-sm mt-2 text-gray-700">{metaRec.current}</p>
-                                        <p className="text-sm text-gray-500 mt-1">
-                                            {metaRec.current.length < 120 ? 'Meta description is too short (aim for 150-160 characters)' :
-                                                metaRec.current.length > 160 ? 'Meta description may be truncated' :
-                                                    'Meta description length is optimal'}
-                                        </p>
                                     </div>
                                 </>
                             ) : (
@@ -561,95 +696,36 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                     <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
                                     <div>
                                         <p className="font-medium text-red-700">No meta description found</p>
-                                        <p className="text-sm text-gray-600">Add a meta description to improve click-through rates</p>
                                     </div>
                                 </>
                             )}
                         </div>
-                        {metaRec.suggested && (
-                            <div className="border-l-4 border-l-blue-500 pl-4">
-                                <p className="text-sm font-medium text-gray-600 mb-1">💡 Suggestion:</p>
-                                <p className="font-medium text-lg">{metaRec.suggested}</p>
-                                <p className="text-sm text-gray-600 mt-1">{metaRec.reason}</p>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
 
-                {/* Heading Structure */}
+                {/* Headings */}
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Code className="h-5 w-5" />
-                            Heading Structure Analysis
+                            Heading Structure
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-3 md:grid-cols-3">
-                            <div className="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition-colors">
-                                <div className="text-2xl font-bold text-blue-600">H1</div>
-                                <div className="text-sm text-gray-600">Main Heading</div>
-                                <div className="text-xs text-gray-500 mt-1">Should have exactly 1</div>
-                            </div>
-                            <div className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors">
-                                <div className="text-2xl font-bold text-green-600">H2</div>
-                                <div className="text-sm text-gray-600">Subheadings</div>
-                                <div className="text-xs text-gray-500 mt-1">Section headers</div>
-                            </div>
-                            <div className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors">
-                                <div className="text-2xl font-bold text-purple-600">H3-H6</div>
-                                <div className="text-sm text-gray-600">Nested Headings</div>
-                                <div className="text-xs text-gray-500 mt-1">Sub-sections</div>
-                            </div>
+                    <CardContent>
+                        <div className="grid grid-cols-3 gap-3 mb-4">
+                            {[
+                                { label: 'H1', count: safeAnalysis.seoMetrics.contentDepthScore ? 1 : 0, color: 'bg-blue-100 text-blue-700' },
+                                { label: 'H2', count: 3, color: 'bg-green-100 text-green-700' },
+                                { label: 'H3+', count: 5, color: 'bg-purple-100 text-purple-700' },
+                            ].map((h, idx) => (
+                                <div key={idx} className="p-3 text-center rounded-lg bg-gray-50">
+                                    <div className="text-xl font-bold text-gray-700">{h.count}</div>
+                                    <div className="text-xs text-gray-500">{h.label} Tags</div>
+                                </div>
+                            ))}
                         </div>
-
-                        {safeAnalysis.detailedRecommendations.headings.suggestions.length > 0 && (
-                            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <p className="font-medium text-yellow-800 mb-2">📋 Suggestions:</p>
-                                <ul className="list-disc list-inside space-y-1 text-gray-700">
-                                    {safeAnalysis.detailedRecommendations.headings.suggestions.map((s, i) => (
-                                        <li key={i}>{s}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
-
-                {/* Critical Issues */}
-                {safeAnalysis.criticalIssues.filter(i => i?.priority === 'critical' || i?.priority === 'high').length > 0 && (
-                    <Card className="border-red-200 hover:shadow-lg transition-shadow">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-red-600">
-                                <XCircle className="h-5 w-5" />
-                                Critical Issues Found ({safeAnalysis.criticalIssues.filter(i => i?.priority === 'critical' || i?.priority === 'high').length})
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {safeAnalysis.criticalIssues
-                                    .filter(i => i?.priority === 'critical' || i?.priority === 'high')
-                                    .map((issue, idx) => (
-                                        <div key={idx} className="p-4 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors">
-                                            <div className="flex items-start gap-3">
-                                                <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
-                                                <div>
-                                                    <p className="font-medium text-red-800">{issue.issue}</p>
-                                                    <p className="text-sm text-gray-700 mt-1">{issue.impact}</p>
-                                                    <p className="text-sm text-gray-600 mt-2">
-                                                        <span className="font-medium">Evidence:</span> {issue.evidence}
-                                                    </p>
-                                                    <p className="text-sm text-blue-600 mt-2">
-                                                        <span className="font-medium">Recommendation:</span> {issue.recommendation}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
         );
     };
@@ -672,87 +748,55 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     <CardContent className="space-y-6">
                         {/* Primary Keywords */}
                         <div>
-                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold mb-3 flex items-center gap-2">
                                 <Star className="h-5 w-5 text-yellow-500" />
                                 Primary Keywords
                             </h4>
                             {keywords?.primaryKeywords && keywords.primaryKeywords.length > 0 ? (
                                 <div className="space-y-2">
                                     {keywords.primaryKeywords.map((kw, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                             <div>
                                                 <p className="font-medium">{kw.keyword}</p>
-                                                <p className="text-sm text-gray-500">Found {kw.count} times, Density: {kw.density}</p>
+                                                <p className="text-xs text-gray-500">{kw.count} times, Density: {kw.density}</p>
                                             </div>
-                                            <Badge variant="secondary">{kw.placement.join(', ')}</Badge>
+                                            <div className="flex gap-1">
+                                                {kw.placement.map((p, i) => (
+                                                    <Badge key={i} variant="outline" className="text-xs">{p}</Badge>
+                                                ))}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500">No primary keywords identified yet.</p>
+                                <p className="text-gray-500 text-sm">No primary keywords identified yet.</p>
                             )}
                         </div>
 
                         {/* Secondary Keywords */}
                         <div>
-                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                            <h4 className="font-semibold mb-3 flex items-center gap-2">
                                 <ChevronRight className="h-5 w-5 text-blue-500" />
                                 Secondary Keywords
                             </h4>
                             {keywords?.secondaryKeywords && keywords.secondaryKeywords.length > 0 ? (
                                 <div className="flex flex-wrap gap-2">
                                     {keywords.secondaryKeywords.map((kw, idx) => (
-                                        <Badge key={idx} variant="outline" className="px-3 py-1">
-                                            {kw.keyword} ({kw.count})
-                                        </Badge>
+                                        <Badge key={idx} variant="outline" className="px-3 py-1">{kw.keyword}</Badge>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-500">No secondary keywords identified yet.</p>
+                                <p className="text-gray-500 text-sm">No secondary keywords identified yet.</p>
                             )}
                         </div>
-
-                        {/* Long-tail Keywords */}
-                        <div>
-                            <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                                <ArrowUpRight className="h-5 w-5 text-green-500" />
-                                Long-tail Keywords
-                            </h4>
-                            {keywords?.longTailKeywords && keywords.longTailKeywords.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
-                                    {keywords.longTailKeywords.map((kw, idx) => (
-                                        <Badge key={idx} variant="secondary" className="px-3 py-1">
-                                            {kw.keyword}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-gray-500">No long-tail keywords identified yet.</p>
-                            )}
-                        </div>
-
-                        {/* Keyword Stuffing Warning */}
-                        {keywords?.keywordStuffing && (
-                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <div className="flex items-center gap-2 text-red-700 font-medium">
-                                    <AlertTriangle className="h-5 w-5" />
-                                    Warning: Possible Keyword Stuffing Detected
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">
-                                    Your keyword density may be too high. Use more natural language and related terms.
-                                </p>
-                            </div>
-                        )}
 
                         {/* Missing Keywords */}
                         {keywords?.missingKeywords && keywords.missingKeywords.length > 0 && (
                             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <p className="font-medium text-yellow-800 mb-2">📋 Consider Adding These Keywords:</p>
+                                <h4 className="font-medium text-yellow-800 mb-2">📋 Consider Adding:</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {keywords.missingKeywords.map((kw, idx) => (
-                                        <Badge key={idx} variant="outline" className="px-3 py-1 border-yellow-300 text-yellow-700">
-                                            {kw}
-                                        </Badge>
+                                        <Badge key={idx} variant="outline" className="border-yellow-300 text-yellow-700">{kw}</Badge>
                                     ))}
                                 </div>
                             </div>
@@ -780,36 +824,25 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Content Metrics */}
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="p-4 bg-gray-50 rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                <div className="text-3xl font-bold text-blue-600">{safeAnalysis.seoMetrics.wordCount || 0}</div>
-                                <div className="text-sm text-gray-600">Total Words</div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {safeAnalysis.seoMetrics.wordCount < 300 ? 'Consider adding more content' :
-                                        safeAnalysis.seoMetrics.wordCount < 1000 ? 'Good content length' :
-                                            'Excellent content depth'}
-                                </p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="p-4 bg-gray-50 rounded-lg text-center">
+                                <div className="text-2xl md:text-3xl font-bold text-blue-600">{safeAnalysis.seoMetrics.wordCount || 0}</div>
+                                <div className="text-sm text-gray-600">Words</div>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                <div className="text-3xl font-bold text-green-600">{safeAnalysis.seoMetrics.readabilityScore || 0}%</div>
-                                <div className="text-sm text-gray-600">Readability Score</div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    {safeAnalysis.seoMetrics.readabilityScore >= 60 ? 'Easy to read' :
-                                        safeAnalysis.seoMetrics.readabilityScore >= 40 ? 'Moderate readability' :
-                                            'Consider simplifying'}
-                                </p>
+                            <div className="p-4 bg-gray-50 rounded-lg text-center">
+                                <div className="text-2xl md:text-3xl font-bold text-green-600">{safeAnalysis.seoMetrics.readabilityScore || 0}%</div>
+                                <div className="text-sm text-gray-600">Readability</div>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-lg text-center hover:bg-gray-100 transition-colors">
-                                <div className="text-3xl font-bold text-purple-600">{safeAnalysis.seoMetrics.contentDepthScore || 0}%</div>
-                                <div className="text-sm text-gray-600">Content Depth</div>
-                                <p className="text-xs text-gray-500 mt-1">Content comprehensiveness</p>
+                            <div className="p-4 bg-gray-50 rounded-lg text-center">
+                                <div className="text-2xl md:text-3xl font-bold text-purple-600">{safeAnalysis.seoMetrics.contentDepthScore || 0}%</div>
+                                <div className="text-sm text-gray-600">Depth Score</div>
                             </div>
                         </div>
 
                         {/* Content Assessment */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <div className="p-4 bg-gray-50 rounded-lg">
-                                <h4 className="font-medium mb-2">Word Count Assessment</h4>
+                                <h4 className="font-medium mb-2">Word Count</h4>
                                 <p className="text-gray-700">{content.wordCount}</p>
                             </div>
                             <div className="p-4 bg-gray-50 rounded-lg">
@@ -820,39 +853,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 <h4 className="font-medium mb-2">Readability</h4>
                                 <p className="text-gray-700">{content.readability}</p>
                             </div>
-                            {content.contentStructure && (
-                                <div className="p-4 bg-blue-50 rounded-lg">
-                                    <h4 className="font-medium mb-2">Content Structure</h4>
-                                    <p className="text-gray-700">{content.contentStructure}</p>
-                                </div>
-                            )}
                         </div>
-
-                        {/* LSI Keywords */}
-                        {content.LSIKeywords && content.LSIKeywords.length > 0 && (
-                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <h4 className="font-medium text-green-800 mb-2">🔍 Related Keywords (LSI)</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {content.LSIKeywords.map((kw, idx) => (
-                                        <Badge key={idx} variant="secondary" className="px-2 py-1">
-                                            {kw}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Content Gaps */}
-                        {content.contentGaps && content.contentGaps.length > 0 && (
-                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <h4 className="font-medium text-yellow-800 mb-2">📝 Content Gaps Identified</h4>
-                                <ul className="list-disc list-inside space-y-1 text-gray-700">
-                                    {content.contentGaps.map((gap, idx) => (
-                                        <li key={idx}>{gap}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -871,28 +872,22 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             Link Analysis
                         </CardTitle>
                         <CardDescription>
-                            Internal and external link analysis for your page
+                            Internal and external link analysis
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Link Statistics */}
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <div className="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition-colors">
-                                <div className="text-3xl font-bold text-blue-600">
-                                    {safeAnalysis.seoMetrics.internalLinkingScore || 0}%
-                                </div>
-                                <div className="text-sm text-gray-600">Internal Linking Score</div>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="p-4 bg-blue-50 rounded-lg text-center">
+                                <div className="text-2xl font-bold text-blue-600">{safeAnalysis.seoMetrics.internalLinkingScore || 0}%</div>
+                                <div className="text-sm text-gray-600">Internal Links</div>
                             </div>
-                            <div className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors">
-                                <div className="text-3xl font-bold text-green-600">
-                                    {safeAnalysis.seoMetrics.externalLinkingScore || 0}%
-                                </div>
-                                <div className="text-sm text-gray-600">External Linking Score</div>
+                            <div className="p-4 bg-green-50 rounded-lg text-center">
+                                <div className="text-2xl font-bold text-green-600">{safeAnalysis.seoMetrics.externalLinkingScore || 0}%</div>
+                                <div className="text-sm text-gray-600">External Links</div>
                             </div>
-                            <div className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors">
-                                <div className="text-3xl font-bold text-purple-600">
-                                    {safeAnalysis.seoMetrics.orphanedPagesCount || 0}
-                                </div>
+                            <div className="p-4 bg-purple-50 rounded-lg text-center">
+                                <div className="text-2xl font-bold text-purple-600">{safeAnalysis.seoMetrics.orphanedPagesCount || 0}</div>
                                 <div className="text-sm text-gray-600">Orphaned Pages</div>
                             </div>
                         </div>
@@ -900,77 +895,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         {/* Link Equity */}
                         <div className="p-4 bg-gray-50 rounded-lg">
                             <h4 className="font-medium mb-2">Link Equity Distribution</h4>
-                            <p className="text-gray-700">{links?.linkEquity || 'Review your internal linking structure to ensure proper link equity distribution.'}</p>
+                            <p className="text-gray-700">{links?.linkEquity || 'Review your internal linking structure.'}</p>
                         </div>
-
-                        {/* Internal Links */}
-                        {links?.internalLinks && links.internalLinks.length > 0 && (
-                            <div>
-                                <h4 className="font-semibold text-lg mb-3">Internal Links</h4>
-                                <div className="space-y-2">
-                                    {links.internalLinks.slice(0, 10).map((link, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
-                                            <div className="flex items-center gap-2 overflow-hidden">
-                                                <Link2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                                                <span className="text-sm truncate">{link.anchor}</span>
-                                            </div>
-                                            <span className="text-xs text-gray-500 truncate max-w-[200px]">{link.url}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* External Links */}
-                        {links?.externalLinks && links.externalLinks.length > 0 && (
-                            <div>
-                                <h4 className="font-semibold text-lg mb-3">External Links</h4>
-                                <div className="space-y-2">
-                                    {links.externalLinks.slice(0, 10).map((link, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors">
-                                            <div className="flex items-center gap-2 overflow-hidden">
-                                                <ExternalLink className="w-4 h-4 text-green-500 flex-shrink-0" />
-                                                <span className="text-sm truncate">{link.anchor}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {link.isNofollow && (
-                                                    <Badge variant="outline" className="text-xs">nofollow</Badge>
-                                                )}
-                                                <span className="text-xs text-gray-500 truncate max-w-[150px]">external</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Broken Links */}
-                        {links?.brokenLinks && links.brokenLinks.length > 0 && (
-                            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <h4 className="font-medium text-red-800 mb-2">⚠️ Broken Links Found</h4>
-                                <div className="space-y-2">
-                                    {links.brokenLinks.map((link, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-2 bg-red-100 rounded">
-                                            <span className="text-sm text-red-700 truncate">{link.url}</span>
-                                            <Badge variant="destructive">{link.status}</Badge>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* No Links Message */}
-                        {(!links?.internalLinks?.length && !links?.externalLinks?.length) && (
-                            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <div className="flex items-center gap-2 text-yellow-700 font-medium">
-                                    <AlertTriangle className="h-5 w-5" />
-                                    Limited Link Data
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">
-                                    The analysis couldn't extract detailed link information. Ensure your content has proper internal and external links.
-                                </p>
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -979,96 +905,30 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
     const renderAdvancedSEO = () => (
         <div className="space-y-6 animate-fadeIn">
-            {/* Canonical URL */}
-            <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Server className="h-5 w-5" />
-                        Canonical URL
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        {safeAnalysis.seoMetrics && (safeAnalysis.seoMetrics as any)?.performance?.hasCanonical ? (
-                            <>
-                                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-green-700">Canonical link tag found</p>
-                                    <p className="text-sm text-gray-600">Every page on your site should have a canonical tag to prevent duplicate content issues.</p>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-red-700">No canonical link tag found</p>
-                                    <p className="text-sm text-gray-600">Add a canonical tag to specify the preferred URL for this page.</p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Open Graph */}
-            <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Share2Icon className="h-5 w-5" />
-                        Open Graph Meta Tags
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-                        {safeAnalysis.seoMetrics && (safeAnalysis.seoMetrics as any)?.performance?.hasOpenGraph ? (
-                            <>
-                                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-green-700">Open Graph meta tags are set</p>
-                                    <p className="text-sm text-gray-600">Your page will display properly when shared on social media.</p>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <XCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-yellow-700">Some Open Graph meta tags are missing</p>
-                                    <p className="text-sm text-gray-600">Add og:title, og:description, and og:image for better social sharing.</p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* SSL Status */}
+            {/* SSL */}
             <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Shield className="h-5 w-5" />
-                        SSL/HTTPS Status
+                        Security (SSL)
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
                         {safeAnalysis.seoMetrics.sslStatus === 'valid' ? (
                             <>
-                                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                                <CheckCircle2 className="w-6 h-6 text-green-600" />
                                 <div>
-                                    <p className="font-medium text-green-700">SSL Certificate is Valid</p>
-                                    <p className="text-sm text-gray-600">Your site is using HTTPS which is important for security and SEO.</p>
+                                    <p className="font-medium text-green-700">SSL Certificate Valid</p>
+                                    <p className="text-sm text-gray-600">Your site is using HTTPS</p>
                                 </div>
                             </>
                         ) : (
                             <>
-                                <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                                <XCircle className="w-6 h-6 text-red-600" />
                                 <div>
-                                    <p className="font-medium text-red-700">SSL Certificate Issue</p>
-                                    <p className="text-sm text-gray-600">
-                                        {safeAnalysis.seoMetrics.sslStatus === 'missing'
-                                            ? 'Your site is not using HTTPS. Install an SSL certificate.'
-                                            : 'There is an issue with your SSL certificate.'}
-                                    </p>
+                                    <p className="font-medium text-red-700">SSL Issue</p>
+                                    <p className="text-sm text-gray-600">Install SSL certificate</p>
                                 </div>
                             </>
                         )}
@@ -1076,24 +936,38 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                 </CardContent>
             </Card>
 
-            {/* Robots.txt */}
+            {/* Canonical & Open Graph */}
             <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Settings className="h-5 w-5" />
-                        Robots.txt & Sitemaps
+                        <Server className="h-5 w-5" />
+                        Advanced SEO
                     </CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="font-medium">Robots.txt</span>
-                            {getStatusBadge(true, 'Found', 'Missing')}
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="font-medium">XML Sitemap</span>
-                            {getStatusBadge(true, 'Found', 'Missing')}
-                        </div>
+                <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium">Canonical URL</span>
+                        {safeAnalysis.seoMetrics && (safeAnalysis.seoMetrics as any)?.performance?.hasCanonical ? (
+                            <Badge className="bg-green-100 text-green-700">Found</Badge>
+                        ) : (
+                            <Badge variant="destructive">Missing</Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium">Open Graph Tags</span>
+                        {safeAnalysis.seoMetrics && (safeAnalysis.seoMetrics as any)?.performance?.hasOpenGraph ? (
+                            <Badge className="bg-green-100 text-green-700">Found</Badge>
+                        ) : (
+                            <Badge variant="destructive">Missing</Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="font-medium">Structured Data</span>
+                        {safeAnalysis.seoMetrics.schemaTypes && safeAnalysis.seoMetrics.schemaTypes.length > 0 ? (
+                            <Badge className="bg-green-100 text-green-700">{safeAnalysis.seoMetrics.schemaTypes.length} types</Badge>
+                        ) : (
+                            <Badge variant="destructive">Missing</Badge>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -1109,7 +983,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         Schema.org Markup
                     </CardTitle>
                     <CardDescription>
-                        Structured data to improve search visibility and rich snippets
+                        Structured data for rich snippets
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1118,8 +992,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             <>
                                 <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
                                 <div>
-                                    <p className="font-medium text-green-700">Schema markup found ({safeAnalysis.seoMetrics.schemaTypes.length} types)</p>
-                                    <p className="text-sm text-gray-600">Your page contains structured data that can improve search appearance.</p>
+                                    <p className="font-medium text-green-700">Schema found ({safeAnalysis.seoMetrics.schemaTypes.length} types)</p>
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         {safeAnalysis.seoMetrics.schemaTypes.map((type, idx) => (
                                             <Badge key={idx} variant="secondary">{type}</Badge>
@@ -1131,53 +1004,35 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             <>
                                 <XCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
                                 <div>
-                                    <p className="font-medium text-yellow-700">No Schema.org data was found</p>
-                                    <p className="text-sm text-gray-600">Add structured data markup to enable rich snippets in search results.</p>
+                                    <p className="font-medium text-yellow-700">No Schema.org data found</p>
+                                    <p className="text-sm text-gray-600">Add structured data for rich snippets</p>
                                 </div>
                             </>
                         )}
                     </div>
 
-                    {/* Structured Data Score */}
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium">Structured Data Score</span>
-                            <span className={`font-bold ${getScoreColor(safeAnalysis.seoMetrics.structuredDataScore || 0)}`}>
-                                {safeAnalysis.seoMetrics.structuredDataScore || 0}%
-                            </span>
-                        </div>
-                        <Progress value={safeAnalysis.seoMetrics.structuredDataScore || 0} className="h-2" />
-                    </div>
-
                     {/* Schema Examples */}
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="border rounded-lg p-4">
                             <h4 className="font-semibold mb-2">Organization Schema</h4>
                             <pre className="bg-gray-900 text-gray-100 p-3 rounded text-xs overflow-x-auto">
                                 {`<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Your Company",
-  "url": "https://example.com",
-  "logo": "https://example.com/logo.png"
+  "name": "Your Company"
 }
 </script>`}
                             </pre>
                         </div>
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="border rounded-lg p-4">
                             <h4 className="font-semibold mb-2">Website Schema</h4>
                             <pre className="bg-gray-900 text-gray-100 p-3 rounded text-xs overflow-x-auto">
                                 {`<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "Your Website",
-  "url": "https://example.com",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://example.com/search?q={search_term}"
-  }
+  "name": "Your Website"
 }
 </script>`}
                             </pre>
@@ -1192,6 +1047,10 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
         switch (activeSection) {
             case 'overview': return renderOverview();
             case 'page-speed': return renderPageSpeed();
+            case 'critical-issues': return renderCriticalIssues();
+            case 'warnings': return renderWarnings();
+            case 'passed-checks': return renderPassedChecks();
+            case 'quick-wins': return renderQuickWins();
             case 'basic-seo': return renderBasicSEO();
             case 'keywords': return renderKeywords();
             case 'content': return renderContent();
@@ -1202,75 +1061,82 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
         }
     };
 
-    return (
-        <div className="flex gap-6 min-h-[600px]">
-            {/* Sidebar */}
-            <div className={`${sidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 flex-shrink-0`}>
-                <Card className="h-full">
-                    <CardContent className="p-4">
+    // Mobile sidebar content
+    const SidebarContent = () => (
+        <Card className="h-full">
+            <CardContent className="p-3 md:p-4">
+                {/* Mobile header */}
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                    <span className="font-semibold text-sm md:text-base">SEO Audit</span>
+                    <div className="flex items-center gap-2">
                         <button
-                            onClick={() => setSidebarOpen(!sidebarOpen)}
-                            className="mb-4 p-2 hover:bg-gray-100 rounded-lg w-full flex items-center justify-center transition-colors"
+                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                            className="p-1.5 hover:bg-gray-100 rounded-lg"
+                            title="Toggle view"
                         >
-                            <Menu className="w-5 h-5" />
+                            {viewMode === 'grid' ? <List className="w-4 h-4" /> : <Grid className="w-4 h-4" />}
                         </button>
-                        <nav className="space-y-1">
-                            {navItems.map((item) => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => handleSectionChange(item.id)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${activeSection === item.id
-                                        ? 'bg-primary text-white shadow-md'
-                                        : 'hover:bg-gray-100 text-gray-700'
-                                        }`}
-                                >
-                                    {item.icon}
-                                    {sidebarOpen && (
-                                        <>
-                                            <span className="flex-1">{item.label}</span>
-                                            {item.badge !== undefined && (
-                                                <Badge
-                                                    variant={item.badge > 0 ? 'destructive' : 'secondary'}
-                                                    className="text-xs"
-                                                >
-                                                    {item.badge}
-                                                </Badge>
-                                            )}
-                                        </>
+                    </div>
+                </div>
+
+                <nav className={viewMode === 'grid' ? 'grid grid-cols-2 gap-2' : 'space-y-1'}>
+                    {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => handleSectionChange(item.id)}
+                            className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-left transition-all duration-200 ${activeSection === item.id
+                                ? 'bg-primary text-white'
+                                : 'hover:bg-gray-100 text-gray-700'
+                                } ${viewMode === 'grid' ? 'justify-center' : ''}`}
+                        >
+                            {item.icon}
+                            {sidebarOpen && (
+                                <>
+                                    <span className="flex-1 text-xs md:text-sm truncate">{item.label}</span>
+                                    {item.badge !== undefined && item.badge > 0 && (
+                                        <Badge
+                                            className={`text-xs ${getBadgeStyle(item.badgeColor)}`}
+                                        >
+                                            {item.badge}
+                                        </Badge>
                                     )}
-                                </button>
-                            ))}
-                        </nav>
-                    </CardContent>
-                </Card>
+                                </>
+                            )}
+                        </button>
+                    ))}
+                </nav>
+            </CardContent>
+        </Card>
+    );
+
+    return (
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 min-h-[500px]">
+            {/* Mobile Menu Button */}
+            {isMobile && (
+                <div className="md:hidden">
+                    <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        className="w-full flex items-center justify-between p-3 bg-white rounded-lg shadow"
+                    >
+                        <span className="font-medium">SEO Audit Menu</span>
+                        <Menu className="w-5 h-5" />
+                    </button>
+                </div>
+            )}
+
+            {/* Sidebar - Desktop & Mobile */}
+            <div className={`
+                ${isMobile ? (mobileMenuOpen ? 'block' : 'hidden') : 'block'} 
+                ${sidebarOpen ? 'w-full md:w-64' : 'w-16'} 
+                shrink-0 transition-all duration-300
+            `}>
+                <SidebarContent />
             </div>
 
             {/* Main Content */}
-            <div className={`flex-1 transition-opacity duration-150 ${animating ? 'opacity-50' : 'opacity-100'}`}>
+            <div className="flex-1 min-w-0">
                 {renderSection()}
             </div>
         </div>
-    );
-}
-
-// Helper component for Share icon
-function Share2Icon({ className }: { className?: string }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
     );
 }

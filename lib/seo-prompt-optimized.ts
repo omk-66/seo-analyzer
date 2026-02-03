@@ -1,5 +1,4 @@
 export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: any, sitemapData?: any) => {
-  // Truncate and summarize content to reduce tokens
   const truncateText = (text: string, maxLength: number = 200) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
@@ -8,10 +7,8 @@ export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: 
     return headings.slice(0, maxCount).map(h => `"${truncateText(h, 50)}"`).join(', ');
   };
 
-  // Extract key PageSpeed metrics only
   const extractKeyPageSpeedMetrics = (pageSpeedData: any) => {
     if (!pageSpeedData?.lighthouseResult) return null;
-
     const audits = pageSpeedData.lighthouseResult.audits || {};
     const categories = pageSpeedData.lighthouseResult.categories || {};
 
@@ -28,139 +25,126 @@ export const generateOptimizedSEOPrompt = (websiteContent: any, pageSpeedData?: 
     };
   };
 
-  return `You are an expert SEO analyst providing comprehensive AIOSEO-style deep audit results. Analyze this website thoroughly and provide detailed recommendations.
+  return `You are an expert SEO analyst providing comprehensive AIOSEO-style deep audit results. Analyze this website thoroughly.
 
 ## SITE DATA
 URL: ${websiteContent.url}
 Title: "${truncateText(websiteContent.title, 100)}"
 Meta Description: "${truncateText(websiteContent.metaDescription, 150)}"
 
-## TECHNICAL SEO
+## TECHNICAL SEO ANALYSIS
 HTTPS: ${websiteContent.technical.hasHttps ? '✅' : '❌'}
-Has Title: ${websiteContent.technical.hasTitle ? '✅' : '❌'}
-Has Meta Description: ${websiteContent.technical.hasMetaDescription ? '✅' : '❌'}
-Title Length: ${websiteContent.technical.titleLength} chars (optimal: 50-60)
-Meta Desc Length: ${websiteContent.technical.metaDescriptionLength} chars (optimal: 150-160)
-Has Canonical: ${websiteContent.performance.hasCanonical ? '✅' : '❌'}
-Has Viewport: ${websiteContent.performance.hasViewportMeta ? '✅' : '❌'}
-Has Structured Data: ${websiteContent.performance.hasStructuredData ? '✅' : '❌'}
-Has Open Graph: ${websiteContent.performance.hasOpenGraph ? '✅' : '❌'}
-Has Robots Meta: ${websiteContent.performance.hasRobotsMeta ? '✅' : '❌'}
-Structured Data Types: ${websiteContent.performance.structuredDataTypes?.join(', ') || 'None'}
+Title: ${websiteContent.technical.hasTitle ? '✅' : '❌'} (${websiteContent.technical.titleLength} chars)
+Meta Description: ${websiteContent.technical.hasMetaDescription ? '✅' : '❌'} (${websiteContent.technical.metaDescriptionLength} chars)
+Canonical: ${websiteContent.performance.hasCanonical ? '✅' : '❌'}
+Viewport: ${websiteContent.performance.hasViewportMeta ? '✅' : '❌'}
+Structured Data: ${websiteContent.performance.hasStructuredData ? '✅' : '❌'}
+Open Graph: ${websiteContent.performance.hasOpenGraph ? '✅' : '❌'}
+Robots Meta: ${websiteContent.performance.hasRobotsMeta ? '✅' : '❌'}
+Schema Types: ${websiteContent.performance.structuredDataTypes?.join(', ') || 'None'}
 
-## CONTENT STRUCTURE
+## HEADING STRUCTURE
 H1 Count: ${websiteContent.technical.headingStructure.h1Count} (should be 1)
 H2 Count: ${websiteContent.technical.headingStructure.h2Count}
 H3 Count: ${websiteContent.technical.headingStructure.h3Count}
-Proper Hierarchy: ${websiteContent.technical.headingStructure.properHierarchy ? '✅' : '❌'}
-Content Length: ${websiteContent.performance.contentLength} chars
-Word Count: ${websiteContent.performance.wordCount} words
-Reading Level: ${websiteContent.technical.readabilityScore.readingLevel}
+Hierarchy: ${websiteContent.technical.headingStructure.properHierarchy ? '✅ Proper' : '❌ Issues'}
 
-## HEADINGS (sample)
-H1: ${summarizeHeadings(websiteContent.headings.h1, 2)}
-H2: ${summarizeHeadings(websiteContent.headings.h2, 5)}
-H3: ${summarizeHeadings(websiteContent.headings.h3, 5)}
+## CONTENT ANALYSIS
+Word Count: ${websiteContent.performance.wordCount} words
+Content Length: ${websiteContent.performance.contentLength} chars
+Readability: ${websiteContent.technical.readabilityScore.readingLevel}
 
 ## MEDIA & LINKS
-Total Images: ${websiteContent.performance.imageCount}
-Images with Alt: ${websiteContent.technical.imagesWithAlt}/${websiteContent.performance.imageCount}
-Images Missing Alt: ${websiteContent.technical.imagesWithoutAlt}
-Total Links: ${websiteContent.performance.linkCount}
-Internal Links: ${websiteContent.performance.internalLinkCount}
-External Links: ${websiteContent.performance.externalLinkCount}
+Images: ${websiteContent.performance.imageCount} total, ${websiteContent.technical.imagesWithAlt} with alt, ${websiteContent.technical.imagesWithoutAlt} missing
+Links: ${websiteContent.performance.linkCount} total (${websiteContent.performance.internalLinkCount} internal, ${websiteContent.performance.externalLinkCount} external)
 
 ${sitemapData ? `
 ## SITEMAP
-Found: ${sitemapData.found ? '✅' : '❌'}
-URLs: ${sitemapData.urlCount || 0}
+Found: ${sitemapData.found ? '✅' : '❌'} (${sitemapData.urlCount || 0} URLs)
 ` : ''}
 
 ${pageSpeedData ? `
-## PERFORMANCE (from PageSpeed Insights)
+## PAGESPEED INSIGHTS
 Score: ${extractKeyPageSpeedMetrics(pageSpeedData)?.performanceScore || 'N/A'}/100
 LCP: ${extractKeyPageSpeedMetrics(pageSpeedData)?.lcp || 'N/A'}s
 INP: ${extractKeyPageSpeedMetrics(pageSpeedData)?.inp || 'N/A'}ms
 CLS: ${extractKeyPageSpeedMetrics(pageSpeedData)?.cls || 'N/A'}
 FCP: ${extractKeyPageSpeedMetrics(pageSpeedData)?.fcp || 'N/A'}s
 TTFB: ${extractKeyPageSpeedMetrics(pageSpeedData)?.ttfb || 'N/A'}s
-TTI: ${extractKeyPageSpeedMetrics(pageSpeedData)?.tti || 'N/A'}s
-TBT: ${extractKeyPageSpeedMetrics(pageSpeedData)?.tbt || 'N/A'}ms
-Speed Index: ${extractKeyPageSpeedMetrics(pageSpeedData)?.speedIndex || 'N/A'}s
 ` : ''}
 
 ## TASK
-Provide a COMPREHENSIVE AIOSEO-style deep audit report with this exact structure:
+Provide a COMPREHENSIVE SEO audit report with detailed analysis in this JSON format:
 
 {
   "overallScore": 0-100,
-  "siteType": "website type (blog, e-commerce, business, portfolio, etc.)",
+  "siteType": "blog|e-commerce|business|portfolio|educational|news|other",
   "url": "${websiteContent.url}",
   
   "criticalIssues": [
     {
-      "category": "technical|on-page|content|advanced|security",
+      "category": "technical|on-page|content|security|performance",
       "issue": "specific issue name",
-      "impact": "why it matters - 2-3 sentences",
-      "evidence": "what we found on the page",
-      "recommendation": "how to fix - specific actionable step",
+      "impact": "why it matters - 2-3 sentences explaining the SEO impact",
+      "evidence": "exact evidence found on the page",
+      "recommendation": "specific actionable recommendation with code example if applicable",
       "priority": "critical|high|medium|low"
     }
   ],
   
   "strengths": [
     {
-      "area": "what area is working well",
-      "description": "why it's good - specific evidence"
+      "area": "what's working well",
+      "description": "detailed description of why this is a strength"
     }
   ],
   
   "quickWins": [
     {
-      "improvement": "quick fix to implement",
-      "impact": "expected benefit",
+      "improvement": "specific quick improvement",
+      "impact": "expected SEO benefit",
       "effort": "low|medium|high"
     }
   ],
   
   "detailedRecommendations": {
     "title": {
-      "current": "current title or empty string",
-      "suggested": "better title under 60 chars with primary keyword",
-      "reason": "why this is better for SEO and CTR"
+      "current": "current title or empty",
+      "suggested": "improved title under 60 chars with primary keyword",
+      "reason": "why this improves SEO and CTR"
     },
     
     "metaDescription": {
-      "current": "current meta or empty string",
-      "suggested": "compelling meta under 160 chars with call-to-action",
-      "reason": "why this will improve click-through rates"
+      "current": "current meta or empty",
+      "suggested": "compelling meta under 160 chars with CTA",
+      "reason": " CTR improvement explanation"
     },
     
     "headings": {
-      "issues": ["issue1", "issue2", "issue3"],
-      "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+      "issues": ["specific issue 1", "specific issue 2"],
+      "suggestions": ["specific suggestion 1", "specific suggestion 2"]
     },
     
     "content": {
-      "wordCount": "detailed assessment of content length with recommendations",
-      "keywordUsage": "detailed analysis of keyword placement and density",
-      "readability": "detailed readability assessment with Flesch-Kincaid score",
-      "LSIKeywords": ["related keyword 1", "related keyword 2", "related keyword 3"],
+      "wordCount": "detailed assessment with word count range recommendation",
+      "keywordUsage": "detailed keyword analysis with density percentages",
+      "readability": "readability score assessment with Flesch-Kincaid level",
+      "LSIKeywords": ["LSI keyword 1", "LSI keyword 2", "LSI keyword 3"],
       "contentGaps": ["missing content area 1", "missing content area 2"],
-      "contentStructure": "assessment of heading hierarchy and content organization"
+      "contentStructure": "heading hierarchy and content organization assessment"
     },
     
     "keywords": {
       "primaryKeywords": [
-        {"keyword": "main keyword", "count": 5, "density": "1.2%", "placement": ["title", "h1", "first paragraph"]}
+        {"keyword": "primary keyword", "count": 5, "density": "1.2%", "placement": ["title", "h1", "first paragraph"]}
       ],
       "secondaryKeywords": [
         {"keyword": "secondary keyword", "count": 3, "density": "0.8%"}
       ],
       "longTailKeywords": [
-        {"keyword": "long tail keyword phrase", "count": 2}
+        {"keyword": "long tail phrase", "count": 2}
       ],
-      "missingKeywords": ["keyword you should target 1", "keyword you should target 2"],
+      "missingKeywords": ["target keyword 1", "target keyword 2"],
       "keywordStuffing": false
     },
     
@@ -175,15 +159,15 @@ Provide a COMPREHENSIVE AIOSEO-style deep audit report with this exact structure
         {"url": "/broken-page", "status": "404"}
       ],
       "orphanedPages": ["/page1", "/page2"],
-      "linkEquity": "assessment of how link equity is distributed across the site"
+      "linkEquity": "detailed assessment of link equity distribution"
     },
     
     "technical": {
-      "imageOptimization": "detailed assessment of image optimization",
-      "internalLinking": "assessment of internal linking structure",
-      "urlStructure": "assessment of URL structure and readability",
-      "structuredData": "assessment of structured data implementation",
-      "metaTags": "assessment of all meta tags"
+      "imageOptimization": "detailed image optimization assessment",
+      "internalLinking": "internal linking structure assessment",
+      "urlStructure": "URL structure and readability assessment",
+      "structuredData": "structured data implementation assessment",
+      "metaTags": "all meta tags assessment including Open Graph, Twitter Cards"
     }
   },
   
@@ -202,11 +186,14 @@ Provide a COMPREHENSIVE AIOSEO-style deep audit report with this exact structure
     "internalLinkingScore": 0-100,
     "externalLinkingScore": 0-100,
     "userExperienceScore": 0-100,
+    "socialSharingScore": 0-100,
     
     "coreWebVitals": {
       "lcp": 2.5,
       "inp": 100,
-      "cls": 0.1
+      "cls": 0.1,
+      "fcp": 1.8,
+      "ttfb": 0.5
     },
     
     "pageSpeed": {
@@ -225,70 +212,77 @@ Provide a COMPREHENSIVE AIOSEO-style deep audit report with this exact structure
     "topKeywords": [
       {"keyword": "keyword", "position": 1, "volume": 1000, "difficulty": 45}
     ],
-    "schemaTypes": ["WebSite", "Organization", "BreadcrumbList"]
+    "schemaTypes": ["WebSite", "Organization", "BreadcrumbList"],
+    
+    "additionalMetrics": {
+      "domainAuthority": 45,
+      "pageAuthority": 35,
+      "backlinksCount": 150,
+      "referringDomains": 50,
+      "organicKeywords": 200,
+      "organicTraffic": 5000,
+      "bounceRate": 45.2,
+      "dwellTime": 180,
+      "conversionRate": 2.5
+    }
   },
   
   "nextSteps": [
-    "priority 1 action item",
-    "priority 2 action item", 
-    "priority 3 action item"
+    "priority 1: most important action",
+    "priority 2: second most important action",
+    "priority 3: third most important action"
   ]
 }
 
 ## COMPREHENSIVE AUDIT REQUIREMENTS:
 
-### For Keywords Section:
-- Identify primary keywords (main focus)
-- Identify secondary keywords (supporting)
-- Identify long-tail keyword opportunities
-- Analyze keyword density and placement
-- Suggest missing keywords to target
+### CRITICAL ISSUES (Priority: Critical/High)
+- Missing essential SEO elements (title, meta, H1, canonical)
+- Security issues (no HTTPS, invalid SSL)
+- Major performance problems (LCP > 4s, CLS > 0.25)
+- Critical accessibility issues (missing alt on important images)
+- Broken internal links affecting crawlability
+
+### WARNINGS (Priority: Medium/Low)
+- Suboptimal title/meta length
+- Heading structure issues
+- Image optimization opportunities
+- Missing optional meta tags
+- Content quality suggestions
+
+### PASSED CHECKS
+- All positive findings that are working correctly
+- Proper implementation of SEO best practices
+- Good performance metrics
+- Proper schema implementation
+
+### QUICK WINS
+- Easy fixes with high impact
+- Low effort improvements
+- Content optimizations
+- Small technical fixes
+
+### KEYWORD ANALYSIS
+- Extract and count all keywords
+- Calculate keyword density
+- Identify keyword placement (title, headings, content)
+- Find missing keyword opportunities
 - Check for keyword stuffing
 
-### For Content Analysis:
-- Detailed word count assessment
+### CONTENT ANALYSIS
+- Word count assessment (thin vs adequate vs comprehensive)
 - Readability score (Flesch-Kincaid)
-- LSI keywords (latent semantic indexing)
-- Content gaps identification
-- Content structure analysis
-- Topic coverage assessment
+- LSI keyword identification
+- Content gap analysis
+- Content structure evaluation
 
-### For Links Section:
-- Internal link analysis with examples
-- External link analysis with nofollow status
-- Broken link identification
-- Orphaned pages detection
-- Link equity distribution assessment
-- Anchor text analysis
+### TECHNICAL SEO
+- URL structure analysis
+- Internal linking assessment
+- External linking quality
+- Schema markup evaluation
+- Core Web Vitals analysis
+- Mobile friendliness check
 
-### For Technical SEO:
-- Image alt text coverage
-- URL structure optimization
-- Canonical tag implementation
-- Open Graph tags assessment
-- Twitter Cards implementation
-- Robots.txt configuration
-- XML sitemap status
-- Favicon availability
-- Language declaration
-- Viewport meta tag
-
-### For Performance (PageSpeed):
-- Detailed Core Web Vitals analysis
-- First Contentful Paint (FCP)
-- Largest Contentful Paint (LCP)
-- Interaction to Next Paint (INP)
-- Cumulative Layout Shift (CLS)
-- Time to First Byte (TTFB)
-- Time to Interactive (TTI)
-- Total Blocking Time (TBT)
-- Speed Index
-
-### For Schema Markup:
-- Identify existing schema types
-- Suggest additional schema opportunities
-- Provide JSON-LD examples
-- Assess schema implementation quality
-
-Focus on actionable, technical, and comprehensive recommendations. Be specific with evidence and recommendations.`;
+Provide detailed, actionable, and specific recommendations. Use technical evidence from the data provided.`;
 };

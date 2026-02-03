@@ -730,10 +730,15 @@ export async function POST(request: NextRequest) {
 
       try {
         // Use Vercel AI SDK with AI model
+        const startTime = new Date().getTime();
+        console.log("starting AI analysis");
+        console.log("start time:", startTime);
         const { text: generatedText } = await generateText({
           model: cohere('command-a-03-2025'),
           prompt: prompt,
         });
+        console.log("end time:", new Date().getTime());
+        console.log("total time:", new Date().getTime() - startTime);
 
         text = generatedText;
         modelUsed = 'cohere-command-a-03-2025';
