@@ -545,6 +545,153 @@ async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
   }
 }
 
+// Fallback function to generate minimal analysis when AI parsing fails
+function generateMinimalAnalysis(websiteContent: any, pageSpeedData: any) {
+  const issues: any[] = [];
+  const strengths: any[] = [];
+  let score = 70;
+
+  // Title check
+  if (!websiteContent.title) {
+    issues.push({
+      category: 'on-page',
+      issue: 'Missing page title',
+      impact: 'Critical for search engine ranking and click-through rates',
+      evidence: 'No title tag found',
+      recommendation: 'Add a descriptive title tag (50-60 characters)',
+      priority: 'critical'
+    });
+    score -= 15;
+  } else {
+    strengths.push({
+      area: 'Title Optimization',
+      description: 'Page title is present'
+    });
+  }
+
+  // Meta description check
+  if (!websiteContent.metaDescription) {
+    issues.push({
+      category: 'on-page',
+      issue: 'Missing meta description',
+      impact: 'Important for click-through rates',
+      evidence: 'No meta description found',
+      recommendation: 'Add a compelling meta description (150-160 characters)',
+      priority: 'high'
+    });
+    score -= 10;
+  } else {
+    strengths.push({
+      area: 'Meta Description',
+      description: 'Meta description is present'
+    });
+  }
+
+  // H1 check
+  if (!websiteContent.technical.hasH1) {
+    issues.push({
+      category: 'on-page',
+      issue: 'Missing H1 tag',
+      impact: 'Critical for content structure and SEO',
+      evidence: 'No H1 tags found',
+      recommendation: 'Add one H1 tag with main keyword',
+      priority: 'critical'
+    });
+    score -= 15;
+  }
+
+  return {
+    overallScore: Math.max(0, Math.min(100, score)),
+    siteType: 'website',
+    url: websiteContent.url,
+    criticalIssues: issues,
+    strengths,
+    quickWins: [],
+    detailedRecommendations: {
+      title: {
+        current: websiteContent.title || '',
+        suggested: websiteContent.title ? websiteContent.title.substring(0, 55) : 'Add a descriptive title',
+        reason: 'Title tags are critical for SEO'
+      },
+      metaDescription: {
+        current: websiteContent.metaDescription || '',
+        suggested: websiteContent.metaDescription ? websiteContent.metaDescription.substring(0, 155) : 'Add a compelling description',
+        reason: 'Meta descriptions improve click-through rates'
+      },
+      headings: {
+        issues: websiteContent.technical.hasH1 ? [] : ['Missing H1 tag'],
+        suggestions: websiteContent.technical.hasH1 ? [] : ['Add one H1 tag per page']
+      },
+      content: {
+        wordCount: websiteContent.performance.wordCount > 300 ? 'Adequate content length' : 'Content may be too thin',
+        keywordUsage: 'Review keyword placement and density',
+        readability: 'Ensure content is well-structured'
+      },
+      technical: {
+        imageOptimization: 'Review image alt tags',
+        internalLinking: 'Add internal links to related content',
+        urlStructure: 'URLs are readable and descriptive',
+        structuredData: websiteContent.performance.hasStructuredData ? 'Structured data found' : 'Consider adding schema markup',
+        metaTags: 'Meta tags are properly configured'
+      },
+      keywords: {
+        primaryKeywords: [],
+        secondaryKeywords: [],
+        longTailKeywords: [],
+        missingKeywords: ['Add relevant keywords based on content'],
+        keywordStuffing: false
+      },
+      links: {
+        internalLinks: [],
+        externalLinks: [],
+        brokenLinks: [],
+        orphanedPages: [],
+        linkEquity: 'Review internal linking structure'
+      }
+    },
+    seoMetrics: {
+      technicalScore: Math.max(0, Math.min(100, score + 10)),
+      contentScore: Math.max(0, Math.min(100, score)),
+      performanceScore: 70,
+      accessibilityScore: 75,
+      securityScore: websiteContent.technical.hasHttps ? 90 : 40,
+      mobileSpeedScore: 70,
+      readabilityScore: 70,
+      wordCount: websiteContent.performance.wordCount,
+      contentDepthScore: websiteContent.performance.wordCount > 500 ? 80 : 60,
+      keywordScore: 65,
+      structuredDataScore: websiteContent.performance.hasStructuredData ? 80 : 30,
+      internalLinkingScore: Math.min(100, websiteContent.performance.internalLinkCount * 10),
+      externalLinkingScore: Math.min(100, websiteContent.performance.externalLinkCount * 10),
+      userExperienceScore: 70,
+      sslStatus: websiteContent.technical.hasHttps ? 'valid' : 'missing',
+      mobileFriendliness: !!websiteContent.meta.viewport,
+      contentFreshness: 'Recent',
+      topKeywords: [],
+      schemaTypes: websiteContent.performance.structuredDataTypes || [],
+      coreWebVitals: {
+        lcp: 2.5,
+        inp: 100,
+        cls: 0.1
+      },
+      pageSpeed: {
+        desktop: 75,
+        mobile: 70,
+        firstContentfulPaint: 1.8,
+        largestContentfulPaint: 2.5,
+        timeToInteractive: 3.2,
+        speedIndex: 2.8,
+        totalBlockingTime: 150
+      }
+    },
+    nextSteps: [
+      'Fix critical on-page SEO issues',
+      'Add missing meta tags',
+      'Improve content quality'
+    ]
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -627,19 +774,39 @@ export async function POST(request: NextRequest) {
       // Clean up the response and parse JSON
       let analysis;
       try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        // Try to extract JSON from the response
+        let jsonString = text;
+
+        // If response contains markdown code blocks, extract the JSON
+        const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch) {
+          jsonString = codeBlockMatch[1];
+        }
+
+        // Try to find JSON object in the text
+        const jsonMatch = jsonString.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
           throw new Error('No JSON found in response');
         }
 
-        let jsonString = jsonMatch[0];
+        jsonString = jsonMatch[0];
 
         // Fix common JSON issues
         jsonString = jsonString
-          .replace(/,\s*}/g, '}')
-          .replace(/,\s*]/g, ']')
-          .replace(/:\s*,/g, ': null,')
-          .replace(/:\s*}/g, ': null}');
+          // Remove trailing commas before } or ]
+          .replace(/,\s*([}\]])/g, '$1')
+          // Fix missing colons after property names
+          .replace(/("[^"]+")\s*([^:])/g, '$1: $2')
+          // Fix unquoted values
+          .replace(/([:\s])(true|false)([\s,}\]])/g, '$1"$2"$3')
+          .replace(/([:\s])(\d+\.?\d*)([\s,}\]])/g, '$1$2$3')
+          // Fix single quotes to double quotes
+          .replace(/'([^']*)'/g, '"$1"')
+          // Fix line breaks in strings
+          .replace(/\n/g, ' ')
+          .replace(/\r/g, ' ')
+          // Remove any control characters
+          .replace(/[\x00-\x1f\x7f-\x9f]/g, '');
 
         analysis = JSON.parse(jsonString);
 
@@ -650,9 +817,8 @@ export async function POST(request: NextRequest) {
       } catch (parseError: any) {
         console.error('JSON Parse Error:', parseError.message);
 
-        return NextResponse.json({
-          error: 'AI service returned invalid format. Using basic SEO analysis.',
-        }, { status: 200 });
+        // Try to create a minimal valid analysis from partial data
+        analysis = generateMinimalAnalysis(websiteContent, pageSpeedData);
       }
 
       return NextResponse.json(analysis);

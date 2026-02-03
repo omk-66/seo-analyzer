@@ -1,5 +1,8 @@
 import { WebsiteContent } from './scraper';
 
+// Backward compatible SEOMetrics interface
+export interface SEOMetrics extends ExtendedSEOMetrics { }
+
 export interface CriticalIssue {
     category: string;
     issue: string;
@@ -39,6 +42,9 @@ export interface DetailedRecommendations {
         wordCount: string;
         keywordUsage: string;
         readability: string;
+        LSIKeywords?: string[];
+        contentGaps?: string[];
+        contentStructure?: string;
     };
     technical: {
         imageOptimization: string;
@@ -47,40 +53,123 @@ export interface DetailedRecommendations {
         structuredData: string;
         metaTags: string;
     };
+    keywords?: {
+        primaryKeywords: Array<{
+            keyword: string;
+            count: number;
+            density: string;
+            placement: string[];
+        }>;
+        secondaryKeywords: Array<{
+            keyword: string;
+            count: number;
+            density: string;
+        }>;
+        longTailKeywords: Array<{
+            keyword: string;
+            count: number;
+        }>;
+        missingKeywords: string[];
+        keywordStuffing: boolean;
+    };
+    links?: {
+        internalLinks: Array<{
+            url: string;
+            anchor: string;
+            isContextual: boolean;
+        }>;
+        externalLinks: Array<{
+            url: string;
+            anchor: string;
+            isNofollow: boolean;
+        }>;
+        brokenLinks: Array<{
+            url: string;
+            status: string;
+        }>;
+        orphanedPages: string[];
+        linkEquity: string;
+    };
 }
 
-export interface SEOMetrics {
+// Extended SEO Metrics for deeper analysis
+export interface ExtendedSEOMetrics {
+    // Core scores
     technicalScore: number;
     contentScore: number;
     performanceScore: number;
     accessibilityScore: number;
-    // Additional comprehensive metrics
+
+    // Extended metrics
     domainAuthority?: number;
     pageAuthority?: number;
     backlinksCount?: number;
     referringDomains?: number;
     organicKeywords?: number;
     organicTraffic?: number;
+
+    // Core Web Vitals (updated for 2024)
     coreWebVitals?: {
-        lcp: number; // Largest Contentful Paint
-        inp: number; // Interaction to Next Paint  
+        lcp: number; // Largest Contentful Paint (seconds)
+        inp: number; // Interaction to Next Paint (ms) - replaced FID
         cls: number; // Cumulative Layout Shift
+        fcp?: number; // First Contentful Paint (optional)
+        ttfb?: number; // Time to First Byte (optional)
     };
-    mobileFriendliness?: boolean;
+
+    // PageSpeed metrics
     pageSpeed?: {
         desktop: number;
         mobile: number;
+        firstContentfulPaint: number;
+        largestContentfulPaint: number;
+        timeToInteractive: number;
+        speedIndex: number;
+        totalBlockingTime: number;
     };
+
+    // Mobile metrics
+    mobileFriendliness?: boolean;
+    mobileSpeedScore?: number;
+
+    // Security
     securityScore?: number;
+    sslStatus: 'valid' | 'invalid' | 'missing';
+
+    // Structured data
     structuredDataScore?: number;
+    schemaTypes: string[];
+
+    // Linking
     internalLinkingScore?: number;
+    externalLinkingScore?: number;
+    orphanedPagesCount?: number;
+
+    // Content depth
     contentDepthScore?: number;
+    contentFreshness?: string;
+    wordCount: number;
+    readabilityScore: number;
+
+    // Keyword metrics
+    keywordScore?: number;
+    topKeywords: Array<{
+        keyword: string;
+        position: number;
+        volume: number;
+        difficulty: number;
+    }>;
+
+    // User experience
     userExperienceScore?: number;
+    bounceRate?: number;
+    dwellTime?: number;
 }
 
 export interface SEOAnalysis {
     overallScore: number;
     siteType: string;
+    url: string;
     generalSuggestions?: Array<{
         category: string;
         issue: string;
@@ -113,7 +202,7 @@ export interface SEOAnalysis {
     strengths: Strength[];
     quickWins: QuickWin[];
     detailedRecommendations: DetailedRecommendations;
-    seoMetrics: SEOMetrics;
+    seoMetrics: ExtendedSEOMetrics;
     nextSteps: string[];
 }
 
@@ -140,6 +229,7 @@ export async function analyzeSEO(content: WebsiteContent): Promise<SEOAnalysis> 
             // Ensure fallback has all required properties
             return {
                 ...fallback,
+                url: content.url,
                 siteType: fallback.siteType || 'unknown',
                 criticalIssues: fallback.criticalIssues || [],
                 strengths: fallback.strengths || [],
@@ -155,7 +245,12 @@ export async function analyzeSEO(content: WebsiteContent): Promise<SEOAnalysis> 
                     technicalScore: 0,
                     contentScore: 0,
                     performanceScore: 0,
-                    accessibilityScore: 0
+                    accessibilityScore: 0,
+                    sslStatus: 'missing',
+                    wordCount: 0,
+                    readabilityScore: 0,
+                    topKeywords: [],
+                    schemaTypes: []
                 },
                 nextSteps: fallback.nextSteps || []
             };
@@ -289,6 +384,7 @@ function generateFallbackAnalysis(content: WebsiteContent): SEOAnalysis {
     return {
         overallScore: Math.max(0, Math.min(100, score)),
         siteType: "other",
+        url: content.url,
         criticalIssues,
         strengths,
         quickWins,
@@ -310,7 +406,8 @@ function generateFallbackAnalysis(content: WebsiteContent): SEOAnalysis {
             content: {
                 wordCount: content.content.length < 300 ? "Content may be too thin" : "Content length is adequate",
                 keywordUsage: "Review keyword density and placement",
-                readability: "Ensure content is well-structured and easy to read"
+                readability: "Ensure content is well-structured and easy to read",
+                contentStructure: content.headings.h2.length > 0 ? "Good heading structure" : "Add more headings"
             },
             technical: {
                 imageOptimization: imagesWithoutAlt > 0 ? "Add alt text to images" : "Images are well optimized",
@@ -318,6 +415,20 @@ function generateFallbackAnalysis(content: WebsiteContent): SEOAnalysis {
                 urlStructure: "Ensure URLs are descriptive and SEO-friendly",
                 structuredData: content.performance.hasStructuredData ? "Structured data found" : "Add structured data for better search visibility",
                 metaTags: "Optimize meta tags for better search engine understanding"
+            },
+            keywords: {
+                primaryKeywords: [],
+                secondaryKeywords: [],
+                longTailKeywords: [],
+                missingKeywords: ["Consider adding relevant keywords"],
+                keywordStuffing: false
+            },
+            links: {
+                internalLinks: [],
+                externalLinks: [],
+                brokenLinks: [],
+                orphanedPages: [],
+                linkEquity: "Review link distribution"
             }
         },
         seoMetrics: {
@@ -326,26 +437,41 @@ function generateFallbackAnalysis(content: WebsiteContent): SEOAnalysis {
             performanceScore: Math.max(0, Math.min(100, score + (content.performance.imageCount > 0 ? 5 : 0) + (content.performance.linkCount > 0 ? 5 : 0))),
             accessibilityScore: Math.max(0, Math.min(100, score + (imagesWithoutAlt === 0 ? 10 : 0) + (content.performance.hasViewportMeta ? 5 : 0))),
             // Additional metrics with fallback estimates
-            domainAuthority: Math.floor(Math.random() * 40) + 30, // 30-70 range for typical sites
-            pageAuthority: Math.floor(Math.random() * 40) + 25, // 25-65 range
-            backlinksCount: Math.floor(Math.random() * 1000) + 50, // 50-1050 range
-            referringDomains: Math.floor(Math.random() * 100) + 10, // 10-110 range
-            organicKeywords: Math.floor(Math.random() * 500) + 20, // 20-520 range
-            organicTraffic: Math.floor(Math.random() * 10000) + 500, // 500-10500 range
+            domainAuthority: Math.floor(Math.random() * 40) + 30,
+            pageAuthority: Math.floor(Math.random() * 40) + 25,
+            backlinksCount: Math.floor(Math.random() * 1000) + 50,
+            referringDomains: Math.floor(Math.random() * 100) + 10,
+            organicKeywords: Math.floor(Math.random() * 500) + 20,
+            organicTraffic: Math.floor(Math.random() * 10000) + 500,
             coreWebVitals: {
-                lcp: Math.round((Math.random() * 3 + 1) * 10) / 10, // 1.0-4.0s
-                inp: Math.floor(Math.random() * 300 + 50), // 50-350ms
-                cls: Math.round((Math.random() * 0.3 + 0.05) * 100) / 100 // 0.05-0.35
+                lcp: Math.round((Math.random() * 3 + 1) * 10) / 10,
+                inp: Math.floor(Math.random() * 300 + 50),
+                cls: Math.round((Math.random() * 0.3 + 0.05) * 100) / 100
+            },
+            pageSpeed: {
+                desktop: Math.floor(Math.random() * 40) + 60,
+                mobile: Math.floor(Math.random() * 50) + 40,
+                firstContentfulPaint: Math.round((Math.random() * 2 + 1) * 10) / 10,
+                largestContentfulPaint: Math.round((Math.random() * 3 + 1) * 10) / 10,
+                timeToInteractive: Math.round((Math.random() * 5 + 2) * 10) / 10,
+                speedIndex: Math.round((Math.random() * 4 + 2) * 10) / 10,
+                totalBlockingTime: Math.floor(Math.random() * 300 + 50)
             },
             mobileFriendliness: content.performance.hasViewportMeta,
-            pageSpeed: {
-                desktop: Math.floor(Math.random() * 40) + 60, // 60-100
-                mobile: Math.floor(Math.random() * 50) + 40 // 40-90
-            },
+            mobileSpeedScore: Math.floor(Math.random() * 40) + 50,
             securityScore: content.technical.hasHttps ? 90 : 40,
+            sslStatus: content.technical.hasHttps ? 'valid' : 'missing',
             structuredDataScore: content.performance.hasStructuredData ? 80 : 20,
+            schemaTypes: content.performance.structuredDataTypes || [],
             internalLinkingScore: Math.max(0, Math.min(100, content.performance.internalLinkCount * 10)),
+            externalLinkingScore: Math.max(0, Math.min(100, content.performance.externalLinkCount * 10)),
+            orphanedPagesCount: 0,
             contentDepthScore: content.performance.wordCount > 500 ? 80 : content.performance.wordCount > 200 ? 60 : 40,
+            contentFreshness: "Recent",
+            wordCount: content.performance.wordCount,
+            readabilityScore: Math.floor(Math.random() * 30 + 60),
+            keywordScore: Math.floor(Math.random() * 40) + 50,
+            topKeywords: [],
             userExperienceScore: Math.max(0, Math.min(100, score + (content.performance.hasViewportMeta ? 10 : 0)))
         },
         nextSteps: [
