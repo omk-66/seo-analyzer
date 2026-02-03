@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from '@ai-sdk/google';
+// import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import { cohere } from '@ai-sdk/cohere';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import puppeteer from 'puppeteer';
+// import puppeteer from 'puppeteer';
 import { generateSEOPrompt } from '@/lib/seo-prompt';
+import { generateOptimizedSEOPrompt } from '@/lib/seo-prompt-optimized';
+import { optimizeWebsiteContent, optimizePageSpeedData, optimizeSitemapData } from '@/lib/data-optimizer';
 import { deepseek } from '@ai-sdk/deepseek';
+// import { fireworks } from '@ai-sdk/fireworks';
 
 // Function to fetch Google PageSpeed Insights data
 async function getPageSpeedData(url: string) {
@@ -179,60 +182,60 @@ interface WebsiteContent {
 }
 
 // Function to capture webpage screenshots
-async function captureScreenshots(url: string): Promise<{ fullPage?: string; viewport?: string; mobile?: string }> {
-  let browser;
-  try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+// async function captureScreenshots(url: string): Promise<{ fullPage?: string; viewport?: string; mobile?: string }> {
+//   let browser;
+//   try {
+//     browser = await puppeteer.launch({
+//       headless: true,
+//       args: ['--no-sandbox', '--disable-setuid-sandbox']
+//     });
 
-    const screenshots: { fullPage?: string; viewport?: string; mobile?: string } = {};
+//     const screenshots: { fullPage?: string; viewport?: string; mobile?: string } = {};
 
-    // Desktop viewport screenshot
-    const desktopPage = await browser.newPage();
-    await desktopPage.setViewport({ width: 1366, height: 768 });
-    await desktopPage.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+//     // Desktop viewport screenshot
+//     const desktopPage = await browser.newPage();
+//     await desktopPage.setViewport({ width: 1366, height: 768 });
+//     await desktopPage.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
 
-    // Capture viewport screenshot
-    const viewportScreenshot = await desktopPage.screenshot({
-      type: 'png',
-      fullPage: false
-    });
-    screenshots.viewport = `data:image/png;base64,${Buffer.from(viewportScreenshot).toString('base64')}`;
+//     // Capture viewport screenshot
+//     const viewportScreenshot = await desktopPage.screenshot({
+//       type: 'png',
+//       fullPage: false
+//     });
+//     screenshots.viewport = `data:image/png;base64,${Buffer.from(viewportScreenshot).toString('base64')}`;
 
-    // Capture full page screenshot
-    const fullPageScreenshot = await desktopPage.screenshot({
-      type: 'png',
-      fullPage: true
-    });
-    screenshots.fullPage = `data:image/png;base64,${Buffer.from(fullPageScreenshot).toString('base64')}`;
+//     // Capture full page screenshot
+//     const fullPageScreenshot = await desktopPage.screenshot({
+//       type: 'png',
+//       fullPage: true
+//     });
+//     screenshots.fullPage = `data:image/png;base64,${Buffer.from(fullPageScreenshot).toString('base64')}`;
 
-    await desktopPage.close();
+//     await desktopPage.close();
 
-    // Mobile screenshot
-    const mobilePage = await browser.newPage();
-    await mobilePage.setViewport({ width: 375, height: 667 });
-    await mobilePage.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
+//     // Mobile screenshot
+//     const mobilePage = await browser.newPage();
+//     await mobilePage.setViewport({ width: 375, height: 667 });
+//     await mobilePage.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
 
-    const mobileScreenshot = await mobilePage.screenshot({
-      type: 'png',
-      fullPage: true
-    });
-    screenshots.mobile = `data:image/png;base64,${Buffer.from(mobileScreenshot).toString('base64')}`;
+//     const mobileScreenshot = await mobilePage.screenshot({
+//       type: 'png',
+//       fullPage: true
+//     });
+//     screenshots.mobile = `data:image/png;base64,${Buffer.from(mobileScreenshot).toString('base64')}`;
 
-    await mobilePage.close();
+//     await mobilePage.close();
 
-    return screenshots;
-  } catch (error) {
-    console.warn('Failed to capture screenshots:', error);
-    return {};
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
-}
+//     return screenshots;
+//   } catch (error) {
+//     console.warn('Failed to capture screenshots:', error);
+//     return {};
+//   } finally {
+//     if (browser) {
+//       await browser.close();
+//     }
+//   }
+// }
 
 // Server-side scraping function
 async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
@@ -567,8 +570,13 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Generate the SEO prompt using the dedicated function with additional data
-      const prompt = generateSEOPrompt(websiteContent, pageSpeedData, sitemapData);
+      // Optimize the data to reduce token usage
+      const optimizedWebsiteContent = optimizeWebsiteContent(websiteContent);
+      const optimizedPageSpeedData = optimizePageSpeedData(pageSpeedData);
+      const optimizedSitemapData = optimizeSitemapData(sitemapData);
+
+      // Generate the optimized SEO prompt
+      const prompt = generateOptimizedSEOPrompt(optimizedWebsiteContent, optimizedPageSpeedData, optimizedSitemapData);
 
       let text = '';
       let modelUsed = '';
@@ -583,10 +591,31 @@ export async function POST(request: NextRequest) {
         text = generatedText;
         modelUsed = 'cohere-command-a-03-2025';
       } catch (modelError: any) {
-        console.error('Model error:', modelError);
-        return NextResponse.json({
-          error: 'AI service temporarily unavailable. Please try again later.',
-        }, { status: 200 });
+        console.error('Model error with optimized prompt:', modelError);
+
+        // If optimized prompt still fails, try ultra-minimal prompt
+        if (modelError.message?.includes('tokens')) {
+          console.log('Trying ultra-minimal prompt as fallback...');
+          const minimalPrompt = `Analyze this website SEO: URL=${optimizedWebsiteContent.url}, Title="${optimizedWebsiteContent.title}", HasH1=${optimizedWebsiteContent.technical.hasH1}, HasMetaDesc=${optimizedWebsiteContent.technical.hasMetaDescription}. Return JSON with overallScore, criticalIssues, importantImprovements, strengths, quickWins, seoScores.`;
+
+          try {
+            const { text: fallbackText } = await generateText({
+              model: cohere('command-a-03-2025'),
+              prompt: minimalPrompt,
+            });
+            text = fallbackText;
+            modelUsed = 'cohere-command-a-03-2025-minimal';
+          } catch (fallbackError: any) {
+            console.error('Minimal prompt also failed:', fallbackError);
+            return NextResponse.json({
+              error: 'AI service token limit exceeded. Try analyzing a smaller page.',
+            }, { status: 200 });
+          }
+        } else {
+          return NextResponse.json({
+            error: 'AI service temporarily unavailable. Please try again later.',
+          }, { status: 200 });
+        }
       }
 
       if (!text) {
