@@ -216,16 +216,41 @@ async function getPageSpeedData(url: string) {
       return null;
     }
 
-    if (!url.startsWith('http')) {
-      url = `https://${url}`;
-    }
-    const response = await axios.get(
-      `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${url}&key=${apiKey}&category=performance&strategy=mobile`
-    );
+    // Ensure URL has proper protocol
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
 
+    // Encode the URL for the API
+    const encodedUrl = encodeURIComponent(formattedUrl);
+
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodedUrl}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo&strategy=mobile`;
+
+    console.log('[PAGESPEED] Fetching data for:', formattedUrl);
+
+    const response = await axios.get(apiUrl, {
+      timeout: 30000, // 30 second timeout
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; SEO-Audit-Bot/1.0)'
+      }
+    });
+
+    // Validate response
+    if (!response.data || !response.data.lighthouseResult) {
+      console.warn('[PAGESPEED] Invalid response structure');
+      return null;
+    }
+
+    console.log('[PAGESPEED] ✅ Data fetched successfully');
     return response.data;
-  } catch (error) {
-    console.warn('Failed to fetch PageSpeed data:', error);
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      console.warn('[PAGESPEED] Axios error:', {
+        message: error.message,
+        status: error.response?.status,
+        url: error.config?.url
+      });
+    } else {
+      console.warn('[PAGESPEED] Failed to fetch PageSpeed data:', error.message);
+    }
     return null;
   }
 }
@@ -730,6 +755,8 @@ export async function POST(req: NextRequest) {
 
         log.info('generateText completed, parsing JSON', { responseLength: generatedText.length });
 
+        console.log("LLM Response ---> 💯 ", generatedText)
+
         // Multiple parsing strategies
         let jsonString = generatedText;
         let parsed = null;
@@ -898,6 +925,31 @@ export async function POST(req: NextRequest) {
     // Add parse method info
     (analysis as any)._parseMethod = parseMethod;
     (analysis as any)._modelUsed = modelUsed;
+
+    // Add scraped website content for static analysis
+    (analysis as any).title = optimizedWebsiteContent.title;
+    (analysis as any).metaDescription = optimizedWebsiteContent.metaDescription;
+    (analysis as any).headings = optimizedWebsiteContent.headings;
+    (analysis as any).meta = optimizedWebsiteContent.meta;
+    (analysis as any).performance = optimizedWebsiteContent.performance;
+
+    // Add images with alt status
+    const rawImages = optimizedWebsiteContent.images;
+    const safeImages = Array.isArray(rawImages) ? rawImages : [];
+    (analysis as any).images = safeImages.map((img: any) => ({
+      src: img.src,
+      alt: img.alt,
+      hasAlt: !!img.alt && img.alt.trim() !== '',
+      hasDimensions: !!(img.width && img.height),
+      loading: img.loading || 'lazy'
+    }));
+
+    // Add image summary
+    (analysis as any).imageSummary = {
+      total: safeImages.length,
+      withAlt: safeImages.filter((img: any) => img.alt && img.alt.trim() !== '').length,
+      withoutAlt: safeImages.filter((img: any) => !img.alt || img.alt.trim() === '').length
+    };
 
     log.success('SEO analysis complete', {
       overallScore: analysis.overallScore,

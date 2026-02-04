@@ -63,20 +63,20 @@ const ContentSchema = z.object({
 
 const PrimaryKeywordSchema = z.object({
     keyword: z.string(),
-    count: z.number(),
+    count: z.number().nonnegative(),
     density: z.string(),
     placement: KeywordPlacement,
 });
 
 const SecondaryKeywordSchema = z.object({
     keyword: z.string(),
-    count: z.number(),
+    count: z.number().nonnegative(),
     density: z.string(),
 });
 
 const LongTailKeywordSchema = z.object({
     keyword: z.string(),
-    count: z.number(),
+    count: z.number().nonnegative(),
 });
 
 const KeywordsSchema = z.object({
@@ -197,9 +197,9 @@ const SeoMetricsSchema = z.object({
 /* ---------- Root Schema ---------- */
 
 export const SeoAuditResponseSchema = z.object({
-    overallScore: z.number(),
+    overallScore: z.number().min(0).max(100),
     siteType: SiteTypeEnum,
-    url: z.string().url(),
+    url: z.string(),
 
     criticalIssues: z.array(CriticalIssueSchema),
     strengths: z.array(StrengthSchema),
