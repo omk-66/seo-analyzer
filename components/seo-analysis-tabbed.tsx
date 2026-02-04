@@ -170,6 +170,55 @@ interface SEOAnalysisTabbedProps {
     analysis?: {
         url?: string;
         onPageSEO?: OnPageSEOData;
+        performance?: {
+            url: string;
+            strategy: string;
+            scores: { [key: string]: number };
+            performance: {
+                serverResponseTimeMs: number | null;
+                firstContentfulPaintMs: number | null;
+                largestContentfulPaintMs: number | null;
+                speedIndexMs: number | null;
+                timeToInteractiveMs: number | null;
+                totalBlockingTimeMs: number | null;
+                cumulativeLayoutShift: number | null;
+            };
+            webVitals: {
+                LCP: number | null;
+                CLS: number | null;
+                INP: number | null;
+            } | null;
+            resourceBreakdown: {
+                totalRequests: number;
+                html: { count: number; sizeKB: number };
+                js: { count: number; sizeKB: number };
+                css: { count: number; sizeKB: number };
+                images: { count: number; sizeKB: number };
+                fonts: { count: number; sizeKB: number };
+                media: { count: number; sizeKB: number };
+                xhr: { count: number; sizeKB: number };
+                other: { count: number; sizeKB: number };
+            };
+            imageSummary: {
+                totalImages: number;
+                totalTransferSizeMB: number;
+                totalOriginalSizeMB: number;
+                avgImageSizeKB: number;
+            };
+            images: Array<{
+                url: string;
+                format: string;
+                transferSizeKB: number;
+                originalSizeKB: number;
+                compressionPercent: number;
+            }>;
+            imageOpportunities: {
+                oversizedImages: any[];
+                nextGenFormats: any[];
+                lazyLoadingIssues: any[];
+                imageCompressionIssues: any[];
+            };
+        } | null;
     } | null;
     url?: string;
 }
@@ -194,120 +243,6 @@ function getStatusColor(status: 'good' | 'warning' | 'error') {
         case 'error':
             return 'bg-red-100 text-red-800 border-red-200';
     }
-}
-
-function getLanguageFullName(languageCode: string): string {
-    // Common language code to full name mapping
-    const languageMap: { [key: string]: string } = {
-        'en': 'English',
-        'en-US': 'English (United States)',
-        'en-GB': 'English (United Kingdom)',
-        'es': 'Spanish',
-        'es-ES': 'Spanish (Spain)',
-        'fr': 'French',
-        'fr-FR': 'French (France)',
-        'de': 'German',
-        'de-DE': 'German (Germany)',
-        'it': 'Italian',
-        'it-IT': 'Italian (Italy)',
-        'pt': 'Portuguese',
-        'pt-BR': 'Portuguese (Brazil)',
-        'pt-PT': 'Portuguese (Portugal)',
-        'ru': 'Russian',
-        'ja': 'Japanese',
-        'zh': 'Chinese',
-        'zh-CN': 'Chinese (Simplified)',
-        'zh-TW': 'Chinese (Traditional)',
-        'ko': 'Korean',
-        'ar': 'Arabic',
-        'hi': 'Hindi',
-        'nl': 'Dutch',
-        'nl-NL': 'Dutch (Netherlands)',
-        'sv': 'Swedish',
-        'da': 'Danish',
-        'no': 'Norwegian',
-        'fi': 'Finnish',
-        'pl': 'Polish',
-        'tr': 'Turkish',
-        'vi': 'Vietnamese',
-        'id': 'Indonesian',
-        'ms': 'Malay',
-        'tl': 'Filipino',
-        'he': 'Hebrew',
-        'cs': 'Czech',
-        'sk': 'Slovak',
-        'hu': 'Hungarian',
-        'ro': 'Romanian',
-        'bg': 'Bulgarian',
-        'hr': 'Croatian',
-        'sr': 'Serbian',
-        'sl': 'Slovenian',
-        'et': 'Estonian',
-        'lv': 'Latvian',
-        'lt': 'Lithuanian',
-        'el': 'Greek',
-        'uk': 'Ukrainian',
-        'be': 'Belarusian',
-        'ka': 'Georgian',
-        'hy': 'Armenian',
-        'az': 'Azerbaijani',
-        'kk': 'Kazakh',
-        'ky': 'Kyrgyz',
-        'uz': 'Uzbek',
-        'mn': 'Mongolian',
-        'ne': 'Nepali',
-        'si': 'Sinhala',
-        'my': 'Burmese',
-        'km': 'Khmer',
-        'lo': 'Lao'
-    };
-
-    return languageMap[languageCode] || languageCode;
-}
-
-function LanguageCard({ data }: { data: OnPageSEOData['language'] }) {
-    const fullLanguageName = data.declaredLanguage ? getLanguageFullName(data.declaredLanguage) : 'Not declared';
-
-    return (
-        <Card>
-            <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                        <FileText className="w-5 h-5" />
-                        Language Declaration
-                    </CardTitle>
-                    {getStatusIcon(data.status)}
-                </div>
-            </CardHeader>
-            <CardContent>
-                <Badge className={getStatusColor(data.status)}>
-                    {data.status.toUpperCase()}
-                </Badge>
-                <p className="mt-2 text-sm">{data.message}</p>
-
-                {data.declaredLanguage && (
-                    <div className="mt-4">
-                        <table className="w-full">
-                            <tbody>
-                                <tr className="border-b">
-                                    <td className="py-2 px-3 font-medium w-32">Language Code</td>
-                                    <td className="py-2 px-3 font-mono">{data.declaredLanguage}</td>
-                                </tr>
-                                <tr className="border-b">
-                                    <td className="py-2 px-3 font-medium">Full Name</td>
-                                    <td className="py-2 px-3">{fullLanguageName}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                <p className="mt-4 text-xs text-gray-500">
-                    Title Tags are very important for search engines to correctly understand and categorize your content.
-                </p>
-            </CardContent>
-        </Card>
-    );
 }
 
 function TitleTagCard({ data }: { data: OnPageSEOData['titleTag'] }) {
@@ -459,12 +394,6 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
     const onPageSEO = analysis?.onPageSEO;
     const defaultStatusData = { status: 'warning' as const, message: 'No data available' };
-    const defaultLanguageData = {
-        hasLangAttribute: false,
-        declaredLanguage: null,
-        status: 'warning' as const,
-        message: 'No language data available'
-    };
 
     return (
         <div className="w-full">
@@ -525,8 +454,9 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                         {/* Language & Canonical - 2 columns */}
                         <div className="grid gap-4 md:grid-cols-2">
-                            <LanguageCard
-                                data={onPageSEO?.language || defaultLanguageData}
+                            <StatusCard
+                                title="Language Declaration"
+                                data={onPageSEO?.language || defaultStatusData}
                             />
                             <StatusCard
                                 title="Canonical Tag"
@@ -660,23 +590,14 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         <p className="mt-2 text-sm">{onPageSEO.contentAmount.message}</p>
 
                                         <div className="mt-4">
-                                            <div className="mb-2">
-                                                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                                                    <span>Words: {onPageSEO.contentAmount.wordCount}</span>
-                                                    <span>Optimal: {onPageSEO.contentAmount.minWords}-{onPageSEO.contentAmount.maxWords}</span>
-                                                </div>
-                                                <Progress
-                                                    value={Math.min((onPageSEO.contentAmount.wordCount / onPageSEO.contentAmount.maxWords) * 100, 100)}
-                                                    className="h-3"
-                                                />
-                                            </div>
-                                            <div className="flex justify-between text-xs mt-2 text-gray-500">
-                                                <span className={onPageSEO.contentAmount.wordCount < onPageSEO.contentAmount.minWords ? 'text-red-600 font-medium' : ''}>
-                                                    {onPageSEO.contentAmount.wordCount < onPageSEO.contentAmount.minWords ? 'Below minimum' : 'Good length'}
-                                                </span>
-                                                <span>
-                                                    {onPageSEO.contentAmount.wordCount >= onPageSEO.contentAmount.maxWords ? 'Above maximum' : 'Within range'}
-                                                </span>
+                                            <Progress
+                                                value={Math.min((onPageSEO.contentAmount.wordCount / 3500) * 100, 100)}
+                                                className="h-3"
+                                            />
+                                            <div className="flex justify-between text-xs mt-1">
+                                                <span>0 words</span>
+                                                <span>{onPageSEO.contentAmount.wordCount} words</span>
+                                                <span>3500+ words</span>
                                             </div>
                                         </div>
                                     </>
@@ -905,22 +826,227 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                 {/* Performance Tab */}
                 <TabsContent value="performance">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Gauge className="w-5 h-5" />
-                                Performance Analysis
-                            </CardTitle>
-                            <CardDescription>
-                                Performance metrics for {url || analysis?.url || 'your website'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-500 text-center py-8">
-                                Performance analysis will be added here in the next task.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6">
+                        {analysis?.performance ? (
+                            <>
+                                {/* Performance Scores */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Gauge className="w-5 h-5" />
+                                            Performance Scores
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Overall performance metrics for {analysis.performance.strategy} strategy
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {Object.entries(analysis.performance.scores).map(([category, score]) => (
+                                                <div key={category} className="text-center">
+                                                    <div className={`text-2xl font-bold ${score >= 90 ? 'text-green-600' :
+                                                            score >= 70 ? 'text-yellow-600' :
+                                                                'text-red-600'
+                                                        }`}>
+                                                        {score}
+                                                    </div>
+                                                    <div className="text-sm text-gray-600 capitalize">{category}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Core Web Vitals */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Gauge className="w-5 h-5" />
+                                            Core Web Vitals
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="p-4 border rounded-lg">
+                                                <div className="text-sm text-gray-600">Largest Contentful Paint</div>
+                                                <div className="text-xl font-semibold">
+                                                    {analysis.performance.performance.largestContentfulPaintMs
+                                                        ? `${(analysis.performance.performance.largestContentfulPaintMs / 1000).toFixed(2)}s`
+                                                        : 'N/A'
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div className="p-4 border rounded-lg">
+                                                <div className="text-sm text-gray-600">Cumulative Layout Shift</div>
+                                                <div className="text-xl font-semibold">
+                                                    {analysis.performance.performance.cumulativeLayoutShift !== null
+                                                        ? analysis.performance.performance.cumulativeLayoutShift.toFixed(3)
+                                                        : 'N/A'
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div className="p-4 border rounded-lg">
+                                                <div className="text-sm text-gray-600">Total Blocking Time</div>
+                                                <div className="text-xl font-semibold">
+                                                    {analysis.performance.performance.totalBlockingTimeMs !== null
+                                                        ? `${analysis.performance.performance.totalBlockingTimeMs}ms`
+                                                        : 'N/A'
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Performance Metrics */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Gauge className="w-5 h-5" />
+                                            Performance Metrics
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm text-gray-600">Server Response Time</span>
+                                                    <span className="font-medium">
+                                                        {analysis.performance.performance.serverResponseTimeMs
+                                                            ? `${analysis.performance.performance.serverResponseTimeMs}ms`
+                                                            : 'N/A'
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm text-gray-600">First Contentful Paint</span>
+                                                    <span className="font-medium">
+                                                        {analysis.performance.performance.firstContentfulPaintMs
+                                                            ? `${(analysis.performance.performance.firstContentfulPaintMs / 1000).toFixed(2)}s`
+                                                            : 'N/A'
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm text-gray-600">Speed Index</span>
+                                                    <span className="font-medium">
+                                                        {analysis.performance.performance.speedIndexMs
+                                                            ? `${(analysis.performance.performance.speedIndexMs / 1000).toFixed(2)}s`
+                                                            : 'N/A'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span className="text-sm text-gray-600">Time to Interactive</span>
+                                                    <span className="font-medium">
+                                                        {analysis.performance.performance.timeToInteractiveMs
+                                                            ? `${(analysis.performance.performance.timeToInteractiveMs / 1000).toFixed(2)}s`
+                                                            : 'N/A'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Resource Breakdown */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <BarChart className="w-5 h-5" />
+                                            Resource Breakdown
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Total Requests: {analysis.performance.resourceBreakdown.totalRequests}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-3">
+                                            {Object.entries(analysis.performance.resourceBreakdown)
+                                                .filter(([key]) => key !== 'totalRequests')
+                                                .map(([resourceType, data]) => (
+                                                    <div key={resourceType} className="flex items-center justify-between p-3 border rounded-lg">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                                            <span className="font-medium capitalize">{resourceType}</span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="font-medium">{data.count} requests</div>
+                                                            <div className="text-sm text-gray-600">{data.sizeKB.toFixed(2)} KB</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Image Analysis */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <ImageIcon className="w-5 h-5" />
+                                            Image Analysis
+                                        </CardTitle>
+                                        <CardDescription>
+                                            {analysis.performance.imageSummary.totalImages} images found
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold">{analysis.performance.imageSummary.totalImages}</div>
+                                                <div className="text-sm text-gray-600">Total Images</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold">{analysis.performance.imageSummary.totalTransferSizeMB} MB</div>
+                                                <div className="text-sm text-gray-600">Transfer Size</div>
+                                            </div>
+                                            <div className="text-center">
+                                                <div className="text-2xl font-bold">{analysis.performance.imageSummary.avgImageSizeKB} KB</div>
+                                                <div className="text-sm text-gray-600">Average Size</div>
+                                            </div>
+                                        </div>
+
+                                        {analysis.performance.images.length > 0 && (
+                                            <div className="space-y-2">
+                                                <h4 className="font-medium">Top Images by Size</h4>
+                                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                    {analysis.performance.images
+                                                        .sort((a, b) => b.transferSizeKB - a.transferSizeKB)
+                                                        .slice(0, 10)
+                                                        .map((img, index) => (
+                                                            <div key={index} className="flex items-center justify-between p-2 border rounded text-sm">
+                                                                <div className="flex-1 truncate">
+                                                                    <div className="font-medium">{img.format}</div>
+                                                                    <div className="text-gray-600 truncate">{img.url}</div>
+                                                                </div>
+                                                                <div className="text-right ml-4">
+                                                                    <div className="font-medium">{img.transferSizeKB} KB</div>
+                                                                    <div className="text-xs text-gray-600">
+                                                                        {img.compressionPercent > 0 ? `Compressed ${img.compressionPercent}%` : 'No compression'}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </>
+                        ) : (
+                            <Card>
+                                <CardContent className="text-center py-8">
+                                    <p className="text-gray-500">
+                                        Performance data not available. Make sure the Google PageSpeed API key is configured.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
                 </TabsContent>
 
                 {/* Social Tab */}

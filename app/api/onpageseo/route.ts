@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { scrapeWebsiteServer } from '@/lib/scraper';
 import { runOnPageSEOAnalysis } from '@/lib/onpageseo/server-analysis';
+import { getFullPageSpeedDashboardData } from '@/lib/pagespeed-dashboard';
 
 export async function POST(request: Request) {
     try {
@@ -15,6 +16,75 @@ export async function POST(request: Request) {
 
         // Scrape the website
         const websiteData = await scrapeWebsiteServer(url);
+
+        // Fetch comprehensive PageSpeed data
+        const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY;
+        let performanceData = null;
+
+        console.log('[DEBUG] Google PageSpeed API Key exists:', !!apiKey);
+        console.log('[DEBUG] API Key length:', apiKey?.length || 0);
+
+        if (apiKey) {
+            try {
+                console.log('[DEBUG] Fetching PageSpeed data for:', url);
+                performanceData = await getFullPageSpeedDashboardData({
+                    url,
+                    apiKey,
+                    strategy: "mobile"
+                });
+                console.log('[DEBUG] PageSpeed data fetched successfully:', !!performanceData);
+                console.log('[DEBUG] Performance scores:', performanceData?.scores);
+            } catch (error: any) {
+                console.error('[ERROR] Failed to fetch comprehensive PageSpeed data:', error);
+                console.error('[ERROR] Error details:', error?.message || 'Unknown error');
+            }
+        } else {
+            console.warn('[WARN] Google PageSpeed API key not found in environment variables');
+        }
+
+        // Ensure we always have some performance data for the UI
+        if (!performanceData) {
+            console.log('[INFO] Using fallback performance data');
+            performanceData = {
+                url: url,
+                strategy: "mobile",
+                scores: { performance: 0 },
+                performance: {
+                    serverResponseTimeMs: null,
+                    firstContentfulPaintMs: null,
+                    largestContentfulPaintMs: null,
+                    speedIndexMs: null,
+                    timeToInteractiveMs: null,
+                    totalBlockingTimeMs: null,
+                    cumulativeLayoutShift: null
+                },
+                webVitals: null,
+                resourceBreakdown: {
+                    totalRequests: 0,
+                    html: { count: 0, sizeKB: 0 },
+                    js: { count: 0, sizeKB: 0 },
+                    css: { count: 0, sizeKB: 0 },
+                    images: { count: 0, sizeKB: 0 },
+                    fonts: { count: 0, sizeKB: 0 },
+                    media: { count: 0, sizeKB: 0 },
+                    xhr: { count: 0, sizeKB: 0 },
+                    other: { count: 0, sizeKB: 0 }
+                },
+                imageSummary: {
+                    totalImages: 0,
+                    totalTransferSizeMB: 0,
+                    totalOriginalSizeMB: 0,
+                    avgImageSizeKB: 0
+                },
+                images: [],
+                imageOpportunities: {
+                    oversizedImages: [],
+                    nextGenFormats: [],
+                    lazyLoadingIssues: [],
+                    imageCompressionIssues: []
+                }
+            };
+        }
 
         // Run on-page SEO analysis
         const onPageSEO = runOnPageSEOAnalysis({
@@ -66,12 +136,17 @@ export async function POST(request: Request) {
             },
         });
 
+        console.log('[DEBUG] Final API response - Performance data exists:', !!performanceData);
+        console.log('[DEBUG] Final API response - Performance keys:', performanceData ? Object.keys(performanceData) : 'null');
+
         return NextResponse.json({
             url: websiteData.url,
-            onPageSEO
+            onPageSEO,
+            performance: performanceData
         });
-    } catch (error) {
-        console.error('On-page SEO analysis error:', error);
+    } catch (error: any) {
+        console.error('[ERROR] On-page SEO analysis error:', error);
+        console.error('[ERROR] Error message:', error?.message);
         return NextResponse.json(
             { error: 'Failed to analyze website' },
             { status: 500 }
