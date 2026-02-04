@@ -27,6 +27,8 @@ import {
     Building,
     FileText as FileTextIcon
 } from 'lucide-react';
+import { ProgressCircle } from './ui/progressCircle';
+import { JsFile } from './assests/svgs';
 
 interface OnPageSEOData {
     titleTag: {
@@ -841,19 +843,58 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {Object.entries(analysis.performance.scores).map(([category, score]) => (
                                                 <div key={category} className="text-center">
-                                                    <div className={`text-2xl font-bold ${score >= 90 ? 'text-green-600' :
+                                                    <div className="text-sm text-gray-600 capitalize">{category}</div>
+                                                    {/* varient from basing of score */}
+                                        {/* <ProgressCircle value={score} variant={score >= 90 ? 'success' : score >= 70 ? 'warning' : 'error'} radius={45} strokeWidth={5} >
+                                                        <div className={`text-2xl font-bold ${score >= 90 ? 'text-green-600' :
                                                             score >= 70 ? 'text-yellow-600' :
                                                                 'text-red-600'
-                                                        }`}>
-                                                        {score}
+                                                            }`}>
+                                                            {score}
+                                                        </div>
+                                                    </ProgressCircle> */}
+                                        {/* </div> */}
+                                        {/* ))} */}
+                                        {/* </div>  */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                            {Object.entries(analysis.performance.scores).map(([category, score]) => {
+                                                const variant =
+                                                    score >= 90 ? 'success' :
+                                                        score >= 70 ? 'warning' :
+                                                            'error';
+
+                                                const color =
+                                                    score >= 90 ? 'text-green-600' :
+                                                        score >= 70 ? 'text-yellow-500' :
+                                                            'text-red-600';
+
+                                                return (
+                                                    <div key={category} className="flex flex-col items-center">
+                                                        <ProgressCircle
+                                                            value={score}
+                                                            variant={variant}
+                                                            radius={48}
+                                                            strokeWidth={6}
+                                                        >
+                                                            <div className="flex flex-col items-center">
+                                                                <span className={`text-3xl font-bold ${color}`}>
+                                                                    {score}
+                                                                </span>
+                                                                {/* <span className="text-xs text-gray-500">/ 100</span> */}
+                                                            </div>
+                                                        </ProgressCircle>
+
+                                                        <div className="mt-3 text-sm font-medium text-gray-700 capitalize">
+                                                            {category}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-sm text-gray-600 capitalize">{category}</div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
+
                                     </CardContent>
                                 </Card>
 
@@ -964,21 +1005,98 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {Object.entries(analysis.performance.resourceBreakdown)
                                                 .filter(([key]) => key !== 'totalRequests')
-                                                .map(([resourceType, data]) => (
-                                                    <div key={resourceType} className="flex items-center justify-between p-3 border rounded-lg">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                                            <span className="font-medium capitalize">{resourceType}</span>
+                                                .map(([resourceType, data]) => {
+                                                    // Calculate total size from all resource types (excluding totalRequests)
+                                                    const resourceEntries = Object.entries(analysis.performance.resourceBreakdown)
+                                                        .filter(([k]) => k !== 'totalRequests');
+                                                    const totalSize = resourceEntries.reduce((sum, [, d]) => sum + (d as any).sizeKB, 0);
+                                                    const percentage = totalSize > 0 ? ((data as any).sizeKB / totalSize) * 100 : 0;
+
+                                                    const getIcon = (type: string) => {
+                                                        switch (type) {
+                                                            case 'html': return <FileText className="w-4 h-4 text-orange-500" />;
+                                                            case 'js': return <JsFile width={16} height={16} className="text-yellow-500" />;
+                                                            case 'css': return <FileText className="w-4 h-4 text-blue-500" />;
+                                                            case 'images': return <ImageIcon className="w-4 h-4 text-green-500" />;
+                                                            case 'fonts': return <FileText className="w-4 h-4 text-purple-500" />;
+                                                            case 'media': return <FileText className="w-4 h-4 text-red-500" />;
+                                                            case 'xhr': return <RefreshCw className="w-4 h-4 text-gray-500" />;
+                                                            default: return <FileText className="w-4 h-4 text-gray-400" />;
+                                                        }
+                                                    };
+
+                                                    const getColor = (type: string) => {
+                                                        switch (type) {
+                                                            case 'html': return 'bg-orange-100 border-orange-200';
+                                                            case 'js': return 'bg-yellow-100 border-yellow-200';
+                                                            case 'css': return 'bg-blue-100 border-blue-200';
+                                                            case 'images': return 'bg-green-100 border-green-200';
+                                                            case 'fonts': return 'bg-purple-100 border-purple-200';
+                                                            case 'media': return 'bg-red-100 border-red-200';
+                                                            case 'xhr': return 'bg-gray-100 border-gray-200';
+                                                            default: return 'bg-gray-50 border-gray-200';
+                                                        }
+                                                    };
+
+                                                    return (
+                                                        <div key={resourceType} className={`p-4 rounded-lg border ${getColor(resourceType)} hover:shadow-md transition-shadow`}>
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <div className="flex items-center gap-3">
+                                                                    {getIcon(resourceType)}
+                                                                    <div>
+                                                                        <div className="font-semibold text-gray-800 capitalize">{resourceType}</div>
+                                                                        <div className="text-xs text-gray-500">{(data as any).count} files</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <div className="font-bold text-gray-800">{(data as any).sizeKB.toFixed(1)} KB</div>
+                                                                    <div className="text-xs text-gray-500">{percentage.toFixed(1)}%</div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Size bar visualization */}
+                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                                <div
+                                                                    className={`h-2 rounded-full transition-all duration-300 ${resourceType === 'html' ? 'bg-orange-500' :
+                                                                        resourceType === 'js' ? 'bg-yellow-500' :
+                                                                            resourceType === 'css' ? 'bg-blue-500' :
+                                                                                resourceType === 'images' ? 'bg-green-500' :
+                                                                                    resourceType === 'fonts' ? 'bg-purple-500' :
+                                                                                        resourceType === 'media' ? 'bg-red-500' :
+                                                                                            resourceType === 'xhr' ? 'bg-gray-500' :
+                                                                                                'bg-gray-400'
+                                                                        }`}
+                                                                    style={{ width: `${Math.min(percentage, 100)}%` }}
+                                                                ></div>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <div className="font-medium">{data.count} requests</div>
-                                                            <div className="text-sm text-gray-600">{data.sizeKB.toFixed(2)} KB</div>
+                                                    );
+                                                })}
+
+                                            {/* Summary row */}
+                                            <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <BarChart className="w-4 h-4 text-gray-600" />
+                                                        <span className="font-medium text-gray-700">Total Resources</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="font-bold text-gray-800">
+                                                            {Object.entries(analysis.performance.resourceBreakdown)
+                                                                .filter(([k]) => k !== 'totalRequests')
+                                                                .reduce((sum, [, d]) => sum + (d as any).count, 0)} files
+                                                        </div>
+                                                        <div className="text-sm text-gray-600">
+                                                            {Object.entries(analysis.performance.resourceBreakdown)
+                                                                .filter(([k]) => k !== 'totalRequests')
+                                                                .reduce((sum, [, d]) => sum + (d as any).sizeKB, 0).toFixed(1)} KB
                                                         </div>
                                                     </div>
-                                                ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
