@@ -5,7 +5,10 @@ export const optimizeWebsiteContent = (websiteContent: any) => {
     url: websiteContent.url,
     title: websiteContent.title,
     metaDescription: websiteContent.metaDescription,
-    
+
+    // Get language from HTML lang attribute
+    lang: websiteContent.technical?.languageDeclared ? ($('html').attr('lang') || undefined) : undefined,
+
     // Keep technical metrics (these are small numbers/booleans)
     technical: {
       hasHttps: websiteContent.technical.hasHttps,
@@ -19,35 +22,34 @@ export const optimizeWebsiteContent = (websiteContent: any) => {
       imagesWithAlt: websiteContent.technical.imagesWithAlt,
       headingStructure: websiteContent.technical.headingStructure,
       readabilityScore: websiteContent.technical.readabilityScore,
-      technicalSEO: websiteContent.technical.technicalSEO
+      technicalSEO: websiteContent.technical.technicalSEO,
+      languageDeclared: websiteContent.technical.languageDeclared
     },
-    
-    // Summarize headings - keep only first few of each type
+
+    // Keep full headings for on-page SEO analysis
     headings: {
-      h1: websiteContent.headings.h1.slice(0, 2), // Max 2 H1s
-      h2: websiteContent.headings.h2.slice(0, 5), // Max 5 H2s
-      h3: websiteContent.headings.h3.slice(0, 3), // Max 3 H3s
-      h4: [], // Skip H4-H6 to save tokens
-      h5: [],
-      h6: []
+      h1: websiteContent.headings.h1,
+      h2: websiteContent.headings.h2,
+      h3: websiteContent.headings.h3,
+      h4: websiteContent.headings.h4,
+      h5: websiteContent.headings.h5,
+      h6: websiteContent.headings.h6
     },
-    
+
     // Truncate content - keep only first 1000 characters
-    content: websiteContent.content.length > 1000 
+    content: websiteContent.content.length > 1000
       ? websiteContent.content.substring(0, 1000) + '...'
       : websiteContent.content,
-    
-    // Summarize images - keep only counts and sample data
-    images: {
-      total: websiteContent.images.length,
-      withAlt: websiteContent.images.filter((img: any) => img.alt).length,
-      withoutAlt: websiteContent.images.filter((img: any) => !img.alt).length,
-      sample: websiteContent.images.slice(0, 3).map((img: any) => ({
-        hasAlt: !!img.alt,
-        hasDimensions: !!(img.width && img.height)
-      }))
-    },
-    
+
+    // Keep full images array for on-page SEO analysis
+    images: websiteContent.images.map((img: any) => ({
+      src: img.src,
+      alt: img.alt || '',
+      width: img.width,
+      height: img.height,
+      loading: img.loading
+    })),
+
     // Summarize links - keep only counts and sample data
     links: {
       total: websiteContent.links.length,
@@ -60,7 +62,7 @@ export const optimizeWebsiteContent = (websiteContent: any) => {
         isNofollow: link.isNofollow
       }))
     },
-    
+
     // Keep performance metrics (these are just numbers)
     performance: {
       contentLength: websiteContent.performance.contentLength,
@@ -79,21 +81,21 @@ export const optimizeWebsiteContent = (websiteContent: any) => {
       hasTwitterCards: websiteContent.performance.hasTwitterCards,
       structuredDataTypes: websiteContent.performance.structuredDataTypes.slice(0, 5) // Max 5 types
     },
-    
+
     // Keep meta tags (they're usually small)
     meta: websiteContent.meta
   };
-  
+
   return optimized;
 };
 
 export const optimizePageSpeedData = (pageSpeedData: any) => {
   if (!pageSpeedData?.lighthouseResult) return null;
-  
+
   // Extract only the most important metrics
   const audits = pageSpeedData.lighthouseResult.audits || {};
   const categories = pageSpeedData.lighthouseResult.categories || {};
-  
+
   return {
     performanceScore: categories.performance?.score ? Math.round(categories.performance.score * 100) : null,
     coreWebVitals: {
@@ -104,9 +106,9 @@ export const optimizePageSpeedData = (pageSpeedData: any) => {
       ttfb: audits['server-response-time']?.displayValue || null
     },
     keyOpportunities: Object.entries(audits)
-      .filter(([key, audit]: [string, any]) => 
-        audit.score !== null && 
-        audit.score < 0.9 && 
+      .filter(([key, audit]: [string, any]) =>
+        audit.score !== null &&
+        audit.score < 0.9 &&
         audit.scoreDisplayMode === 'numeric' &&
         ['uses-webp-images', 'modern-image-formats', 'offscreen-images', 'render-blocking-resources', 'unused-css-rules', 'unused-javascript', 'total-blocking-time'].includes(key)
       )
@@ -123,7 +125,7 @@ export const optimizePageSpeedData = (pageSpeedData: any) => {
 
 export const optimizeSitemapData = (sitemapData: any) => {
   if (!sitemapData) return null;
-  
+
   return {
     found: sitemapData.found,
     url: sitemapData.url,

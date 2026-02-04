@@ -1,30 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Loader2, AlertCircle, CheckCircle, XCircle, ExternalLink, FileText } from 'lucide-react'
+import { Search, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
-import axios from 'axios'
 
 export default function Home() {
   const [domain, setDomain] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<any>(null)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
 
   const handleAnalyze = async () => {
     if (!domain) return
 
     setIsAnalyzing(true)
-    setError("")
+    setError('')
     setAnalysis(null)
 
     try {
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('/api/onpageseo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,8 +37,8 @@ export default function Home() {
       } else {
         setAnalysis(data)
       }
-    } catch (error) {
-      console.error('Analysis error:', error)
+    } catch (err) {
+      console.error('Analysis error:', err)
       setError('Failed to analyze website. Please try again.')
     } finally {
       setIsAnalyzing(false)
@@ -48,7 +46,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-liner-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -115,8 +113,8 @@ export default function Home() {
               <Button
                 onClick={() => {
                   setAnalysis(null)
-                  setError("")
-                  setDomain("")
+                  setError('')
+                  setDomain('')
                 }}
                 variant="outline"
                 size="lg"

@@ -21,10 +21,8 @@ export interface ImageAnalysis {
 // Function to download and analyze images
 async function downloadAndAnalyzeImage(imageSrc: string, baseUrl: string): Promise<Partial<ImageAnalysis>> {
     try {
-        // Convert relative URLs to absolute
         const absoluteUrl = imageSrc.startsWith('http') ? imageSrc : new URL(imageSrc, baseUrl).href;
 
-        // Download image
         const response = await axios.get(absoluteUrl, {
             responseType: 'arraybuffer',
             timeout: 5000,
@@ -33,15 +31,10 @@ async function downloadAndAnalyzeImage(imageSrc: string, baseUrl: string): Promi
             }
         });
 
-        // Convert to base64
         const base64 = Buffer.from(response.data, 'binary').toString('base64');
         const mimeType = response.headers['content-type'];
         const dataUrl = `data:${mimeType};base64,${base64}`;
-
-        // Get image format from MIME type
         const format = mimeType.split('/')[1] || 'unknown';
-
-        // Calculate file size
         const size = response.data.byteLength;
 
         return {
@@ -63,18 +56,15 @@ function classifyImage(img: any, index: number, totalImages: number): Partial<Im
     const className = img.className || '';
     const id = img.id || '';
 
-    // Logo detection
     const isLogo = src.toLowerCase().includes('logo') ||
         alt.toLowerCase().includes('logo') ||
         className.toLowerCase().includes('logo') ||
         id.toLowerCase().includes('logo');
 
-    // Hero image detection (first large image)
     const isHero = index === 0 &&
         (img.width && parseInt(img.width) > 400 ||
             img.height && parseInt(img.height) > 300);
 
-    // Product image detection
     const isProduct = src.toLowerCase().includes('product') ||
         alt.toLowerCase().includes('product') ||
         className.toLowerCase().includes('product') ||
@@ -114,6 +104,9 @@ export interface WebsiteContent {
         author?: string;
         viewport?: string;
         robots?: string;
+        robotsContent?: string;
+        noindex?: boolean;
+        nofollow?: boolean;
         canonical?: string;
         openGraph?: Record<string, string>;
         twitter?: Record<string, string>;
@@ -186,14 +179,41 @@ export interface WebsiteContent {
             hasFavicon: boolean;
             hasManifest: boolean;
             languageDeclared: boolean;
+            langAttribute: string | null;
         };
+    };
+    // New fields for additional SEO checks
+    security: {
+        sslEnabled: boolean;
+        httpsRedirect: boolean;
+    };
+    crawlers: {
+        robotsTxtUrl: string | null;
+        robotsTxtExists: boolean;
+        blockedByRobots: boolean;
+        llmsTxtUrl: string | null;
+        llmsTxtExists: boolean;
+    };
+    sitemaps: {
+        xmlSitemapUrl: string | null;
+        xmlSitemapExists: boolean;
+    };
+    analytics: {
+        hasAnalytics: boolean;
+        analyticsType: string | null;
+    };
+    structuredData: {
+        hasJsonLd: boolean;
+        schemaTypes: string[];
+        hasOrganizationSchema: boolean;
+        hasPersonSchema: boolean;
+        organizationName: string | null;
     };
 }
 
 // Server-side scraping function
 export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> {
     try {
-        // Ensure URL has protocol
         const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
 
         const response = await axios.get(formattedUrl, {
@@ -204,12 +224,18 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
         });
 
         const $ = cheerio.load(response.data);
+        const baseUrl = new URL(formattedUrl).origin;
 
         // Extract title
         const title = $('title').text().trim() || '';
 
         // Extract meta description
         const metaDescription = $('meta[name="description"]').attr('content') || '';
+
+        // Extract meta robots
+        const robotsContent = $('meta[name="robots"]').attr('content') || '';
+        const noindex = robotsContent.toLowerCase().includes('noindex');
+        const nofollow = robotsContent.toLowerCase().includes('nofollow');
 
         // Extract Open Graph meta tags
         const openGraph: Record<string, string> = {};
@@ -233,7 +259,6 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             }
         });
 
-        // Extract other meta tags
         const metaKeywords = $('meta[name="keywords"]').attr('content') || '';
         const metaAuthor = $('meta[name="author"]').attr('content') || '';
         const metaViewport = $('meta[name="viewport"]').attr('content') || '';
@@ -250,11 +275,7 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             h6: $('h6').map((_, el) => $(el).text().trim()).get()
         };
 
-        // Extract content
         const content = $('body').text().trim();
-
-        // Get base URL for resolving relative URLs
-        const baseUrl = new URL(formattedUrl).origin;
 
         // Extract and analyze images
         const imageElements = $('img').map((_, el) => {
@@ -269,13 +290,12 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             };
         }).get();
 
-        // Analyze images
         const images: ImageAnalysis[] = [];
         for (let i = 0; i < imageElements.length; i++) {
             const img = imageElements[i];
             const classification = classifyImage(img, i, imageElements.length);
             const downloadData = await downloadAndAnalyzeImage(img.src, baseUrl);
-            
+
             images.push({
                 ...img,
                 ...classification,
@@ -308,14 +328,23 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
 
         // Extract structured data types
         const structuredDataTypes: string[] = [];
+        let hasOrganizationSchema = false;
+        let hasPersonSchema = false;
+        let organizationName: string | null = null;
+
         $('script[type="application/ld+json"]').each((_, el) => {
             try {
                 const jsonData = JSON.parse($(el).html() || '{}');
                 if (jsonData['@type']) {
-                    if (Array.isArray(jsonData['@type'])) {
-                        structuredDataTypes.push(...jsonData['@type']);
-                    } else {
-                        structuredDataTypes.push(jsonData['@type']);
+                    const types = Array.isArray(jsonData['@type']) ? jsonData['@type'] : [jsonData['@type']];
+                    structuredDataTypes.push(...types);
+
+                    if (types.includes('Organization') || types.includes('ProfessionalService')) {
+                        hasOrganizationSchema = true;
+                        organizationName = jsonData.name || jsonData['@type']?.[0] || 'Organization';
+                    }
+                    if (types.includes('Person')) {
+                        hasPersonSchema = true;
                     }
                 }
             } catch (e) {
@@ -333,7 +362,6 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
         const h5Count = headings.h5.length;
         const h6Count = headings.h6.length;
 
-        // Check for proper heading hierarchy
         const properHierarchy = h1Count === 1 && (
             (h2Count > 0 && h3Count === 0 && h4Count === 0 && h5Count === 0 && h6Count === 0) ||
             (h2Count > 0 && h3Count > 0 && h4Count === 0 && h5Count === 0 && h6Count === 0) ||
@@ -342,13 +370,11 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             (h2Count > 0 && h3Count > 0 && h4Count > 0 && h5Count > 0 && h6Count > 0)
         );
 
-        // Check for skipped heading levels
         const skippedLevels = (h1Count > 0 && h2Count === 0 && (h3Count > 0 || h4Count > 0 || h5Count > 0 || h6Count > 0)) ||
             (h2Count > 0 && h3Count === 0 && (h4Count > 0 || h5Count > 0 || h6Count > 0)) ||
             (h3Count > 0 && h4Count === 0 && (h5Count > 0 || h6Count > 0)) ||
             (h4Count > 0 && h5Count === 0 && h6Count > 0);
 
-        // Estimate domain authority
         const estimateDomainAuthority = (): number => {
             let score = 30;
 
@@ -375,14 +401,12 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
         const estimatedBacklinks = Math.floor(Math.pow(domainAuthority / 10, 2.5) * 50);
         const estimatedOrganicTraffic = Math.floor(Math.pow(domainAuthority / 10, 3) * 100);
 
-        // Simulate Core Web Vitals
         const coreWebVitals = {
             lcp: Math.round((Math.random() * 2 + 1 + (domainAuthority > 70 ? -0.5 : 0.5)) * 10) / 10,
             inp: Math.floor(Math.random() * 200 + 100 + (domainAuthority > 70 ? -50 : 50)),
             cls: Math.round((Math.random() * 0.2 + 0.05 + (domainAuthority > 70 ? -0.02 : 0.02)) * 100) / 100
         };
 
-        // Calculate readability scores
         const calculateReadability = (text: string) => {
             const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
             const words = text.split(/\s+/).filter(w => w.length > 0);
@@ -393,7 +417,6 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             const avgWordsPerSentence = words.length / sentences.length;
             const avgSyllablesPerWord = syllables / words.length;
 
-            // Flesch-Kincaid Grade Level formula
             const fleschKincaid = 0.39 * avgWordsPerSentence + 11.8 * avgSyllablesPerWord - 15.59;
 
             let readingLevel = 'Easy';
@@ -418,7 +441,8 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             hasSitemap: $('link[rel="sitemap"]').length > 0 || $('link[type="application/xml"]').length > 0,
             hasFavicon: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0,
             hasManifest: $('link[rel="manifest"]').length > 0,
-            languageDeclared: $('html').attr('lang') !== undefined
+            languageDeclared: $('html').attr('lang') !== undefined,
+            langAttribute: $('html').attr('lang') || null
         };
 
         // Social sharing analysis
@@ -482,6 +506,79 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             technicalSEO
         };
 
+        // Security checks
+        const security = {
+            sslEnabled: formattedUrl.startsWith('https://'),
+            httpsRedirect: formattedUrl.startsWith('https://')
+        };
+
+        // Robots.txt and llms.txt checks
+        const robotsTxtUrl = `${baseUrl}/robots.txt`;
+        const llmsTxtUrl = `${baseUrl}/llms.txt`;
+        const xmlSitemapUrl = `${baseUrl}/sitemap.xml`;
+
+        // Actually check if robots.txt exists and if current page is blocked
+        let robotsTxtExists = false;
+        let xmlSitemapExists = false;
+        let llmsTxtExists = false;
+        let blockedByRobots = false;
+
+        try {
+            const robotsResponse = await axios.get(robotsTxtUrl, {
+                timeout: 3000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Audit-Bot/1.0)' }
+            });
+            robotsTxtExists = robotsResponse.status === 200;
+
+            // Check if current URL path is blocked by robots.txt
+            if (robotsTxtExists) {
+                const robotsContent = robotsResponse.data;
+                const urlPath = new URL(formattedUrl).pathname;
+                const disallowedPaths = robotsContent
+                    .split('\n')
+                    .filter((line: string) => line.trim().startsWith('Disallow:'))
+                    .map((line: string) => line.trim().replace('Disallow:', '').trim());
+
+                blockedByRobots = disallowedPaths.some((path: string) => {
+                    if (path === '/') return true;
+                    if (path.endsWith('/')) return urlPath.startsWith(path);
+                    return urlPath === path || urlPath.startsWith(path + '/');
+                });
+            }
+        } catch (error) {
+            robotsTxtExists = false;
+        }
+
+        try {
+            const sitemapResponse = await axios.get(xmlSitemapUrl, {
+                timeout: 3000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Audit-Bot/1.0)' }
+            });
+            xmlSitemapExists = sitemapResponse.status === 200;
+        } catch (error) {
+            xmlSitemapExists = false;
+        }
+
+        try {
+            const llmsResponse = await axios.get(llmsTxtUrl, {
+                timeout: 3000,
+                headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SEO-Audit-Bot/1.0)' }
+            });
+            llmsTxtExists = llmsResponse.status === 200;
+        } catch (error) {
+            llmsTxtExists = false;
+        }
+
+        // Analytics check
+        const hasGoogleAnalytics =
+            $('script[src*="googletagmanager.com"]').length > 0 ||
+            $('script[src*="google-analytics.com"]').length > 0 ||
+            $('script[src*="ga.js"]').length > 0 ||
+            $('script[src*="analytics.js"]').length > 0;
+
+        // Structured data check
+        const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
+
         return {
             url: formattedUrl,
             title,
@@ -495,16 +592,41 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
                 author: metaAuthor,
                 viewport: metaViewport,
                 robots: metaRobots,
+                robotsContent,
+                noindex,
+                nofollow,
                 canonical,
                 openGraph,
                 twitter
             },
             performance,
-            technical
+            technical,
+            security,
+            crawlers: {
+                robotsTxtUrl,
+                robotsTxtExists,
+                blockedByRobots,
+                llmsTxtUrl,
+                llmsTxtExists
+            },
+            sitemaps: {
+                xmlSitemapUrl,
+                xmlSitemapExists
+            },
+            analytics: {
+                hasAnalytics: hasGoogleAnalytics,
+                analyticsType: hasGoogleAnalytics ? 'Google Analytics' : null
+            },
+            structuredData: {
+                hasJsonLd,
+                schemaTypes: structuredDataTypes,
+                hasOrganizationSchema,
+                hasPersonSchema,
+                organizationName
+            }
         };
-
     } catch (error) {
         console.error('Scraping error:', error);
-        throw new Error(`Failed to scrape website: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error('Failed to scrape website');
     }
 }
