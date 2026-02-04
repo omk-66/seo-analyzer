@@ -196,6 +196,120 @@ function getStatusColor(status: 'good' | 'warning' | 'error') {
     }
 }
 
+function getLanguageFullName(languageCode: string): string {
+    // Common language code to full name mapping
+    const languageMap: { [key: string]: string } = {
+        'en': 'English',
+        'en-US': 'English (United States)',
+        'en-GB': 'English (United Kingdom)',
+        'es': 'Spanish',
+        'es-ES': 'Spanish (Spain)',
+        'fr': 'French',
+        'fr-FR': 'French (France)',
+        'de': 'German',
+        'de-DE': 'German (Germany)',
+        'it': 'Italian',
+        'it-IT': 'Italian (Italy)',
+        'pt': 'Portuguese',
+        'pt-BR': 'Portuguese (Brazil)',
+        'pt-PT': 'Portuguese (Portugal)',
+        'ru': 'Russian',
+        'ja': 'Japanese',
+        'zh': 'Chinese',
+        'zh-CN': 'Chinese (Simplified)',
+        'zh-TW': 'Chinese (Traditional)',
+        'ko': 'Korean',
+        'ar': 'Arabic',
+        'hi': 'Hindi',
+        'nl': 'Dutch',
+        'nl-NL': 'Dutch (Netherlands)',
+        'sv': 'Swedish',
+        'da': 'Danish',
+        'no': 'Norwegian',
+        'fi': 'Finnish',
+        'pl': 'Polish',
+        'tr': 'Turkish',
+        'vi': 'Vietnamese',
+        'id': 'Indonesian',
+        'ms': 'Malay',
+        'tl': 'Filipino',
+        'he': 'Hebrew',
+        'cs': 'Czech',
+        'sk': 'Slovak',
+        'hu': 'Hungarian',
+        'ro': 'Romanian',
+        'bg': 'Bulgarian',
+        'hr': 'Croatian',
+        'sr': 'Serbian',
+        'sl': 'Slovenian',
+        'et': 'Estonian',
+        'lv': 'Latvian',
+        'lt': 'Lithuanian',
+        'el': 'Greek',
+        'uk': 'Ukrainian',
+        'be': 'Belarusian',
+        'ka': 'Georgian',
+        'hy': 'Armenian',
+        'az': 'Azerbaijani',
+        'kk': 'Kazakh',
+        'ky': 'Kyrgyz',
+        'uz': 'Uzbek',
+        'mn': 'Mongolian',
+        'ne': 'Nepali',
+        'si': 'Sinhala',
+        'my': 'Burmese',
+        'km': 'Khmer',
+        'lo': 'Lao'
+    };
+
+    return languageMap[languageCode] || languageCode;
+}
+
+function LanguageCard({ data }: { data: OnPageSEOData['language'] }) {
+    const fullLanguageName = data.declaredLanguage ? getLanguageFullName(data.declaredLanguage) : 'Not declared';
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="w-5 h-5" />
+                        Language Declaration
+                    </CardTitle>
+                    {getStatusIcon(data.status)}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Badge className={getStatusColor(data.status)}>
+                    {data.status.toUpperCase()}
+                </Badge>
+                <p className="mt-2 text-sm">{data.message}</p>
+
+                {data.declaredLanguage && (
+                    <div className="mt-4">
+                        <table className="w-full">
+                            <tbody>
+                                <tr className="border-b">
+                                    <td className="py-2 px-3 font-medium w-32">Language Code</td>
+                                    <td className="py-2 px-3 font-mono">{data.declaredLanguage}</td>
+                                </tr>
+                                <tr className="border-b">
+                                    <td className="py-2 px-3 font-medium">Full Name</td>
+                                    <td className="py-2 px-3">{fullLanguageName}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                <p className="mt-4 text-xs text-gray-500">
+                    Title Tags are very important for search engines to correctly understand and categorize your content.
+                </p>
+            </CardContent>
+        </Card>
+    );
+}
+
 function TitleTagCard({ data }: { data: OnPageSEOData['titleTag'] }) {
     return (
         <Card>
@@ -345,6 +459,12 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
     const onPageSEO = analysis?.onPageSEO;
     const defaultStatusData = { status: 'warning' as const, message: 'No data available' };
+    const defaultLanguageData = {
+        hasLangAttribute: false,
+        declaredLanguage: null,
+        status: 'warning' as const,
+        message: 'No language data available'
+    };
 
     return (
         <div className="w-full">
@@ -405,9 +525,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                         {/* Language & Canonical - 2 columns */}
                         <div className="grid gap-4 md:grid-cols-2">
-                            <StatusCard
-                                title="Language Declaration"
-                                data={onPageSEO?.language || defaultStatusData}
+                            <LanguageCard
+                                data={onPageSEO?.language || defaultLanguageData}
                             />
                             <StatusCard
                                 title="Canonical Tag"
@@ -541,14 +660,23 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         <p className="mt-2 text-sm">{onPageSEO.contentAmount.message}</p>
 
                                         <div className="mt-4">
-                                            <Progress
-                                                value={Math.min((onPageSEO.contentAmount.wordCount / 3500) * 100, 100)}
-                                                className="h-3"
-                                            />
-                                            <div className="flex justify-between text-xs mt-1">
-                                                <span>0 words</span>
-                                                <span>{onPageSEO.contentAmount.wordCount} words</span>
-                                                <span>3500+ words</span>
+                                            <div className="mb-2">
+                                                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                                    <span>Words: {onPageSEO.contentAmount.wordCount}</span>
+                                                    <span>Optimal: {onPageSEO.contentAmount.minWords}-{onPageSEO.contentAmount.maxWords}</span>
+                                                </div>
+                                                <Progress
+                                                    value={Math.min((onPageSEO.contentAmount.wordCount / onPageSEO.contentAmount.maxWords) * 100, 100)}
+                                                    className="h-3"
+                                                />
+                                            </div>
+                                            <div className="flex justify-between text-xs mt-2 text-gray-500">
+                                                <span className={onPageSEO.contentAmount.wordCount < onPageSEO.contentAmount.minWords ? 'text-red-600 font-medium' : ''}>
+                                                    {onPageSEO.contentAmount.wordCount < onPageSEO.contentAmount.minWords ? 'Below minimum' : 'Good length'}
+                                                </span>
+                                                <span>
+                                                    {onPageSEO.contentAmount.wordCount >= onPageSEO.contentAmount.maxWords ? 'Above maximum' : 'Within range'}
+                                                </span>
                                             </div>
                                         </div>
                                     </>
