@@ -104,7 +104,12 @@ function getDefaultPerformanceData(strategy: string): PerformanceData {
     return {
         url: '',
         strategy,
-        scores: { performance: 0 },
+        scores: {
+            performance: 0,
+            accessibility: 0,
+            'best-practices': 0,
+            seo: 0
+        },
         performance: {
             serverResponseTimeMs: null,
             firstContentfulPaintMs: null,
@@ -165,8 +170,8 @@ export async function getFullPageSpeedDashboardData({
     // Ensure URL has proper protocol
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
 
-    // Use only performance category to reduce response size and time
-    const apiUrl = `${endpoint}?url=${encodeURIComponent(formattedUrl)}&strategy=${strategy}&category=performance&key=${apiKey}`;
+    // Use multiple categories to get all scores (performance, accessibility, best-practices, seo)
+    const apiUrl = `${endpoint}?url=${encodeURIComponent(formattedUrl)}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo&key=${apiKey}`;
 
     console.log('[PAGESPEED] Fetching data from:', apiUrl.replace(/key=[^&]+/, 'key=***'));
     console.log('[PAGESPEED] Formatted URL:', formattedUrl);

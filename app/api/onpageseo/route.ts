@@ -190,7 +190,12 @@ export async function POST(request: Request) {
             performanceData = {
                 url: url,
                 strategy: "mobile",
-                scores: { performance: 0 },
+                scores: {
+                    performance: 0,
+                    accessibility: 0,
+                    'best-practices': 0,
+                    seo: 0
+                },
                 performance: {
                     serverResponseTimeMs: null,
                     firstContentfulPaintMs: null,
