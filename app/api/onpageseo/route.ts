@@ -38,6 +38,18 @@ export interface UsabilityData {
         totalBlockingTime: { value: number | null; displayValue: string };
         cumulativeLayoutShift: { value: number | null; displayValue: string };
     };
+    desktopScores: {
+        performance: number;
+        accessibility: number;
+        bestPractices: number;
+        seo: number;
+    };
+    mobileScores: {
+        performance: number;
+        accessibility: number;
+        bestPractices: number;
+        seo: number;
+    };
 }
 
 export async function POST(request: Request) {
@@ -91,6 +103,18 @@ export async function POST(request: Request) {
                 timeToInteractive: { value: null, displayValue: '' },
                 totalBlockingTime: { value: null, displayValue: '' },
                 cumulativeLayoutShift: { value: null, displayValue: '' }
+            },
+            desktopScores: {
+                performance: 0,
+                accessibility: 0,
+                bestPractices: 0,
+                seo: 0
+            },
+            mobileScores: {
+                performance: 0,
+                accessibility: 0,
+                bestPractices: 0,
+                seo: 0
             }
         };
 
@@ -132,6 +156,21 @@ export async function POST(request: Request) {
                     timeToInteractive: combinedPerformanceData.desktop.metrics.timeToInteractive,
                     totalBlockingTime: combinedPerformanceData.desktop.metrics.totalBlockingTime,
                     cumulativeLayoutShift: combinedPerformanceData.desktop.metrics.cumulativeLayoutShift
+                };
+
+                // Extract scores from both mobile and desktop
+                usabilityData.desktopScores = {
+                    performance: combinedPerformanceData.desktop.scores.performance || 0,
+                    accessibility: combinedPerformanceData.desktop.scores.accessibility || 0,
+                    bestPractices: combinedPerformanceData.desktop.scores['best-practices'] || 0,
+                    seo: combinedPerformanceData.desktop.scores.seo || 0
+                };
+
+                usabilityData.mobileScores = {
+                    performance: combinedPerformanceData.mobile.scores.performance || 0,
+                    accessibility: combinedPerformanceData.mobile.scores.accessibility || 0,
+                    bestPractices: combinedPerformanceData.mobile.scores['best-practices'] || 0,
+                    seo: combinedPerformanceData.mobile.scores.seo || 0
                 };
 
             } catch (error: any) {

@@ -205,6 +205,37 @@ interface UsabilityData {
         totalBlockingTime: { value: number | null; displayValue: string };
         cumulativeLayoutShift: { value: number | null; displayValue: string };
     };
+    // Additional usability checks
+    flash: {
+        hasFlash: boolean;
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    };
+    iframes: {
+        hasIframes: boolean;
+        iframeCount: number;
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    };
+    favicon: {
+        hasFavicon: boolean;
+        faviconUrl: string | null;
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    };
+    // Desktop and Mobile Scores
+    desktopScores: {
+        performance: number;
+        accessibility: number;
+        bestPractices: number;
+        seo: number;
+    };
+    mobileScores: {
+        performance: number;
+        accessibility: number;
+        bestPractices: number;
+        seo: number;
+    };
 }
 
 interface SEOAnalysisTabbedProps {
@@ -963,6 +994,184 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             </CardContent>
                         </Card>
 
+                        {/* Desktop & Mobile Scores */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Gauge className="w-5 h-5" />
+                                    Desktop & Mobile Scores
+                                </CardTitle>
+                                <CardDescription>
+                                    Performance scores for both desktop and mobile
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {/* Desktop Scores */}
+                                <div className="mb-6">
+                                    <h3 className="font-medium flex items-center gap-2 mb-4">
+                                        <Monitor className="w-4 h-4" />
+                                        Desktop Scores
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {analysis?.usability?.desktopScores ? (
+                                            <>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.desktopScores.performance}
+                                                        variant={analysis.usability.desktopScores.performance >= 90 ? 'success' : analysis.usability.desktopScores.performance >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.desktopScores.performance >= 90 ? 'text-green-600' :
+                                                                analysis.usability.desktopScores.performance >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.desktopScores.performance}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Performance</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.desktopScores.accessibility}
+                                                        variant={analysis.usability.desktopScores.accessibility >= 90 ? 'success' : analysis.usability.desktopScores.accessibility >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.desktopScores.accessibility >= 90 ? 'text-green-600' :
+                                                                analysis.usability.desktopScores.accessibility >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.desktopScores.accessibility}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Accessibility</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.desktopScores.bestPractices}
+                                                        variant={analysis.usability.desktopScores.bestPractices >= 90 ? 'success' : analysis.usability.desktopScores.bestPractices >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.desktopScores.bestPractices >= 90 ? 'text-green-600' :
+                                                                analysis.usability.desktopScores.bestPractices >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.desktopScores.bestPractices}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Best Practices</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.desktopScores.seo}
+                                                        variant={analysis.usability.desktopScores.seo >= 90 ? 'success' : analysis.usability.desktopScores.seo >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.desktopScores.seo >= 90 ? 'text-green-600' :
+                                                                analysis.usability.desktopScores.seo >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.desktopScores.seo}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">SEO</div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="col-span-4 text-center text-gray-500 py-4">
+                                                Desktop scores not available
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Mobile Scores */}
+                                <div>
+                                    <h3 className="font-medium flex items-center gap-2 mb-4">
+                                        <Smartphone className="w-4 h-4" />
+                                        Mobile Scores
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {analysis?.usability?.mobileScores ? (
+                                            <>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.mobileScores.performance}
+                                                        variant={analysis.usability.mobileScores.performance >= 90 ? 'success' : analysis.usability.mobileScores.performance >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.mobileScores.performance >= 90 ? 'text-green-600' :
+                                                                analysis.usability.mobileScores.performance >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.mobileScores.performance}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Performance</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.mobileScores.accessibility}
+                                                        variant={analysis.usability.mobileScores.accessibility >= 90 ? 'success' : analysis.usability.mobileScores.accessibility >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.mobileScores.accessibility >= 90 ? 'text-green-600' :
+                                                                analysis.usability.mobileScores.accessibility >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.mobileScores.accessibility}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Accessibility</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.mobileScores.bestPractices}
+                                                        variant={analysis.usability.mobileScores.bestPractices >= 90 ? 'success' : analysis.usability.mobileScores.bestPractices >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.mobileScores.bestPractices >= 90 ? 'text-green-600' :
+                                                                analysis.usability.mobileScores.bestPractices >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.mobileScores.bestPractices}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">Best Practices</div>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                    <ProgressCircle
+                                                        value={analysis.usability.mobileScores.seo}
+                                                        variant={analysis.usability.mobileScores.seo >= 90 ? 'success' : analysis.usability.mobileScores.seo >= 70 ? 'warning' : 'error'}
+                                                        radius={40}
+                                                        strokeWidth={5}
+                                                    >
+                                                        <div className={`text-2xl font-bold ${analysis.usability.mobileScores.seo >= 90 ? 'text-green-600' :
+                                                                analysis.usability.mobileScores.seo >= 70 ? 'text-yellow-500' :
+                                                                    'text-red-600'
+                                                            }`}>
+                                                            {analysis.usability.mobileScores.seo}
+                                                        </div>
+                                                    </ProgressCircle>
+                                                    <div className="mt-2 text-sm font-medium text-gray-700">SEO</div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="col-span-4 text-center text-gray-500 py-4">
+                                                Mobile scores not available
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
                         {/* Performance Metrics - Desktop */}
                         <Card>
                             <CardHeader>
@@ -1063,6 +1272,55 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         value={analysis?.usability?.mobileMetrics?.cumulativeLayoutShift?.value}
                                         displayValue={analysis?.usability?.mobileMetrics?.cumulativeLayoutShift?.displayValue}
                                     />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Flash, iFrames, and Favicon Checks */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <FileSearch className="w-5 h-5" />
+                                    Flash, iFrames & Favicon
+                                </CardTitle>
+                                <CardDescription>
+                                    Additional usability checks for your page
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Flash Check */}
+                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.flash?.status || 'good')}`}>
+                                        <div className="flex items-center gap-2">
+                                            {getStatusIcon(analysis?.usability?.flash?.status || 'good')}
+                                            <span className="font-medium">Flash Used?</span>
+                                        </div>
+                                        <p className="text-sm mt-1">
+                                            {analysis?.usability?.flash?.message || 'No Flash content has been identified on your page.'}
+                                        </p>
+                                    </div>
+
+                                    {/* iFrames Check */}
+                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.iframes?.status || 'good')}`}>
+                                        <div className="flex items-center gap-2">
+                                            {getStatusIcon(analysis?.usability?.iframes?.status || 'good')}
+                                            <span className="font-medium">iFrames Used?</span>
+                                        </div>
+                                        <p className="text-sm mt-1">
+                                            {analysis?.usability?.iframes?.message || 'There are no iFrames detected on your page.'}
+                                        </p>
+                                    </div>
+
+                                    {/* Favicon Check */}
+                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.favicon?.status || 'good')}`}>
+                                        <div className="flex items-center gap-2">
+                                            {getStatusIcon(analysis?.usability?.favicon?.status || 'good')}
+                                            <span className="font-medium">Favicon</span>
+                                        </div>
+                                        <p className="text-sm mt-1">
+                                            {analysis?.usability?.favicon?.message || 'Your page has specified a Favicon.'}
+                                        </p>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

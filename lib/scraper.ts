@@ -209,6 +209,26 @@ export interface WebsiteContent {
         hasPersonSchema: boolean;
         organizationName: string | null;
     };
+    // Usability checks
+    usability: {
+        flash: {
+            hasFlash: boolean;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+        iframes: {
+            hasIframes: boolean;
+            iframeCount: number;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+        favicon: {
+            hasFavicon: boolean;
+            faviconUrl: string | null;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+    };
 }
 
 // Server-side scraping function
@@ -623,6 +643,37 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
                 hasOrganizationSchema,
                 hasPersonSchema,
                 organizationName
+            },
+            usability: {
+                // Flash check - Flash is deprecated and should not be used
+                flash: {
+                    hasFlash: $('object[type*="application/x-shockwave-flash"]').length > 0 ||
+                        $('embed[type*="application/x-shockwave-flash"]').length > 0,
+                    status: $('object[type*="application/x-shockwave-flash"]').length > 0 ||
+                        $('embed[type*="application/x-shockwave-flash"]').length > 0 ? 'error' : 'good',
+                    message: $('object[type*="application/x-shockwave-flash"]').length > 0 ||
+                        $('embed[type*="application/x-shockwave-flash"]').length > 0
+                        ? 'Flash content has been detected on your page. Flash is deprecated and should be removed.'
+                        : 'No Flash content has been identified on your page.'
+                },
+                // iFrames check
+                iframes: {
+                    hasIframes: $('iframe').length > 0,
+                    iframeCount: $('iframe').length,
+                    status: $('iframe').length === 0 ? 'good' : 'warning',
+                    message: $('iframe').length === 0
+                        ? 'There are no iFrames detected on your page.'
+                        : `${$('iframe').length} iFrame${$('iframe').length > 1 ? 's' : ''} detected on your page.`
+                },
+                // Favicon check
+                favicon: {
+                    hasFavicon: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0,
+                    faviconUrl: $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href') || null,
+                    status: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0 ? 'good' : 'warning',
+                    message: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0
+                        ? 'Your page has specified a Favicon.'
+                        : 'No Favicon has been specified for your page.'
+                }
             }
         };
     } catch (error) {
