@@ -1,7 +1,44 @@
 import { NextResponse } from 'next/server';
 import { scrapeWebsiteServer } from '@/lib/scraper';
 import { runOnPageSEOAnalysis } from '@/lib/onpageseo/server-analysis';
-import { getFullPageSpeedDashboardData } from '@/lib/pagespeed-dashboard';
+import { getFullPageSpeedDashboardData, getCombinedPageSpeedData, CombinedPerformanceData } from '@/lib/pagespeed-dashboard';
+
+export interface UsabilityData {
+    desktopScreenshot: {
+        exists: boolean;
+        dataUrl: string | null;
+        width: number;
+        height: number;
+    };
+    mobileScreenshot: {
+        exists: boolean;
+        dataUrl: string | null;
+        width: number;
+        height: number;
+    };
+    mobileFriendly: boolean;
+    viewportConfigured: boolean;
+    touchElementsSize: {
+        tooSmall: number;
+        appropriate: number;
+    };
+    desktopMetrics: {
+        firstContentfulPaint: { value: number | null; displayValue: string };
+        speedIndex: { value: number | null; displayValue: string };
+        largestContentfulPaint: { value: number | null; displayValue: string };
+        timeToInteractive: { value: number | null; displayValue: string };
+        totalBlockingTime: { value: number | null; displayValue: string };
+        cumulativeLayoutShift: { value: number | null; displayValue: string };
+    };
+    mobileMetrics: {
+        firstContentfulPaint: { value: number | null; displayValue: string };
+        speedIndex: { value: number | null; displayValue: string };
+        largestContentfulPaint: { value: number | null; displayValue: string };
+        timeToInteractive: { value: number | null; displayValue: string };
+        totalBlockingTime: { value: number | null; displayValue: string };
+        cumulativeLayoutShift: { value: number | null; displayValue: string };
+    };
+}
 
 export async function POST(request: Request) {
     try {
@@ -17,30 +54,96 @@ export async function POST(request: Request) {
         // Scrape the website
         const websiteData = await scrapeWebsiteServer(url);
 
-        // Fetch comprehensive PageSpeed data
+        // Fetch comprehensive PageSpeed data (mobile + desktop in parallel - only 2 API calls)
         const apiKey = process.env.GOOGLE_PAGESPEED_API_KEY;
-        let performanceData = null;
+        let combinedPerformanceData: CombinedPerformanceData | null = null;
+        let usabilityData: UsabilityData = {
+            desktopScreenshot: {
+                exists: false,
+                dataUrl: null,
+                width: 0,
+                height: 0
+            },
+            mobileScreenshot: {
+                exists: false,
+                dataUrl: null,
+                width: 0,
+                height: 0
+            },
+            mobileFriendly: websiteData.technical?.mobileFriendliness ?? false,
+            viewportConfigured: !!websiteData.meta?.viewport,
+            touchElementsSize: {
+                tooSmall: 0,
+                appropriate: 0
+            },
+            desktopMetrics: {
+                firstContentfulPaint: { value: null, displayValue: '' },
+                speedIndex: { value: null, displayValue: '' },
+                largestContentfulPaint: { value: null, displayValue: '' },
+                timeToInteractive: { value: null, displayValue: '' },
+                totalBlockingTime: { value: null, displayValue: '' },
+                cumulativeLayoutShift: { value: null, displayValue: '' }
+            },
+            mobileMetrics: {
+                firstContentfulPaint: { value: null, displayValue: '' },
+                speedIndex: { value: null, displayValue: '' },
+                largestContentfulPaint: { value: null, displayValue: '' },
+                timeToInteractive: { value: null, displayValue: '' },
+                totalBlockingTime: { value: null, displayValue: '' },
+                cumulativeLayoutShift: { value: null, displayValue: '' }
+            }
+        };
 
         console.log('[DEBUG] Google PageSpeed API Key exists:', !!apiKey);
         console.log('[DEBUG] API Key length:', apiKey?.length || 0);
 
         if (apiKey) {
             try {
-                console.log('[DEBUG] Fetching PageSpeed data for:', url);
-                performanceData = await getFullPageSpeedDashboardData({
+                console.log('[DEBUG] Fetching combined PageSpeed data (mobile + desktop) for:', url);
+
+                // Make only 2 API calls in parallel - one for mobile, one for desktop
+                combinedPerformanceData = await getCombinedPageSpeedData({
                     url,
-                    apiKey,
-                    strategy: "mobile"
+                    apiKey
                 });
-                console.log('[DEBUG] PageSpeed data fetched successfully:', !!performanceData);
-                console.log('[DEBUG] Performance scores:', performanceData?.scores);
+
+                console.log('[DEBUG] Combined PageSpeed data fetched successfully');
+                console.log('[DEBUG] Mobile screenshot exists:', combinedPerformanceData.mobile.screenshot.exists);
+                console.log('[DEBUG] Desktop screenshot exists:', combinedPerformanceData.desktop.screenshot.exists);
+
+                // Extract screenshots from the combined data
+                usabilityData.mobileScreenshot = combinedPerformanceData.mobile.screenshot;
+                usabilityData.desktopScreenshot = combinedPerformanceData.desktop.screenshot;
+
+                // Extract metrics from both mobile and desktop
+                usabilityData.mobileMetrics = {
+                    firstContentfulPaint: combinedPerformanceData.mobile.metrics.firstContentfulPaint,
+                    speedIndex: combinedPerformanceData.mobile.metrics.speedIndex,
+                    largestContentfulPaint: combinedPerformanceData.mobile.metrics.largestContentfulPaint,
+                    timeToInteractive: combinedPerformanceData.mobile.metrics.timeToInteractive,
+                    totalBlockingTime: combinedPerformanceData.mobile.metrics.totalBlockingTime,
+                    cumulativeLayoutShift: combinedPerformanceData.mobile.metrics.cumulativeLayoutShift
+                };
+
+                usabilityData.desktopMetrics = {
+                    firstContentfulPaint: combinedPerformanceData.desktop.metrics.firstContentfulPaint,
+                    speedIndex: combinedPerformanceData.desktop.metrics.speedIndex,
+                    largestContentfulPaint: combinedPerformanceData.desktop.metrics.largestContentfulPaint,
+                    timeToInteractive: combinedPerformanceData.desktop.metrics.timeToInteractive,
+                    totalBlockingTime: combinedPerformanceData.desktop.metrics.totalBlockingTime,
+                    cumulativeLayoutShift: combinedPerformanceData.desktop.metrics.cumulativeLayoutShift
+                };
+
             } catch (error: any) {
-                console.error('[ERROR] Failed to fetch comprehensive PageSpeed data:', error);
+                console.error('[ERROR] Failed to fetch combined PageSpeed data:', error);
                 console.error('[ERROR] Error details:', error?.message || 'Unknown error');
             }
         } else {
             console.warn('[WARN] Google PageSpeed API key not found in environment variables');
         }
+
+        // Use mobile data as the primary performance data
+        let performanceData = combinedPerformanceData?.mobile || null;
 
         // Ensure we always have some performance data for the UI
         if (!performanceData) {
@@ -82,6 +185,15 @@ export async function POST(request: Request) {
                     nextGenFormats: [],
                     lazyLoadingIssues: [],
                     imageCompressionIssues: []
+                },
+                screenshot: { exists: false, dataUrl: null, width: 0, height: 0 },
+                metrics: {
+                    firstContentfulPaint: { value: null, displayValue: '' },
+                    speedIndex: { value: null, displayValue: '' },
+                    largestContentfulPaint: { value: null, displayValue: '' },
+                    timeToInteractive: { value: null, displayValue: '' },
+                    totalBlockingTime: { value: null, displayValue: '' },
+                    cumulativeLayoutShift: { value: null, displayValue: '' }
                 }
             };
         }
@@ -137,12 +249,14 @@ export async function POST(request: Request) {
         });
 
         console.log('[DEBUG] Final API response - Performance data exists:', !!performanceData);
-        console.log('[DEBUG] Final API response - Performance keys:', performanceData ? Object.keys(performanceData) : 'null');
+        console.log('[DEBUG] Final API response - Usability data exists:', !!usabilityData);
 
         return NextResponse.json({
             url: websiteData.url,
             onPageSEO,
-            performance: performanceData
+            performance: performanceData,
+            usability: usabilityData,
+            combinedPerformance: combinedPerformanceData
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);

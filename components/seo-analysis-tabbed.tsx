@@ -25,7 +25,9 @@ import {
     BarChart,
     Code,
     Building,
-    FileText as FileTextIcon
+    FileText as FileTextIcon,
+    Monitor,
+    Smartphone
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
@@ -168,6 +170,43 @@ interface OnPageSEOData {
     };
 }
 
+interface UsabilityData {
+    desktopScreenshot: {
+        exists: boolean;
+        dataUrl: string | null;
+        width: number;
+        height: number;
+    };
+    mobileScreenshot: {
+        exists: boolean;
+        dataUrl: string | null;
+        width: number;
+        height: number;
+    };
+    mobileFriendly: boolean;
+    viewportConfigured: boolean;
+    touchElementsSize: {
+        tooSmall: number;
+        appropriate: number;
+    };
+    desktopMetrics: {
+        firstContentfulPaint: { value: number | null; displayValue: string };
+        speedIndex: { value: number | null; displayValue: string };
+        largestContentfulPaint: { value: number | null; displayValue: string };
+        timeToInteractive: { value: number | null; displayValue: string };
+        totalBlockingTime: { value: number | null; displayValue: string };
+        cumulativeLayoutShift: { value: number | null; displayValue: string };
+    };
+    mobileMetrics: {
+        firstContentfulPaint: { value: number | null; displayValue: string };
+        speedIndex: { value: number | null; displayValue: string };
+        largestContentfulPaint: { value: number | null; displayValue: string };
+        timeToInteractive: { value: number | null; displayValue: string };
+        totalBlockingTime: { value: number | null; displayValue: string };
+        cumulativeLayoutShift: { value: number | null; displayValue: string };
+    };
+}
+
 interface SEOAnalysisTabbedProps {
     analysis?: {
         url?: string;
@@ -221,6 +260,7 @@ interface SEOAnalysisTabbedProps {
                 imageCompressionIssues: any[];
             };
         } | null;
+        usability?: UsabilityData | null;
     } | null;
     url?: string;
 }
@@ -245,6 +285,25 @@ function getStatusColor(status: 'good' | 'warning' | 'error') {
         case 'error':
             return 'bg-red-100 text-red-800 border-red-200';
     }
+}
+
+// Metric Card Component for displaying performance metrics
+function MetricCard({ label, value, unit = '', displayValue }: {
+    label: string;
+    value: number | null | undefined;
+    unit?: string;
+    displayValue?: string
+}) {
+    return (
+        <div className="p-4 border rounded-lg">
+            <div className="text-sm text-gray-600">{label}</div>
+            <div className="text-xl font-semibold">
+                {value !== null && value !== undefined
+                    ? `${value}${unit}`
+                    : displayValue || 'N/A'}
+            </div>
+        </div>
+    );
 }
 
 function TitleTagCard({ data }: { data: OnPageSEOData['titleTag'] }) {
@@ -808,22 +867,206 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                 {/* Usability Tab */}
                 <TabsContent value="usability">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Users className="w-5 h-5" />
-                                Usability Analysis
-                            </CardTitle>
-                            <CardDescription>
-                                Usability metrics for {url || analysis?.url || 'your website'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-500 text-center py-8">
-                                Usability analysis will be added here in the next task.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Users className="w-5 h-5" />
+                                    Google PageSpeed Screenshots
+                                </CardTitle>
+                                <CardDescription>
+                                    Desktop and mobile view screenshots from Google PageSpeed Insights
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Desktop Screenshot */}
+                                    <div className="space-y-2">
+                                        <h3 className="font-medium flex items-center gap-2">
+                                            <Monitor className="w-4 h-4" />
+                                            Desktop View
+                                        </h3>
+                                        {analysis?.usability?.desktopScreenshot?.exists ? (
+                                            <div className="border rounded-lg overflow-hidden">
+                                                <img
+                                                    src={analysis.usability.desktopScreenshot.dataUrl || ''}
+                                                    alt="Desktop screenshot"
+                                                    className="w-full h-auto"
+                                                    style={{ maxHeight: '400px', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="border rounded-lg p-8 text-center text-gray-500">
+                                                <Monitor className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                                <p>Desktop screenshot not available</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Mobile Screenshot */}
+                                    <div className="space-y-2">
+                                        <h3 className="font-medium flex items-center gap-2">
+                                            <Smartphone className="w-4 h-4" />
+                                            Mobile View
+                                        </h3>
+                                        {analysis?.usability?.mobileScreenshot?.exists ? (
+                                            <div className="border rounded-lg overflow-hidden">
+                                                <img
+                                                    src={analysis.usability.mobileScreenshot.dataUrl || ''}
+                                                    alt="Mobile screenshot"
+                                                    className="w-full h-auto"
+                                                    style={{ maxHeight: '400px', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="border rounded-lg p-8 text-center text-gray-500">
+                                                <Smartphone className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                                <p>Mobile screenshot not available</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Mobile Friendliness Info */}
+                                <div className="mt-6 grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            {analysis?.usability?.mobileFriendly ? (
+                                                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                            ) : (
+                                                <XCircle className="w-5 h-5 text-red-500" />
+                                            )}
+                                            <span className="font-medium">Mobile Friendly</span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            {analysis?.usability?.mobileFriendly
+                                                ? 'Your page is mobile friendly'
+                                                : 'Your page may not be mobile friendly'}
+                                        </p>
+                                    </div>
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            {analysis?.usability?.viewportConfigured ? (
+                                                <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                            ) : (
+                                                <XCircle className="w-5 h-5 text-yellow-500" />
+                                            )}
+                                            <span className="font-medium">Viewport Configured</span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            {analysis?.usability?.viewportConfigured
+                                                ? 'Viewport meta tag is configured'
+                                                : 'Viewport meta tag is missing'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Performance Metrics - Desktop */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Monitor className="w-5 h-5" />
+                                    Desktop Performance Metrics
+                                </CardTitle>
+                                <CardDescription>
+                                    Core Web Vitals and performance metrics for desktop
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <MetricCard
+                                        label="First Contentful Paint"
+                                        value={analysis?.usability?.desktopMetrics?.firstContentfulPaint?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.desktopMetrics?.firstContentfulPaint?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Speed Index"
+                                        value={analysis?.usability?.desktopMetrics?.speedIndex?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.desktopMetrics?.speedIndex?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Largest Contentful Paint"
+                                        value={analysis?.usability?.desktopMetrics?.largestContentfulPaint?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.desktopMetrics?.largestContentfulPaint?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Time to Interactive"
+                                        value={analysis?.usability?.desktopMetrics?.timeToInteractive?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.desktopMetrics?.timeToInteractive?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Total Blocking Time"
+                                        value={analysis?.usability?.desktopMetrics?.totalBlockingTime?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.desktopMetrics?.totalBlockingTime?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Cumulative Layout Shift"
+                                        value={analysis?.usability?.desktopMetrics?.cumulativeLayoutShift?.value}
+                                        displayValue={analysis?.usability?.desktopMetrics?.cumulativeLayoutShift?.displayValue}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Performance Metrics - Mobile */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Smartphone className="w-5 h-5" />
+                                    Mobile Performance Metrics
+                                </CardTitle>
+                                <CardDescription>
+                                    Core Web Vitals and performance metrics for mobile
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <MetricCard
+                                        label="First Contentful Paint"
+                                        value={analysis?.usability?.mobileMetrics?.firstContentfulPaint?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.mobileMetrics?.firstContentfulPaint?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Speed Index"
+                                        value={analysis?.usability?.mobileMetrics?.speedIndex?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.mobileMetrics?.speedIndex?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Largest Contentful Paint"
+                                        value={analysis?.usability?.mobileMetrics?.largestContentfulPaint?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.mobileMetrics?.largestContentfulPaint?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Time to Interactive"
+                                        value={analysis?.usability?.mobileMetrics?.timeToInteractive?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.mobileMetrics?.timeToInteractive?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Total Blocking Time"
+                                        value={analysis?.usability?.mobileMetrics?.totalBlockingTime?.value}
+                                        unit="s"
+                                        displayValue={analysis?.usability?.mobileMetrics?.totalBlockingTime?.displayValue}
+                                    />
+                                    <MetricCard
+                                        label="Cumulative Layout Shift"
+                                        value={analysis?.usability?.mobileMetrics?.cumulativeLayoutShift?.value}
+                                        displayValue={analysis?.usability?.mobileMetrics?.cumulativeLayoutShift?.displayValue}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </TabsContent>
 
                 {/* Performance Tab */}

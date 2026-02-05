@@ -50,7 +50,42 @@ interface ImageOpportunities {
     imageCompressionIssues: any[];
 }
 
-interface PageSpeedDashboardData {
+interface ScreenshotData {
+    exists: boolean;
+    dataUrl: string | null;
+    width: number;
+    height: number;
+}
+
+// Performance metrics for usability section
+interface PageSpeedMetrics {
+    firstContentfulPaint: {
+        value: number | null;
+        displayValue: string;
+    };
+    speedIndex: {
+        value: number | null;
+        displayValue: string;
+    };
+    largestContentfulPaint: {
+        value: number | null;
+        displayValue: string;
+    };
+    timeToInteractive: {
+        value: number | null;
+        displayValue: string;
+    };
+    totalBlockingTime: {
+        value: number | null;
+        displayValue: string;
+    };
+    cumulativeLayoutShift: {
+        value: number | null;
+        displayValue: string;
+    };
+}
+
+interface PerformanceData {
     url: string;
     strategy: string;
     scores: { [key: string]: number };
@@ -60,6 +95,60 @@ interface PageSpeedDashboardData {
     imageSummary: ImageSummary;
     images: ImageData[];
     imageOpportunities: ImageOpportunities;
+    screenshot: ScreenshotData;
+    metrics: PageSpeedMetrics;
+}
+
+// Default/fallback data
+function getDefaultPerformanceData(strategy: string): PerformanceData {
+    return {
+        url: '',
+        strategy,
+        scores: { performance: 0 },
+        performance: {
+            serverResponseTimeMs: null,
+            firstContentfulPaintMs: null,
+            largestContentfulPaintMs: null,
+            speedIndexMs: null,
+            timeToInteractiveMs: null,
+            totalBlockingTimeMs: null,
+            cumulativeLayoutShift: null
+        },
+        webVitals: null,
+        resourceBreakdown: {
+            totalRequests: 0,
+            html: { count: 0, sizeKB: 0 },
+            js: { count: 0, sizeKB: 0 },
+            css: { count: 0, sizeKB: 0 },
+            images: { count: 0, sizeKB: 0 },
+            fonts: { count: 0, sizeKB: 0 },
+            media: { count: 0, sizeKB: 0 },
+            xhr: { count: 0, sizeKB: 0 },
+            other: { count: 0, sizeKB: 0 }
+        },
+        imageSummary: {
+            totalImages: 0,
+            totalTransferSizeMB: 0,
+            totalOriginalSizeMB: 0,
+            avgImageSizeKB: 0
+        },
+        images: [],
+        imageOpportunities: {
+            oversizedImages: [],
+            nextGenFormats: [],
+            lazyLoadingIssues: [],
+            imageCompressionIssues: []
+        },
+        screenshot: { exists: false, dataUrl: null, width: 0, height: 0 },
+        metrics: {
+            firstContentfulPaint: { value: null, displayValue: '' },
+            speedIndex: { value: null, displayValue: '' },
+            largestContentfulPaint: { value: null, displayValue: '' },
+            timeToInteractive: { value: null, displayValue: '' },
+            totalBlockingTime: { value: null, displayValue: '' },
+            cumulativeLayoutShift: { value: null, displayValue: '' }
+        }
+    };
 }
 
 export async function getFullPageSpeedDashboardData({
@@ -70,22 +159,24 @@ export async function getFullPageSpeedDashboardData({
     url: string;
     apiKey: string;
     strategy?: string;
-}): Promise<PageSpeedDashboardData> {
+}): Promise<PerformanceData> {
     const endpoint = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 
     // Ensure URL has proper protocol
     const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
 
-    const apiUrl = `${endpoint}?url=${encodeURIComponent(formattedUrl)}&strategy=${strategy}&key=${apiKey}`;
+    // Use only performance category to reduce response size and time
+    const apiUrl = `${endpoint}?url=${encodeURIComponent(formattedUrl)}&strategy=${strategy}&category=performance&key=${apiKey}`;
 
     console.log('[PAGESPEED] Fetching data from:', apiUrl.replace(/key=[^&]+/, 'key=***'));
     console.log('[PAGESPEED] Formatted URL:', formattedUrl);
+    console.log('[PAGESPEED] Strategy:', strategy);
 
     try {
         const response = await axios.get(apiUrl, {
-            timeout: 30000,
+            timeout: 60000, // Increased to 60 seconds
             headers: {
-                'User-Agent': 'Mozilla/5.0 (compatible; SEO-Audit-Bot/1.0)'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
 
@@ -108,6 +199,45 @@ export async function getFullPageSpeedDashboardData({
             timeToInteractiveMs: audits["interactive"]?.numericValue ?? null,
             totalBlockingTimeMs: audits["total-blocking-time"]?.numericValue ?? null,
             cumulativeLayoutShift: audits["cumulative-layout-shift"]?.numericValue ?? null
+        };
+
+        /* ================= PAGE SPEED METRICS (for usability section) ================= */
+
+        const metrics: PageSpeedMetrics = {
+            firstContentfulPaint: {
+                value: audits["first-contentful-paint"]?.numericValue
+                    ? +(audits["first-contentful-paint"].numericValue / 1000).toFixed(2)
+                    : null,
+                displayValue: audits["first-contentful-paint"]?.displayValue || ''
+            },
+            speedIndex: {
+                value: audits["speed-index"]?.numericValue
+                    ? +(audits["speed-index"].numericValue / 1000).toFixed(2)
+                    : null,
+                displayValue: audits["speed-index"]?.displayValue || ''
+            },
+            largestContentfulPaint: {
+                value: audits["largest-contentful-paint"]?.numericValue
+                    ? +(audits["largest-contentful-paint"].numericValue / 1000).toFixed(2)
+                    : null,
+                displayValue: audits["largest-contentful-paint"]?.displayValue || ''
+            },
+            timeToInteractive: {
+                value: audits["interactive"]?.numericValue
+                    ? +(audits["interactive"].numericValue / 1000).toFixed(2)
+                    : null,
+                displayValue: audits["interactive"]?.displayValue || ''
+            },
+            totalBlockingTime: {
+                value: audits["total-blocking-time"]?.numericValue
+                    ? +(audits["total-blocking-time"].numericValue / 1000).toFixed(2)
+                    : null,
+                displayValue: audits["total-blocking-time"]?.displayValue || ''
+            },
+            cumulativeLayoutShift: {
+                value: audits["cumulative-layout-shift"]?.numericValue ?? null,
+                displayValue: audits["cumulative-layout-shift"]?.displayValue || ''
+            }
         };
 
         /* ================= CORE WEB VITALS (FIELD DATA) ================= */
@@ -225,6 +355,29 @@ export async function getFullPageSpeedDashboardData({
             imageCompressionIssues: audits["uses-optimized-images"]?.details?.items ?? []
         };
 
+        /* ================= SCREENSHOT ================= */
+
+        // Get screenshot from screenshot-thumbnails (contains multiple frames)
+        const screenshotThumbnails = audits["screenshot-thumbnails"]?.details?.items ?? [];
+        const screenshotData: ScreenshotData = {
+            exists: false,
+            dataUrl: null,
+            width: 0,
+            height: 0
+        };
+
+        if (screenshotThumbnails.length > 0) {
+            // Get the last (final) screenshot which is the fully loaded page
+            const finalScreenshot = screenshotThumbnails[screenshotThumbnails.length - 1];
+            if (finalScreenshot?.data) {
+                screenshotData.exists = true;
+                screenshotData.dataUrl = finalScreenshot.data;
+                screenshotData.width = finalScreenshot.width || 0;
+                screenshotData.height = finalScreenshot.height || 0;
+                console.log('[PAGESPEED] Screenshot found:', screenshotData.exists, 'width:', screenshotData.width, 'height:', screenshotData.height);
+            }
+        }
+
         /* ================= CATEGORY SCORES ================= */
 
         const scores: { [key: string]: number } = Object.fromEntries(
@@ -236,7 +389,7 @@ export async function getFullPageSpeedDashboardData({
 
         /* ================= FINAL RETURN ================= */
 
-        const result = {
+        const result: PerformanceData = {
             url: lighthouse.finalUrl,
             strategy,
             scores,
@@ -245,24 +398,50 @@ export async function getFullPageSpeedDashboardData({
             resourceBreakdown,
             imageSummary,
             images,
-            imageOpportunities
+            imageOpportunities,
+            screenshot: screenshotData,
+            metrics: metrics
         };
 
         console.log('[PAGESPEED] Returning result with keys:', Object.keys(result));
         console.log('[PAGESPEED] Performance scores:', result.scores);
         console.log('[PAGESPEED] Total requests:', result.resourceBreakdown.totalRequests);
+        console.log('[PAGESPEED] Screenshot exists:', result.screenshot.exists);
 
         return result;
     } catch (error: any) {
         console.error('[PAGESPEED] API error:', error);
 
-        // Log more details for 400 errors
-        if (error.response?.status === 400) {
-            console.error('[PAGESPEED] 400 Error Response:', error.response.data);
-            console.error('[PAGESPEED] 400 Error Details:', JSON.stringify(error.response.data, null, 2));
-        }
-
-        console.error('[PAGESPEED] Error message:', error?.message);
-        throw new Error(`Failed to fetch PageSpeed data: ${error?.message || 'Unknown error'}`);
+        // Return default data instead of throwing error
+        console.warn('[PAGESPEED] Using fallback data for', strategy, 'due to API error:', error?.message);
+        return getDefaultPerformanceData(strategy);
     }
+}
+
+// Interface for combined performance data with both mobile and desktop
+export interface CombinedPerformanceData {
+    mobile: PerformanceData;
+    desktop: PerformanceData;
+}
+
+// Get both mobile and desktop data - handle individual failures gracefully
+export async function getCombinedPageSpeedData({
+    url,
+    apiKey
+}: {
+    url: string;
+    apiKey: string;
+}): Promise<CombinedPerformanceData> {
+    const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+
+    // Fetch both mobile and desktop data - if one fails, use fallback for that one
+    const [mobileData, desktopData] = await Promise.all([
+        getFullPageSpeedDashboardData({ url: formattedUrl, apiKey, strategy: 'mobile' }),
+        getFullPageSpeedDashboardData({ url: formattedUrl, apiKey, strategy: 'desktop' })
+    ]);
+
+    return {
+        mobile: mobileData,
+        desktop: desktopData
+    };
 }
