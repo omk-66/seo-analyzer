@@ -300,7 +300,8 @@ export async function POST(request: Request) {
             onPageSEO,
             performance: performanceData,
             usability: usabilityData,
-            combinedPerformance: combinedPerformanceData
+            combinedPerformance: combinedPerformanceData,
+            social: websiteData.social
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);

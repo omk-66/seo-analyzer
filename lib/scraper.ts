@@ -229,6 +229,44 @@ export interface WebsiteContent {
             message: string;
         };
     };
+    // Social media and contact info
+    social: {
+        openGraph: {
+            hasOpenGraph: boolean;
+            openGraph: Record<string, string>;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+        twitterCards: {
+            hasTwitterCards: boolean;
+            twitter: Record<string, string>;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+        socialProfiles: {
+            links: {
+                youtube: string | null;
+                facebook: string | null;
+                linkedin: string | null;
+                instagram: string | null;
+                twitter: string | null;
+                pinterest: string | null;
+                tiktok: string | null;
+            };
+            count: number;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+        contactInfo: {
+            hasPhone: boolean;
+            phoneNumbers: string[];
+            hasAddress: boolean;
+            addresses: string[];
+            hasContactPage: boolean;
+            status: 'good' | 'warning' | 'error';
+            message: string;
+        };
+    };
 }
 
 // Server-side scraping function
@@ -599,6 +637,65 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
         // Structured data check
         const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
 
+        // Social media links detection
+        const allLinks = $('a[href]').map((i, el) => $(el).attr('href')).get();
+        const socialLinks = {
+            youtube: allLinks.find(link => link?.includes('youtube.com') || link?.includes('youtu.be') || link?.includes('youtube.co')) || null,
+            facebook: allLinks.find(link => link?.includes('facebook.com') || link?.includes('fb.me') || link?.includes('fb.com')) || null,
+            linkedin: allLinks.find(link => link?.includes('linkedin.com')) || null,
+            instagram: allLinks.find(link => link?.includes('instagram.com')) || null,
+            twitter: allLinks.find(link => link?.includes('twitter.com') || link?.includes('x.com')) || null,
+            pinterest: allLinks.find(link => link?.includes('pinterest.com')) || null,
+            tiktok: allLinks.find(link => link?.includes('tiktok.com')) || null,
+        };
+
+        // Count social links found
+        const socialLinksCount = Object.values(socialLinks).filter(link => link !== null).length;
+
+        // Address and phone number detection
+        const pageText = $('body').text();
+
+        // Phone number regex - matches various formats
+        const phoneRegex = /[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}/g;
+        const phoneMatches = pageText.match(phoneRegex) || [];
+        const phoneNumbers = [...new Set(phoneMatches.filter(phone => phone.replace(/\D/g, '').length >= 7))].slice(0, 5);
+
+        // Address detection - look for common patterns
+        const addressPatterns = [
+            /\d+\s+[A-Za-z]+\s+(Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Court|Ct|Way|Place|Pl)/gi,
+            /[A-Za-z]+,\s*[A-Za-z]+\s+\d{5}/g, // City, State ZIP
+        ];
+        let addresses: string[] = [];
+        addressPatterns.forEach(pattern => {
+            const matches = pageText.match(pattern);
+            if (matches) {
+                addresses = [...addresses, ...matches];
+            }
+        });
+        addresses = [...new Set(addresses)].slice(0, 3);
+
+        // Contact info from structured data (schema.org)
+        let contactPhone: string | null = null;
+        let contactAddress: string | null = null;
+        $('script[type="application/ld+json"]').each((i, el) => {
+            try {
+                const jsonData = JSON.parse($(el).html() || '{}');
+                if (jsonData.telephone) contactPhone = jsonData.telephone;
+                if (jsonData.address) {
+                    const address = jsonData.address;
+                    if (typeof address === 'string') contactAddress = address;
+                    else if (address.streetAddress) contactAddress = `${address.streetAddress}, ${address.addressLocality}`;
+                }
+            } catch (e) { }
+        });
+
+        // Contact page detection
+        const contactPageLinks = allLinks.filter(link =>
+            link?.toLowerCase().includes('contact') ||
+            link?.toLowerCase().includes('about-us')
+        );
+        const hasContactPage = contactPageLinks.length > 0;
+
         return {
             url: formattedUrl,
             title,
@@ -673,6 +770,48 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
                     message: $('link[rel="icon"]').length > 0 || $('link[rel="shortcut icon"]').length > 0
                         ? 'Your page has specified a Favicon.'
                         : 'No Favicon has been specified for your page.'
+                }
+            },
+            // Social media and contact info
+            social: {
+                openGraph: {
+                    hasOpenGraph: Object.keys(openGraph).length > 0,
+                    openGraph: openGraph,
+                    status: Object.keys(openGraph).length > 2 ? 'good' : Object.keys(openGraph).length > 0 ? 'warning' : 'error',
+                    message: Object.keys(openGraph).length > 2
+                        ? 'Your page has Open Graph tags configured.'
+                        : Object.keys(openGraph).length > 0
+                            ? 'Your page has some Open Graph tags but may be missing others.'
+                            : 'No Open Graph tags found on your page.'
+                },
+                twitterCards: {
+                    hasTwitterCards: Object.keys(twitter).length > 0,
+                    twitter: twitter,
+                    status: Object.keys(twitter).length > 0 ? 'good' : 'warning',
+                    message: Object.keys(twitter).length > 0
+                        ? 'Your page has Twitter Cards configured.'
+                        : 'No Twitter Cards found on your page.'
+                },
+                socialProfiles: {
+                    links: socialLinks,
+                    count: socialLinksCount,
+                    status: socialLinksCount >= 2 ? 'good' : socialLinksCount === 1 ? 'warning' : 'error',
+                    message: socialLinksCount >= 2
+                        ? `Found ${socialLinksCount} social media profiles.`
+                        : socialLinksCount === 1
+                            ? 'Only one social media profile found. Consider adding more.'
+                            : 'No social media profiles found on your page.'
+                },
+                contactInfo: {
+                    hasPhone: phoneNumbers.length > 0 || contactPhone !== null,
+                    phoneNumbers: phoneNumbers.length > 0 ? phoneNumbers : (contactPhone ? [contactPhone] : []),
+                    hasAddress: addresses.length > 0 || contactAddress !== null,
+                    addresses: addresses.length > 0 ? addresses : (contactAddress ? [contactAddress] : []),
+                    hasContactPage: hasContactPage,
+                    status: (phoneNumbers.length > 0 || contactPhone !== null) ? 'good' : 'warning',
+                    message: (phoneNumbers.length > 0 || contactPhone !== null)
+                        ? 'Contact information is available on your page.'
+                        : 'No phone number found on your page.'
                 }
             }
         };

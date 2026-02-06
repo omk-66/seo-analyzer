@@ -292,6 +292,43 @@ interface SEOAnalysisTabbedProps {
             };
         } | null;
         usability?: UsabilityData | null;
+        social?: {
+            openGraph: {
+                hasOpenGraph: boolean;
+                openGraph: Record<string, string>;
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+            twitterCards: {
+                hasTwitterCards: boolean;
+                twitter: Record<string, string>;
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+            socialProfiles: {
+                links: {
+                    youtube: string | null;
+                    facebook: string | null;
+                    linkedin: string | null;
+                    instagram: string | null;
+                    twitter: string | null;
+                    pinterest: string | null;
+                    tiktok: string | null;
+                };
+                count: number;
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+            contactInfo: {
+                hasPhone: boolean;
+                phoneNumbers: string[];
+                hasAddress: boolean;
+                addresses: string[];
+                hasContactPage: boolean;
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+        } | null;
     } | null;
     url?: string;
 }
@@ -1023,8 +1060,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.desktopScores.performance >= 90 ? 'text-green-600' :
-                                                                analysis.usability.desktopScores.performance >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.desktopScores.performance >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.desktopScores.performance}
                                                         </div>
@@ -1039,8 +1076,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.desktopScores.accessibility >= 90 ? 'text-green-600' :
-                                                                analysis.usability.desktopScores.accessibility >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.desktopScores.accessibility >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.desktopScores.accessibility}
                                                         </div>
@@ -1055,8 +1092,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.desktopScores.bestPractices >= 90 ? 'text-green-600' :
-                                                                analysis.usability.desktopScores.bestPractices >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.desktopScores.bestPractices >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.desktopScores.bestPractices}
                                                         </div>
@@ -1071,8 +1108,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.desktopScores.seo >= 90 ? 'text-green-600' :
-                                                                analysis.usability.desktopScores.seo >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.desktopScores.seo >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.desktopScores.seo}
                                                         </div>
@@ -1105,8 +1142,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.mobileScores.performance >= 90 ? 'text-green-600' :
-                                                                analysis.usability.mobileScores.performance >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.mobileScores.performance >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.mobileScores.performance}
                                                         </div>
@@ -1121,8 +1158,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.mobileScores.accessibility >= 90 ? 'text-green-600' :
-                                                                analysis.usability.mobileScores.accessibility >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.mobileScores.accessibility >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.mobileScores.accessibility}
                                                         </div>
@@ -1137,8 +1174,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.mobileScores.bestPractices >= 90 ? 'text-green-600' :
-                                                                analysis.usability.mobileScores.bestPractices >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.mobileScores.bestPractices >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.mobileScores.bestPractices}
                                                         </div>
@@ -1153,8 +1190,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                         strokeWidth={5}
                                                     >
                                                         <div className={`text-2xl font-bold ${analysis.usability.mobileScores.seo >= 90 ? 'text-green-600' :
-                                                                analysis.usability.mobileScores.seo >= 70 ? 'text-yellow-500' :
-                                                                    'text-red-600'
+                                                            analysis.usability.mobileScores.seo >= 70 ? 'text-yellow-500' :
+                                                                'text-red-600'
                                                             }`}>
                                                             {analysis.usability.mobileScores.seo}
                                                         </div>
@@ -1670,22 +1707,202 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                 {/* Social Tab */}
                 <TabsContent value="social">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Share2 className="w-5 h-5" />
-                                Social Media Analysis
-                            </CardTitle>
-                            <CardDescription>
-                                Social media presence for {url || analysis?.url || 'your website'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-500 text-center py-8">
-                                Social media analysis will be added here in the next task.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6">
+                        {/* Open Graph Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Share2 className="w-5 h-5" />
+                                    Open Graph Analysis
+                                </CardTitle>
+                                <CardDescription>
+                                    Open Graph protocol for social sharing
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.social?.openGraph?.status || 'warning')}`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        {getStatusIcon(analysis?.social?.openGraph?.status || 'warning')}
+                                        <span className="font-medium">Open Graph Status</span>
+                                    </div>
+                                    <p className="text-sm">
+                                        {analysis?.social?.openGraph?.message || 'No Open Graph data available'}
+                                    </p>
+                                </div>
+
+                                {analysis?.social?.openGraph?.hasOpenGraph && (
+                                    <div className="mt-4 grid grid-cols-2 gap-3">
+                                        {Object.entries(analysis.social.openGraph.openGraph || {}).map(([key, value]) => (
+                                            <div key={key} className="p-3 bg-gray-50 rounded text-sm">
+                                                <div className="font-medium text-gray-700 capitalize">{key.replace('og:', '')}</div>
+                                                <div className="text-gray-600 truncate" title={value as string}>{value as string}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Twitter Cards Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Share2 className="w-5 h-5" />
+                                    Twitter Cards Analysis
+                                </CardTitle>
+                                <CardDescription>
+                                    Twitter Card metadata for social sharing
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.social?.twitterCards?.status || 'warning')}`}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        {getStatusIcon(analysis?.social?.twitterCards?.status || 'warning')}
+                                        <span className="font-medium">Twitter Cards Status</span>
+                                    </div>
+                                    <p className="text-sm">
+                                        {analysis?.social?.twitterCards?.message || 'No Twitter Cards data available'}
+                                    </p>
+                                </div>
+
+                                {analysis?.social?.twitterCards?.hasTwitterCards && (
+                                    <div className="mt-4 grid grid-cols-2 gap-3">
+                                        {Object.entries(analysis.social.twitterCards.twitter || {}).map(([key, value]) => (
+                                            <div key={key} className="p-3 bg-gray-50 rounded text-sm">
+                                                <div className="font-medium text-gray-700 capitalize">{key.replace('twitter:', '')}</div>
+                                                <div className="text-gray-600 truncate" title={value as string}>{value as string}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Social Profiles Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Share2 className="w-5 h-5" />
+                                    Social Media Profiles
+                                </CardTitle>
+                                <CardDescription>
+                                    Social media profiles linked from your website
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.social?.socialProfiles?.status || 'error')}`}>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {getStatusIcon(analysis?.social?.socialProfiles?.status || 'error')}
+                                        <span className="font-medium">Profiles Found: {analysis?.social?.socialProfiles?.count || 0}</span>
+                                    </div>
+                                    <p className="text-sm">
+                                        {analysis?.social?.socialProfiles?.message || 'No social media profiles found'}
+                                    </p>
+                                </div>
+
+                                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {[
+                                        { key: 'youtube', label: 'YouTube', icon: '▶️' },
+                                        { key: 'facebook', label: 'Facebook', icon: '📘' },
+                                        { key: 'twitter', label: 'Twitter/X', icon: '🐦' },
+                                        { key: 'instagram', label: 'Instagram', icon: '📷' },
+                                        { key: 'linkedin', label: 'LinkedIn', icon: '💼' },
+                                        { key: 'pinterest', label: 'Pinterest', icon: '📌' },
+                                        { key: 'tiktok', label: 'TikTok', icon: '🎵' },
+                                    ].map(({ key, label, icon }) => {
+                                        const link = analysis?.social?.socialProfiles?.links?.[key as keyof typeof analysis.social.socialProfiles.links];
+                                        return (
+                                            <div
+                                                key={key}
+                                                className={`p-3 rounded border ${link ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 opacity-50'}`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span>{icon}</span>
+                                                    <span className="font-medium text-sm">{label}</span>
+                                                </div>
+                                                <div className="text-xs mt-1 text-gray-600 truncate" title={link || 'Not found'}>
+                                                    {link ? (
+                                                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                                            Found
+                                                        </a>
+                                                    ) : 'Not found'}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Contact Information Card */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Share2 className="w-5 h-5" />
+                                    Contact Information
+                                </CardTitle>
+                                <CardDescription>
+                                    Contact details found on your website
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.social?.contactInfo?.status || 'warning')}`}>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {getStatusIcon(analysis?.social?.contactInfo?.status || 'warning')}
+                                        <span className="font-medium">Contact Status</span>
+                                    </div>
+                                    <p className="text-sm">
+                                        {analysis?.social?.contactInfo?.message || 'No contact information available'}
+                                    </p>
+                                </div>
+
+                                <div className="mt-4 space-y-3">
+                                    {/* Phone Numbers */}
+                                    {analysis?.social?.contactInfo?.hasPhone && (
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-lg">📞</span>
+                                                <span className="font-medium text-green-800">Phone Numbers</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                {analysis.social.contactInfo.phoneNumbers.map((phone, i) => (
+                                                    <div key={i} className="text-sm text-green-700">{phone}</div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Addresses */}
+                                    {analysis?.social?.contactInfo?.hasAddress && (
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-lg">📍</span>
+                                                <span className="font-medium text-green-800">Addresses</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                {analysis.social.contactInfo.addresses.map((address, i) => (
+                                                    <div key={i} className="text-sm text-green-700">{address}</div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Contact Page */}
+                                    <div className={`p-3 rounded border ${analysis?.social?.contactInfo?.hasContactPage ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg">🔗</span>
+                                            <span className={`font-medium ${analysis?.social?.contactInfo?.hasContactPage ? 'text-green-800' : 'text-yellow-800'}`}>
+                                                Contact/About Page
+                                            </span>
+                                        </div>
+                                        <div className="text-sm mt-1 text-gray-600">
+                                            {analysis?.social?.contactInfo?.hasContactPage ? 'Found' : 'Not found'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
