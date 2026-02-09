@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,12 @@ import {
     Building,
     FileText as FileTextIcon,
     Monitor,
-    Smartphone
+    Smartphone,
+    Youtube,
+    Facebook,
+    Twitter,
+    Instagram,
+    Linkedin
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
@@ -668,11 +673,11 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                 </thead>
                                                 <tbody>
                                                     {[
-                                                        { tag: 'H2', count: onPageSEO.headers.headerFrequency.h2, max: 10 },
-                                                        { tag: 'H3', count: onPageSEO.headers.headerFrequency.h3, max: 10 },
-                                                        { tag: 'H4', count: onPageSEO.headers.headerFrequency.h4, max: 5 },
-                                                        { tag: 'H5', count: onPageSEO.headers.headerFrequency.h5, max: 3 },
-                                                        { tag: 'H6', count: onPageSEO.headers.headerFrequency.h6, max: 3 },
+                                                        { tag: 'H2', count: onPageSEO.headers.headerFrequency.h2 },
+                                                        { tag: 'H3', count: onPageSEO.headers.headerFrequency.h3 },
+                                                        { tag: 'H4', count: onPageSEO.headers.headerFrequency.h4 },
+                                                        { tag: 'H5', count: onPageSEO.headers.headerFrequency.h5 },
+                                                        { tag: 'H6', count: onPageSEO.headers.headerFrequency.h6 },
                                                     ].map((item) => (
                                                         <tr key={item.tag} className="border-b">
                                                             <td className="py-2 px-3 font-medium">{item.tag}</td>
@@ -680,7 +685,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                             <td className="py-2 px-3">
                                                                 <div className="flex items-center gap-2">
                                                                     <Progress
-                                                                        value={(item.count / item.max) * 100}
+                                                                        value={(item.count / Math.max(...Object.values(onPageSEO.headers.headerFrequency))) * 100}
                                                                         className="h-2 flex-1"
                                                                     />
                                                                     <span className="text-xs text-gray-500 w-8">
@@ -1436,7 +1441,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                     </CardContent>
                                 </Card>
 
-                                {/* Core Web Vitals */}
+                                {/* Core Web Vitals with Radial Gauges */}
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
@@ -1445,34 +1450,19 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div className="p-4 border rounded-lg">
-                                                <div className="text-sm text-gray-600">Largest Contentful Paint</div>
-                                                <div className="text-xl font-semibold">
-                                                    {analysis.performance.performance.largestContentfulPaintMs
-                                                        ? `${(analysis.performance.performance.largestContentfulPaintMs / 1000).toFixed(2)}s`
-                                                        : 'N/A'
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div className="p-4 border rounded-lg">
-                                                <div className="text-sm text-gray-600">Cumulative Layout Shift</div>
-                                                <div className="text-xl font-semibold">
-                                                    {analysis.performance.performance.cumulativeLayoutShift !== null
-                                                        ? analysis.performance.performance.cumulativeLayoutShift.toFixed(3)
-                                                        : 'N/A'
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div className="p-4 border rounded-lg">
-                                                <div className="text-sm text-gray-600">Total Blocking Time</div>
-                                                <div className="text-xl font-semibold">
-                                                    {analysis.performance.performance.totalBlockingTimeMs !== null
-                                                        ? `${analysis.performance.performance.totalBlockingTimeMs}ms`
-                                                        : 'N/A'
-                                                    }
-                                                </div>
-                                            </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            {/* LCP Gauge */}
+                                            <LCPRadialGauge
+                                                value={analysis?.performance?.performance?.largestContentfulPaintMs}
+                                            />
+                                            {/* CLS Gauge */}
+                                            <CLSRadialGauge
+                                                value={analysis?.performance?.performance?.cumulativeLayoutShift}
+                                            />
+                                            {/* TBT Gauge */}
+                                            <TBTRadialGauge
+                                                value={analysis?.performance?.performance?.totalBlockingTimeMs}
+                                            />
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -1544,11 +1534,11 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                     </CardHeader>
                                     <CardContent>
                                         <div className="space-y-4">
-                                            {Object.entries(analysis.performance.resourceBreakdown)
+                                            {analysis?.performance?.resourceBreakdown && Object.entries(analysis.performance.resourceBreakdown)
                                                 .filter(([key]) => key !== 'totalRequests')
                                                 .map(([resourceType, data]) => {
                                                     // Calculate total size from all resource types (excluding totalRequests)
-                                                    const resourceEntries = Object.entries(analysis.performance.resourceBreakdown)
+                                                    const resourceEntries = Object.entries(analysis.performance?.resourceBreakdown || {})
                                                         .filter(([k]) => k !== 'totalRequests');
                                                     const totalSize = resourceEntries.reduce((sum, [, d]) => sum + (d as any).sizeKB, 0);
                                                     const percentage = totalSize > 0 ? ((data as any).sizeKB / totalSize) * 100 : 0;
@@ -1802,13 +1792,13 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                                     {[
-                                        { key: 'youtube', label: 'YouTube', icon: '▶️' },
-                                        { key: 'facebook', label: 'Facebook', icon: '📘' },
-                                        { key: 'twitter', label: 'Twitter/X', icon: '🐦' },
-                                        { key: 'instagram', label: 'Instagram', icon: '📷' },
-                                        { key: 'linkedin', label: 'LinkedIn', icon: '💼' },
-                                        { key: 'pinterest', label: 'Pinterest', icon: '📌' },
-                                        { key: 'tiktok', label: 'TikTok', icon: '🎵' },
+                                        { key: 'youtube', label: 'YouTube', icon: <Youtube /> },
+                                        { key: 'facebook', label: 'Facebook', icon: <Facebook /> },
+                                        { key: 'twitter', label: 'Twitter/X', icon: <Twitter /> },
+                                        { key: 'instagram', label: 'Instagram', icon: <Instagram /> },
+                                        { key: 'linkedin', label: 'LinkedIn', icon: <Linkedin /> },
+                                        { key: 'pinterest', label: 'Pinterest', icon: <LinkIcon /> },
+                                        { key: 'tiktok', label: 'TikTok', icon: <LinkIcon /> },
                                     ].map(({ key, label, icon }) => {
                                         const link = analysis?.social?.socialProfiles?.links?.[key as keyof typeof analysis.social.socialProfiles.links];
                                         return (
@@ -1906,6 +1896,188 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                 </TabsContent>
             </Tabs>
         </div>
+    );
+}
+
+// Custom SVG Radial Gauge Component
+function RadialGauge({
+    value,
+    min = 0,
+    max = 100,
+    label,
+    unit,
+    thresholds
+}: {
+    value: number | null | undefined;
+    min?: number;
+    max?: number;
+    label: string;
+    unit: string;
+    thresholds: { good: number; warning: number };
+}) {
+    const gaugeValue = value || 0;
+    const percentage = Math.min(Math.max((gaugeValue - min) / (max - min), 0), 1);
+
+    const getColor = () => {
+        if (gaugeValue <= thresholds.good) return '#22c55e';
+        if (gaugeValue <= thresholds.warning) return '#eab308';
+        return '#ef4444';
+    };
+
+    const radius = 55;
+    const strokeWidth = 14;
+    const centerX = 80;
+    const centerY = 70;
+    const startAngle = -135; // Start from top-left (225 degrees in standard position)
+    const endAngle = 45; // End at bottom-right (45 degrees in standard position)
+
+    // Calculate the needle angle based on percentage
+    // The arc goes from -135° to +45° (a 270° sweep)
+    const needleAngle = startAngle + (percentage * 270);
+
+    // Convert angle to radians for needle tip position
+    const needleRadians = (needleAngle * Math.PI) / 180;
+
+    // Calculate needle tip position
+    const needleTipX = centerX + (radius - 8) * Math.cos(needleRadians);
+    const needleTipY = centerY + (radius - 8) * Math.sin(needleRadians);
+
+    // Helper function to create arc path
+    const createArcPath = (startPct: number, endPct: number) => {
+        const arcStartAngle = startAngle + (startPct * 270);
+        const arcEndAngle = startAngle + (endPct * 270);
+
+        const startRad = (arcStartAngle * Math.PI) / 180;
+        const endRad = (arcEndAngle * Math.PI) / 180;
+
+        const x1 = centerX + radius * Math.cos(startRad);
+        const y1 = centerY + radius * Math.sin(startRad);
+        const x2 = centerX + radius * Math.cos(endRad);
+        const y2 = centerY + radius * Math.sin(endRad);
+
+        const largeArcFlag = endPct - startPct > 0.5 ? 1 : 0;
+
+        return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`;
+    };
+
+    return (
+        <div className="flex flex-col items-center p-2">
+            <svg width="160" height="120" viewBox="0 0 160 120">
+                {/* Background arc */}
+                <path
+                    d={createArcPath(0, 1)}
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                />
+
+                {/* Green zone (0 to good threshold) */}
+                <path
+                    d={createArcPath(0, (thresholds.good - min) / (max - min))}
+                    fill="none"
+                    stroke="#22c55e"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="butt"
+                />
+
+                {/* Yellow zone (good to warning threshold) */}
+                {thresholds.warning > thresholds.good && (
+                    <path
+                        d={createArcPath((thresholds.good - min) / (max - min), (thresholds.warning - min) / (max - min))}
+                        fill="none"
+                        stroke="#eab308"
+                        strokeWidth={strokeWidth}
+                        strokeLinecap="butt"
+                    />
+                )}
+
+                {/* Red zone (warning to max) */}
+                <path
+                    d={createArcPath((thresholds.warning - min) / (max - min), 1)}
+                    fill="none"
+                    stroke="#ef4444"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                />
+
+                {/* Needle */}
+                <line
+                    x1={centerX} y1={centerY} x2={needleTipX} y2={needleTipY}
+                    stroke={getColor()}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                />
+                <circle cx={centerX} cy={centerY} r="5" fill={getColor()} />
+
+                {/* Labels */}
+                <text x={centerX - 45} y={centerY + radius + 18} fontSize="9" fill="#6b7280" textAnchor="middle">{min}</text>
+                <text x={centerX} y={centerY + radius + 18} fontSize="9" fill="#6b7280" textAnchor="middle">{((min + max) / 2).toFixed(0)}</text>
+                <text x={centerX + 45} y={centerY + radius + 18} fontSize="9" fill="#6b7280" textAnchor="middle">{max}</text>
+
+                {/* Value display */}
+                <text x={centerX} y={centerY - 5} fontSize="14" fontWeight="bold" fill={getColor()} textAnchor="middle">
+                    {gaugeValue > 0 ? `${gaugeValue.toFixed(1)}${unit}` : 'N/A'}
+                </text>
+                <text x={centerX} y={centerY + 28} fontSize="10" fontWeight="bold" fill="#374151" textAnchor="middle">{label}</text>
+            </svg>
+
+            <div className="mt-1 text-center">
+                <div className="text-xs text-gray-500">
+                    <span className="text-green-600">Good: ≤{thresholds.good}{unit}</span> •
+                    <span className="text-yellow-600 ml-1">Warning: ≤{thresholds.warning}{unit}</span> •
+                    <span className="text-red-600 ml-1">Poor: &gt;{thresholds.warning}{unit}</span>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// LCP Radial Gauge Component
+function LCPRadialGauge({ value }: { value: number | null | undefined }) {
+    const lcpValue = value ? value / 1000 : 0;
+
+    return (
+        <RadialGauge
+            value={lcpValue}
+            min={0}
+            max={5}
+            label="LCP"
+            unit="s"
+            thresholds={{ good: 2.5, warning: 4 }}
+        />
+    );
+}
+
+// CLS Radial Gauge Component
+function CLSRadialGauge({ value }: { value: number | null | undefined }) {
+    const clsValue = value || 0;
+
+    return (
+        <RadialGauge
+            value={clsValue}
+            min={0}
+            max={0.5}
+            label="CLS"
+            unit=""
+            thresholds={{ good: 0.1, warning: 0.25 }}
+        />
+    );
+}
+
+// TBT Radial Gauge Component
+function TBTRadialGauge({ value }: { value: number | null | undefined }) {
+    const tbtValue = value || 0;
+
+    return (
+        <RadialGauge
+            value={tbtValue}
+            min={0}
+            max={1000}
+            label="TBT"
+            unit="ms"
+            thresholds={{ good: 200, warning: 600 }}
+        />
     );
 }
 

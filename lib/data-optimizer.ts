@@ -79,7 +79,7 @@ export const optimizeWebsiteContent = (websiteContent: any) => {
       hasCanonical: websiteContent.performance.hasCanonical,
       hasOpenGraph: websiteContent.performance.hasOpenGraph,
       hasTwitterCards: websiteContent.performance.hasTwitterCards,
-      structuredDataTypes: websiteContent.performance.structuredDataTypes.slice(0, 5) // Max 5 types
+      structuredDataTypes: websiteContent.performance.structuredDataTypes.slice(0, 5)
     },
 
     // Keep meta tags (they're usually small)
