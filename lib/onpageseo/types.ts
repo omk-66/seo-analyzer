@@ -120,6 +120,13 @@ export interface OnPageSEOAnalysis {
     analytics: {
         hasAnalytics: boolean;
         analyticsType: string | null;
+        detectedTools: Array<{
+            name: string;
+            category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+            confidence: 'high' | 'medium' | 'low';
+            detectedBy: string;
+            details?: string;
+        }>;
         status: 'good' | 'warning' | 'error';
         message: string;
     };

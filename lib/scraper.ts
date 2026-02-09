@@ -78,6 +78,15 @@ function classifyImage(img: any, index: number, totalImages: number): Partial<Im
     };
 }
 
+// Interface for detected analytics tools
+export interface DetectedAnalyticsTool {
+    name: string;
+    category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+    confidence: 'high' | 'medium' | 'low';
+    detectedBy: string;
+    details?: string;
+};
+
 export interface WebsiteContent {
     url: string;
     title: string;
@@ -201,6 +210,7 @@ export interface WebsiteContent {
     analytics: {
         hasAnalytics: boolean;
         analyticsType: string | null;
+        detectedTools: DetectedAnalyticsTool[];
     };
     structuredData: {
         hasJsonLd: boolean;
@@ -627,12 +637,146 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
             llmsTxtExists = false;
         }
 
-        // Analytics check
-        const hasGoogleAnalytics =
-            $('script[src*="googletagmanager.com"]').length > 0 ||
-            $('script[src*="google-analytics.com"]').length > 0 ||
+        // Comprehensive Analytics Detection
+        const detectedAnalyticsTools: DetectedAnalyticsTool[] = [];
+
+        // Get all scripts for analysis
+        const allScripts = $('script[src]').map((i, el) => $(el).attr('src')).get();
+        const inlineScripts = $('script').not('[src]').map((i, el) => $(el).html()).get();
+        const allScriptContent = allScripts.join(' ') + ' ' + inlineScripts.join(' ');
+
+        // Google Analytics GA4 detection (gtag, G-XXXXXXX)
+        const hasGA4 =
+            allScriptContent.includes('gtag(') ||
+            allScriptContent.match(/G-[A-Z0-9]{6,}/i) !== null ||
+            $('script[src*="googletagmanager.com"]').length > 0;
+        if (hasGA4) {
+            const gtmMatch = $('script[src*="googletagmanager.com"]').attr('src')?.match(/GTM-[A-Z0-9]+/i);
+            detectedAnalyticsTools.push({
+                name: 'Google Analytics (GA4)',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'gtag( or G-XXXXXXX pattern',
+                details: gtmMatch ? `Container: ${gtmMatch[0]}` : 'gtag.js detected'
+            });
+        }
+
+        // Universal Analytics detection (analytics.js, UA-)
+        const hasUniversalAnalytics =
+            $('script[src*="analytics.js"]').length > 0 ||
             $('script[src*="ga.js"]').length > 0 ||
-            $('script[src*="analytics.js"]').length > 0;
+            allScriptContent.match(/UA-[0-9]{4,}-[0-9]{1,}/i) !== null;
+        if (hasUniversalAnalytics) {
+            const uaMatch = allScriptContent.match(/UA-[0-9]{4,}-[0-9]{1,}/i);
+            detectedAnalyticsTools.push({
+                name: 'Universal Analytics',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'analytics.js or UA-XXXXX-X pattern',
+                details: uaMatch ? `Tracking ID: ${uaMatch[0]}` : 'analytics.js detected'
+            });
+        }
+
+        // Google Tag Manager detection (GTM-)
+        const hasGTM = $('script[src*="googletagmanager.com"]').length > 0;
+        if (hasGTM) {
+            const gtmId = $('script[src*="googletagmanager.com"]').attr('src')?.match(/GTM-[A-Z0-9]+/i)?.[0];
+            // Only add if not already added as GA4
+            if (!detectedAnalyticsTools.find(t => t.name === 'Google Analytics (GA4)')) {
+                detectedAnalyticsTools.push({
+                    name: 'Google Tag Manager',
+                    category: 'all-in-one',
+                    confidence: 'high',
+                    detectedBy: 'googletagmanager.com',
+                    details: gtmId ? `Container: ${gtmId}` : 'GTM container detected'
+                });
+            }
+        }
+
+        // Facebook Pixel detection (fbq())
+        const hasFacebookPixel = allScriptContent.includes('fbq(');
+        if (hasFacebookPixel) {
+            const fbqMatch = allScriptContent.match(/fbq\(['"]init['"],\s*['"][0-9]{5,}/i);
+            detectedAnalyticsTools.push({
+                name: 'Facebook Pixel',
+                category: 'marketing',
+                confidence: 'high',
+                detectedBy: 'fbq(',
+                details: fbqMatch ? `Pixel ID: ${fbqMatch[0].match(/[0-9]{5,}/)?.[0]}` : 'Facebook Pixel detected'
+            });
+        }
+
+        // Hotjar detection (hotjar, hjSettings)
+        const hasHotjar =
+            allScriptContent.includes('hotjar') ||
+            allScriptContent.includes('hjSettings') ||
+            $('script[src*="static.hotjar.com"]').length > 0;
+        if (hasHotjar) {
+            const hjMatch = allScriptContent.match(/hj\s*\([\s\S]*?,\s*?[0-9]+\)/i);
+            detectedAnalyticsTools.push({
+                name: 'Hotjar',
+                category: 'heatmap',
+                confidence: 'high',
+                detectedBy: 'hotjar or hjSettings',
+                details: 'Heatmap and session recording detected'
+            });
+        }
+
+        // Mixpanel detection (mixpanel.init)
+        const hasMixpanel = allScriptContent.includes('mixpanel.init');
+        if (hasMixpanel) {
+            detectedAnalyticsTools.push({
+                name: 'Mixpanel',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'mixpanel.init',
+                details: 'Mixpanel analytics detected'
+            });
+        }
+
+        // Segment detection (analytics.load)
+        const hasSegment = allScriptContent.includes('analytics.load');
+        if (hasSegment) {
+            detectedAnalyticsTools.push({
+                name: 'Segment',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'analytics.load',
+                details: 'Segment CDP detected'
+            });
+        }
+
+        // Plausible detection (plausible.io/js)
+        const hasPlausible = $('script[src*="plausible.io/js"]').length > 0;
+        if (hasPlausible) {
+            const plausibleScript = $('script[src*="plausible.io/js"]').attr('src');
+            detectedAnalyticsTools.push({
+                name: 'Plausible',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'plausible.io/js',
+                details: plausibleScript?.includes('script.js') ? 'Plausible script.js detected' : 'Plausible detected'
+            });
+        }
+
+        // Matomo detection (matomo.js, _paq.push)
+        const hasMatomo =
+            $('script[src*="matomo.js"]').length > 0 ||
+            allScriptContent.includes('_paq.push');
+        if (hasMatomo) {
+            detectedAnalyticsTools.push({
+                name: 'Matomo',
+                category: 'analytics',
+                confidence: 'high',
+                detectedBy: 'matomo.js or _paq.push',
+                details: 'Matomo Analytics detected'
+            });
+        }
+
+        const hasAnalytics = detectedAnalyticsTools.length > 0;
+        const primaryAnalyticsType = detectedAnalyticsTools.length > 0
+            ? detectedAnalyticsTools.map(t => t.name).join(', ')
+            : null;
 
         // Structured data check
         const hasJsonLd = $('script[type="application/ld+json"]').length > 0;
@@ -731,8 +875,9 @@ export async function scrapeWebsiteServer(url: string): Promise<WebsiteContent> 
                 xmlSitemapExists
             },
             analytics: {
-                hasAnalytics: hasGoogleAnalytics,
-                analyticsType: hasGoogleAnalytics ? 'Google Analytics' : null
+                hasAnalytics,
+                analyticsType: primaryAnalyticsType,
+                detectedTools: detectedAnalyticsTools
             },
             structuredData: {
                 hasJsonLd,

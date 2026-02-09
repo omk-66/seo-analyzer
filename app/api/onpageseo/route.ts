@@ -282,6 +282,7 @@ export async function POST(request: Request) {
             analytics: {
                 hasAnalytics: websiteData.analytics?.hasAnalytics || false,
                 analyticsType: websiteData.analytics?.analyticsType || null,
+                detectedTools: websiteData.analytics?.detectedTools || [],
             },
             structuredData: {
                 hasJsonLd: websiteData.structuredData?.hasJsonLd || false,

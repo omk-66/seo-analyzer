@@ -157,6 +157,13 @@ interface OnPageSEOData {
     analytics: {
         hasAnalytics: boolean;
         analyticsType: string | null;
+        detectedTools: Array<{
+            name: string;
+            category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+            confidence: 'high' | 'medium' | 'low';
+            detectedBy: string;
+            details?: string;
+        }>;
         status: 'good' | 'warning' | 'error';
         message: string;
     };
@@ -515,6 +522,111 @@ function StatusCard({ title, data, icon: Icon, showUrl = false }: {
                         >
                             {url}
                         </a>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+// Custom Analytics Card to display detected analytics tools
+function AnalyticsCard({ data }: {
+    data: {
+        hasAnalytics: boolean;
+        analyticsType: string | null;
+        detectedTools: Array<{
+            name: string;
+            category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+            confidence: 'high' | 'medium' | 'low';
+            detectedBy: string;
+            details?: string;
+        }>;
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    }
+}) {
+    const tools = data.detectedTools || [];
+
+    const getCategoryColor = (category: string) => {
+        switch (category) {
+            case 'analytics': return 'bg-blue-100 text-blue-800';
+            case 'marketing': return 'bg-purple-100 text-purple-800';
+            case 'heatmap': return 'bg-orange-100 text-orange-800';
+            case 'all-in-one': return 'bg-green-100 text-green-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case 'analytics': return <BarChart className="w-4 h-4" />;
+            case 'marketing': return <Share2 className="w-4 h-4" />;
+            case 'heatmap': return <Gauge className="w-4 h-4" />;
+            case 'all-in-one': return <Code className="w-4 h-4" />;
+            default: return <BarChart className="w-4 h-4" />;
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart className="w-5 h-5" />
+                        Analytics
+                    </CardTitle>
+                    {getStatusIcon(data.status)}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Badge className={getStatusColor(data.status)}>
+                    {data.status.toUpperCase()}
+                </Badge>
+                <p className="mt-2 text-sm">{data.message}</p>
+
+                {tools.length > 0 && (
+                    <div className="mt-4 space-y-3">
+                        <p className="text-sm font-medium text-gray-700">Detected Tools:</p>
+                        {tools.map((tool, index) => (
+                            <div
+                                key={index}
+                                className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                            >
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getCategoryColor(tool.category)}`}>
+                                    {getCategoryIcon(tool.category)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                            {tool.name}
+                                        </p>
+                                        <Badge variant="outline" className="text-xs">
+                                            {tool.category}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Detected by: {tool.detectedBy}
+                                    </p>
+                                    {tool.details && (
+                                        <p className="text-xs text-gray-600 mt-1 font-mono bg-gray-100 px-2 py-1 rounded">
+                                            {tool.details}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {tools.length === 0 && (
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-yellow-800">
+                            <AlertTriangle className="w-4 h-4" />
+                            <p className="text-sm font-medium">No Analytics Tools Detected</p>
+                        </div>
+                        <p className="text-xs text-yellow-700 mt-1">
+                            Consider adding analytics tools like Google Analytics, Facebook Pixel, or Hotjar to track your website performance.
+                        </p>
                     </div>
                 )}
             </CardContent>
@@ -897,10 +1009,14 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         />
 
                         {/* Analytics & Schema */}
-                        <StatusCard
-                            title="Analytics"
-                            data={onPageSEO?.analytics || defaultStatusData}
-                            icon={BarChart}
+                        <AnalyticsCard
+                            data={onPageSEO?.analytics || {
+                                hasAnalytics: false,
+                                analyticsType: null,
+                                detectedTools: [],
+                                status: 'warning',
+                                message: 'No analytics data available'
+                            }}
                         />
 
                         <StatusCard

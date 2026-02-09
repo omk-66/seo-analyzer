@@ -472,30 +472,42 @@ function analyzeXmlSitemap(xmlSitemapExists: boolean | undefined, xmlSitemapUrl:
 }
 
 // Analytics Analysis
-function analyzeAnalytics(hasAnalytics: boolean | undefined, analyticsType: string | null): OnPageSEOAnalysis['analytics'] {
-    if (hasAnalytics && analyticsType) {
-        return {
-            hasAnalytics: true,
-            analyticsType,
-            status: 'good',
-            message: `Your page is using an analytics tool. ${analyticsType}`,
-        };
-    }
+function analyzeAnalytics(
+    hasAnalytics: boolean | undefined,
+    analyticsType: string | null,
+    detectedTools: Array<{
+        name: string;
+        category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+        confidence: 'high' | 'medium' | 'low';
+        detectedBy: string;
+        details?: string;
+    }> | undefined
+): OnPageSEOAnalysis['analytics'] {
+    const tools = detectedTools || [];
 
-    if (hasAnalytics) {
+    if (tools.length > 0) {
+        const toolDetails = tools.map(t => {
+            if (t.details) {
+                return `${t.name} (${t.details})`;
+            }
+            return t.name;
+        }).join(', ');
+
         return {
             hasAnalytics: true,
-            analyticsType: null,
+            analyticsType: tools.map(t => t.name).join(', '),
+            detectedTools: tools,
             status: 'good',
-            message: 'Your page is using an analytics tool.',
+            message: `Your page is using ${tools.length} analytics/marketing tool(s): ${toolDetails}`,
         };
     }
 
     return {
         hasAnalytics: false,
         analyticsType: null,
+        detectedTools: [],
         status: 'warning',
-        message: 'Your page is not using an analytics tool. Consider adding analytics to track performance.',
+        message: 'Your page is not using any analytics tools. Consider adding analytics to track performance.',
     };
 }
 
@@ -603,6 +615,13 @@ export function runOnPageSEOAnalysis(websiteData: {
     analytics?: {
         hasAnalytics?: boolean;
         analyticsType?: string | null;
+        detectedTools?: Array<{
+            name: string;
+            category: 'analytics' | 'marketing' | 'heatmap' | 'all-in-one';
+            confidence: 'high' | 'medium' | 'low';
+            detectedBy: string;
+            details?: string;
+        }>;
     };
     structuredData?: {
         hasJsonLd?: boolean;
@@ -650,7 +669,11 @@ export function runOnPageSEOAnalysis(websiteData: {
         blockedByRobots: analyzeBlockedByRobots(websiteData.crawlers?.blockedByRobots),
         llmsTxt: analyzeLlmsTxt(websiteData.crawlers?.llmsTxtExists, websiteData.crawlers?.llmsTxtUrl),
         xmlSitemap: analyzeXmlSitemap(websiteData.sitemaps?.xmlSitemapExists, websiteData.sitemaps?.xmlSitemapUrl),
-        analytics: analyzeAnalytics(websiteData.analytics?.hasAnalytics, websiteData.analytics?.analyticsType),
+        analytics: analyzeAnalytics(
+            websiteData.analytics?.hasAnalytics,
+            websiteData.analytics?.analyticsType,
+            websiteData.analytics?.detectedTools
+        ),
         schemaOrg: analyzeStructuredData(websiteData.structuredData?.hasJsonLd, websiteData.structuredData?.schemaTypes || []),
         identitySchema: analyzeIdentitySchema(
             websiteData.structuredData?.hasOrganizationSchema,
