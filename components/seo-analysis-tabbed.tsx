@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,12 @@ import {
     Facebook,
     Twitter,
     Instagram,
-    Linkedin
+    Linkedin,
+    Globe,
+    MapPin,
+    Anchor,
+    ArrowRight,
+    ChevronRight
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
@@ -341,6 +346,77 @@ interface SEOAnalysisTabbedProps {
                 message: string;
             };
         } | null;
+        // Backlinks data
+        backlinks?: {
+            counts: {
+                total: number;
+                doFollow: number;
+                fromHomePage: number;
+                doFollowFromHomePage: number;
+                text: number;
+                toHomePage: number;
+            };
+            domains: {
+                total: number;
+                doFollow: number;
+                fromHomePage: number;
+                toHomePage: number;
+            };
+            ips: number | null;
+            cBlocks: number | null;
+            anchors: number | null;
+            anchorUrls: number | null;
+            topTLD: string | null;
+            topCountry: string | null;
+            topAnchorsByBacklinks: Array<{
+                anchor: string;
+                count: number;
+            }>;
+            topAnchorsByDomains: Array<{
+                anchor: string;
+                domains: number;
+            }>;
+            topAnchorUrlsByBacklinks: Array<{
+                url: string;
+                count: number;
+            }>;
+            topAnchorUrlsByDomains: Array<{
+                url: string;
+                domains: number;
+            }>;
+        } | null;
+        // Individual backlinks list
+        backlinkList?: Array<{
+            url_from: string;
+            url_to: string;
+            title: string;
+            anchor: string;
+            alt: string;
+            nofollow: boolean;
+            image: boolean;
+            image_source: string;
+            inlink_rank: number;
+            domain_inlink_rank: number;
+            first_seen: string;
+            last_visited: string;
+        }> | null;
+        // Referral domains data
+        referralDomains?: {
+            referrers: Array<{
+                refdomain: string;
+                backlinks: number;
+                dofollow_backlinks: number;
+                first_seen: string;
+                domain_inlink_rank: number;
+            }>;
+            totalDomains: number;
+            totalBacklinks: number;
+            tldBreakdown: Array<{
+                tld: string;
+                count: number;
+                percentage: number;
+            }>;
+        } | null;
     } | null;
     url?: string;
 }
@@ -637,6 +713,8 @@ function AnalyticsCard({ data }: {
 export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [activeTab, setActiveTab] = useState('onpage');
     const [showImages, setShowImages] = useState(false);
+    const [showAllBacklinks, setShowAllBacklinks] = useState(false);
+    const [showAllReferralDomains, setShowAllReferralDomains] = useState(false);
 
     const onPageSEO = analysis?.onPageSEO;
     const defaultStatusData = { status: 'warning' as const, message: 'No data available' };
@@ -1036,22 +1114,470 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                 {/* Links Tab */}
                 <TabsContent value="links">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <LinkIcon className="w-5 h-5" />
-                                Links Analysis
-                            </CardTitle>
-                            <CardDescription>
-                                Analysis of internal and external links for {url || analysis?.url || 'your website'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-500 text-center py-8">
-                                Links analysis will be added here in the next task.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="space-y-6">
+                        {/* Backlinks Summary Cards */}
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-blue-600">
+                                            {analysis?.backlinks?.counts?.total?.toLocaleString() || '0'}
+                                        </div>
+                                        <div className="text-sm text-blue-700 mt-1 font-medium">Total Backlinks</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-green-600">
+                                            {analysis?.backlinks?.counts?.doFollow?.toLocaleString() || '0'}
+                                        </div>
+                                        <div className="text-sm text-green-700 mt-1 font-medium">DoFollow Links</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-purple-600">
+                                            {analysis?.backlinks?.domains?.total?.toLocaleString() || '0'}
+                                        </div>
+                                        <div className="text-sm text-purple-700 mt-1 font-medium">Unique Domains</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-orange-600">
+                                            {analysis?.backlinks?.counts?.fromHomePage?.toLocaleString() || '0'}
+                                        </div>
+                                        <div className="text-sm text-orange-700 mt-1 font-medium">From Homepages</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200 hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                    <div className="text-center">
+                                        <div className="text-3xl font-bold text-teal-600">
+                                            {analysis?.backlinks?.ips?.toLocaleString() || '0'}
+                                        </div>
+                                        <div className="text-sm text-teal-700 mt-1 font-medium">Total IPs</div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Top Pages by Backlinks */}
+                        {analysis?.backlinks?.topAnchorUrlsByBacklinks && analysis.backlinks.topAnchorUrlsByBacklinks.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Globe className="w-5 h-5 text-blue-600" />
+                                        Top Pages by Backlinks
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Pages on this site receiving the most backlinks
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b bg-gray-50">
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600">URL</th>
+                                                    <th className="text-center py-3 px-3 font-medium text-gray-600">Backlinks</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600 w-1/3">Visualization</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {analysis.backlinks?.topAnchorUrlsByBacklinks?.slice(0, 10).map((item: any, idx: number) => {
+                                                    const maxCount = analysis.backlinks?.topAnchorUrlsByBacklinks?.[0]?.count || 1;
+                                                    const percentage = (item.count / maxCount) * 100;
+                                                    return (
+                                                        <tr key={idx} className="border-b hover:bg-blue-50/50 transition-colors">
+                                                            <td className="py-3 px-3">
+                                                                <a
+                                                                    href={item.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:underline font-medium truncate max-w-xs block"
+                                                                    title={item.url}
+                                                                >
+                                                                    {item.url.length > 60 ? item.url.substring(0, 60) + '...' : item.url}
+                                                                </a>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-center">
+                                                                <span className="font-bold text-blue-600">
+                                                                    {item.count?.toLocaleString()}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                                                                        <div
+                                                                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300"
+                                                                            style={{ width: `${percentage}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-gray-500 min-w-[40px]">
+                                                                        {percentage.toFixed(0)}%
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Top Anchor Texts by Backlinks */}
+                        {analysis?.backlinks?.topAnchorsByBacklinks && analysis.backlinks.topAnchorsByBacklinks.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Anchor className="w-5 h-5 text-green-600" />
+                                        Top Anchor Texts by Backlinks
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Most common anchor texts used in backlinks pointing to this site
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b bg-gray-50">
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600">Anchor Text</th>
+                                                    <th className="text-center py-3 px-3 font-medium text-gray-600">Total Backlinks</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600 w-1/3">Visualization</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {analysis.backlinks?.topAnchorsByBacklinks?.slice(0, 10).map((item: any, idx: number) => {
+                                                    const maxCount = analysis.backlinks?.topAnchorsByBacklinks?.[0]?.count || 1;
+                                                    const percentage = (item.count / maxCount) * 100;
+                                                    return (
+                                                        <tr key={idx} className="border-b hover:bg-green-50/50 transition-colors">
+                                                            <td className="py-3 px-3">
+                                                                <span className="font-medium text-gray-700 truncate max-w-xs block" title={item.anchor}>
+                                                                    {item.anchor || '(no anchor)'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-3 text-center">
+                                                                <span className="font-bold text-green-600">
+                                                                    {item.count?.toLocaleString()}
+                                                                </span>
+                                                            </td>
+                                                            <td className="py-3 px-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                                                                        <div
+                                                                            className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300"
+                                                                            style={{ width: `${percentage}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs text-gray-500 min-w-[40px]">
+                                                                        {percentage.toFixed(0)}%
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Backlink List Table */}
+                        {analysis?.backlinkList && analysis.backlinkList.length > 0 && (
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                <LinkIcon className="w-5 h-5 text-gray-600" />
+                                                Backlink List
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Showing {showAllBacklinks ? analysis.backlinkList.length : Math.min(5, analysis.backlinkList.length)} of {analysis.backlinkList.length.toLocaleString()} total backlinks
+                                            </CardDescription>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setShowAllBacklinks(!showAllBacklinks)}
+                                            className="flex items-center gap-1"
+                                        >
+                                            {showAllBacklinks ? (
+                                                <>
+                                                    Show Less
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Show All Backlinks
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b bg-gray-50">
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600">Source URL</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600">Anchor</th>
+                                                    <th className="text-center py-3 px-3 font-medium text-gray-600">Type</th>
+                                                    <th className="text-center py-3 px-3 font-medium text-gray-600">Inlink Rank</th>
+                                                    <th className="text-left py-3 px-3 font-medium text-gray-600">First Seen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(showAllBacklinks ? analysis.backlinkList : analysis.backlinkList.slice(0, 5)).map((bl: any, idx: number) => (
+                                                    <tr key={idx} className="border-b hover:bg-blue-50/50 transition-colors">
+                                                        <td className="py-3 px-3 max-w-xs truncate">
+                                                            <a
+                                                                href={bl.url_from}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-blue-600 hover:underline font-medium"
+                                                                title={bl.url_from}
+                                                            >
+                                                                {bl.url_from.length > 60 ? bl.url_from.substring(0, 60) + '...' : bl.url_from}
+                                                            </a>
+                                                        </td>
+                                                        <td className="py-3 px-3 max-w-xs truncate" title={bl.anchor}>
+                                                            <span className="bg-gray-100 px-2 py-1 rounded text-gray-700">
+                                                                {bl.anchor || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-center">
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                {bl.nofollow ? (
+                                                                    <Badge variant="destructive" className="text-xs">NF</Badge>
+                                                                ) : (
+                                                                    <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-200">DF</Badge>
+                                                                )}
+                                                                {bl.image && (
+                                                                    <Badge variant="outline" className="text-xs bg-blue-50">IMG</Badge>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-center">
+                                                            <span className="font-mono text-gray-600">
+                                                                {bl.inlink_rank?.toLocaleString() || '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-gray-500">
+                                                            {bl.first_seen ? new Date(bl.first_seen).toLocaleDateString() : '-'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Referral Domains Section */}
+                        {analysis?.referralDomains?.referrers && analysis.referralDomains.referrers.length > 0 && (
+                            <div className="space-y-6">
+                                {/* TLD Breakdown with Progress Circles */}
+                                {analysis.referralDomains.tldBreakdown && analysis.referralDomains.tldBreakdown.length > 0 && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2 text-lg">
+                                                <Globe className="w-5 h-5 text-purple-600" />
+                                                TLD Breakdown
+                                            </CardTitle>
+                                            <CardDescription>
+                                                Distribution of referring domains by top-level domain
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                                {analysis.referralDomains.tldBreakdown.slice(0, 6).map((tld: any, idx: number) => (
+                                                    <div key={idx} className="flex flex-col items-center">
+                                                        <ProgressCircle
+                                                            value={tld.percentage}
+                                                            variant={tld.percentage >= 50 ? 'success' : tld.percentage >= 25 ? 'warning' : 'default'}
+                                                            radius={35}
+                                                            strokeWidth={6}
+                                                        >
+                                                            <span className="text-lg font-bold text-gray-700">{tld.tld}</span>
+                                                        </ProgressCircle>
+                                                        <div className="text-center mt-2">
+                                                            <div className="font-medium text-gray-700">{tld.count}</div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {tld.percentage.toFixed(1)}%
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Top Referring Domains Table */}
+                                <Card>
+                                    <CardHeader>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle className="flex items-center gap-2 text-lg">
+                                                    <LinkIcon className="w-5 h-5 text-blue-600" />
+                                                    Top Referring Domains
+                                                </CardTitle>
+                                                <CardDescription>
+                                                    Showing {showAllReferralDomains ? analysis.referralDomains.referrers.length : Math.min(5, analysis.referralDomains.referrers.length)} of {analysis.referralDomains.totalDomains?.toLocaleString() || analysis.referralDomains.referrers.length} total domains
+                                                </CardDescription>
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowAllReferralDomains(!showAllReferralDomains)}
+                                                className="flex items-center gap-1"
+                                            >
+                                                {showAllReferralDomains ? (
+                                                    "Show Less"
+                                                ) : (
+                                                    <>
+                                                        Show More
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="border-b bg-gray-50">
+                                                        <th className="text-left py-3 px-3 font-medium text-gray-600">Referring Domain</th>
+                                                        <th className="text-center py-3 px-3 font-medium text-gray-600">Backlinks</th>
+                                                        <th className="text-center py-3 px-3 font-medium text-gray-600">DoFollow</th>
+                                                        <th className="text-left py-3 px-3 font-medium text-gray-600 w-1/3">Visualization</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {(showAllReferralDomains ? analysis.referralDomains.referrers : analysis.referralDomains.referrers.slice(0, 5)).map((ref: any, idx: number) => {
+                                                        const maxBacklinks = analysis.referralDomains.referrers[0]?.backlinks || 1;
+                                                        const percentage = (ref.backlinks / maxBacklinks) * 100;
+                                                        return (
+                                                            <tr key={idx} className="border-b hover:bg-purple-50/50 transition-colors">
+                                                                <td className="py-3 px-3">
+                                                                    <a
+                                                                        href={`https://${ref.refdomain}`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-blue-600 hover:underline font-medium truncate max-w-xs block"
+                                                                        title={ref.refdomain}
+                                                                    >
+                                                                        {ref.refdomain}
+                                                                    </a>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-center">
+                                                                    <span className="font-bold text-blue-600">
+                                                                        {ref.backlinks?.toLocaleString()}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3 px-3 text-center">
+                                                                    <span className="font-medium text-green-600">
+                                                                        {ref.dofollow_backlinks?.toLocaleString()}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-3 px-3">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="flex-1 bg-gray-200 rounded-full h-3">
+                                                                            <div
+                                                                                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+                                                                                style={{ width: `${percentage}%` }}
+                                                                            />
+                                                                        </div>
+                                                                        <span className="text-xs text-gray-500 min-w-[40px]">
+                                                                            {percentage.toFixed(0)}%
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
+
+                        {/* Top TLD and Country */}
+                        {(analysis?.backlinks?.topTLD || analysis?.backlinks?.topCountry) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {analysis?.backlinks?.topTLD && (
+                                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <Globe className="w-4 h-4 text-indigo-600" />
+                                                Top TLD
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold text-indigo-600">
+                                                {analysis.backlinks.topTLD}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {analysis?.backlinks?.topCountry && (
+                                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base flex items-center gap-2">
+                                                <MapPin className="w-4 h-4 text-emerald-600" />
+                                                Top Country
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold text-emerald-600">
+                                                {analysis.backlinks.topCountry}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
+                        )}
+
+                        {/* No backlinks message */}
+                        {(!analysis?.backlinks?.counts?.total || analysis.backlinks.counts.total === 0) && (
+                            <Card>
+                                <CardContent className="p-8 text-center">
+                                    <LinkIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                    <p className="text-gray-500">
+                                        No backlinks data available for this website.
+                                    </p>
+                                    <p className="text-sm text-gray-400 mt-2">
+                                        Backlinks data is fetched from VEB API when available.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
                 </TabsContent>
 
                 {/* Usability Tab */}

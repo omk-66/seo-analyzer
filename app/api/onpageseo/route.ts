@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { scrapeWebsiteServer } from '@/lib/scraper';
 import { runOnPageSEOAnalysis } from '@/lib/onpageseo/server-analysis';
 import { getFullPageSpeedDashboardData, getCombinedPageSpeedData, CombinedPerformanceData } from '@/lib/pagespeed-dashboard';
+import { getAllBacklinks } from '@/lib/links/back-links';
+import { getReferralDomains, TLDStats } from '@/lib/links/referral-domain';
 
 export interface UsabilityData {
     desktopScreenshot: {
@@ -296,13 +298,148 @@ export async function POST(request: Request) {
         console.log('[DEBUG] Final API response - Performance data exists:', !!performanceData);
         console.log('[DEBUG] Final API response - Usability data exists:', !!usabilityData);
 
+        // Fetch backlinks data
+        const vebApiKey = process.env.VEB_API_KEY;
+        let backlinksData = {
+            counts: {
+                total: 0,
+                doFollow: 0,
+                fromHomePage: 0,
+                doFollowFromHomePage: 0,
+                text: 0,
+                toHomePage: 0,
+            },
+            domains: {
+                total: 0,
+                doFollow: 0,
+                fromHomePage: 0,
+                toHomePage: 0,
+            },
+            ips: null as number | null,
+            cBlocks: null as number | null,
+            anchors: null as number | null,
+            anchorUrls: null as number | null,
+            topTLD: null as string | null,
+            topCountry: null as string | null,
+            topAnchorsByBacklinks: [] as Array<{ anchor: string; count: number }>,
+            topAnchorsByDomains: [] as Array<{ anchor: string; domains: number }>,
+            topAnchorUrlsByBacklinks: [] as Array<{ url: string; count: number }>,
+            topAnchorUrlsByDomains: [] as Array<{ url: string; domains: number }>,
+        };
+        let backlinkList: Array<{
+            url_from: string;
+            url_to: string;
+            title: string;
+            anchor: string;
+            alt: string;
+            nofollow: boolean;
+            image: boolean;
+            image_source: string;
+            inlink_rank: number;
+            domain_inlink_rank: number;
+            first_seen: string;
+            last_visited: string;
+        }> = [];
+
+        if (vebApiKey) {
+            try {
+                console.log('[DEBUG] Fetching backlinks data for:', url);
+                const backlinksResponse = await getAllBacklinks(url, vebApiKey);
+
+                // Map the API response to our format
+                backlinksData = {
+                    counts: {
+                        total: backlinksResponse.counts.backlinks.total,
+                        doFollow: backlinksResponse.counts.backlinks.doFollow,
+                        fromHomePage: backlinksResponse.counts.backlinks.fromHomePage,
+                        doFollowFromHomePage: backlinksResponse.counts.backlinks.doFollowFromHomePage,
+                        text: backlinksResponse.counts.backlinks.text,
+                        toHomePage: backlinksResponse.counts.backlinks.toHomePage,
+                    },
+                    domains: {
+                        total: backlinksResponse.counts.domains.total,
+                        doFollow: backlinksResponse.counts.domains.doFollow,
+                        fromHomePage: backlinksResponse.counts.domains.fromHomePage,
+                        toHomePage: backlinksResponse.counts.domains.toHomePage,
+                    },
+                    ips: backlinksResponse.counts.ips,
+                    cBlocks: backlinksResponse.counts.cBlocks,
+                    anchors: backlinksResponse.counts.anchors,
+                    anchorUrls: backlinksResponse.counts.anchorUrls,
+                    topTLD: backlinksResponse.counts.topTLD,
+                    topCountry: backlinksResponse.counts.topCountry,
+                    topAnchorsByBacklinks: backlinksResponse.counts.topAnchorsByBacklinks || [],
+                    topAnchorsByDomains: backlinksResponse.counts.topAnchorsByDomains || [],
+                    topAnchorUrlsByBacklinks: backlinksResponse.counts.topAnchorUrlsByBacklinks || [],
+                    topAnchorUrlsByDomains: backlinksResponse.counts.topAnchorUrlsByDomains || [],
+                };
+
+                // Limit backlink list to first 100 items for performance
+                backlinkList = backlinksResponse.backlinks.slice(0, 100).map(bl => ({
+                    url_from: bl.url_from,
+                    url_to: bl.url_to,
+                    title: bl.title,
+                    anchor: bl.anchor,
+                    alt: bl.alt,
+                    nofollow: bl.nofollow,
+                    image: bl.image,
+                    image_source: bl.image_source,
+                    inlink_rank: bl.inlink_rank,
+                    domain_inlink_rank: bl.domain_inlink_rank,
+                    first_seen: bl.first_seen,
+                    last_visited: bl.last_visited,
+                }));
+
+                console.log('[DEBUG] Backlinks data fetched successfully:', backlinksData.counts.total, 'total backlinks');
+            } catch (error: any) {
+                console.error('[ERROR] Failed to fetch backlinks data:', error);
+            }
+        } else {
+            console.warn('[WARN] VEB_API_KEY not found in environment variables');
+        }
+
+        // Fetch referral domains data
+        let referralDomainsData = {
+            referrers: [] as Array<{
+                refdomain: string;
+                backlinks: number;
+                dofollow_backlinks: number;
+                first_seen: string;
+                domain_inlink_rank: number;
+            }>,
+            totalDomains: 0,
+            totalBacklinks: 0,
+            tldBreakdown: [] as TLDStats[],
+        };
+
+        if (vebApiKey) {
+            try {
+                console.log('[DEBUG] Fetching referral domains data for:', url);
+                const referralResponse = await getReferralDomains(url, vebApiKey);
+
+                referralDomainsData = {
+                    referrers: referralResponse.referrers,
+                    totalDomains: referralResponse.totalDomains,
+                    totalBacklinks: referralResponse.totalBacklinks,
+                    tldBreakdown: referralResponse.tldBreakdown,
+                };
+
+                console.log('[DEBUG] Referral domains data fetched successfully:', referralDomainsData.totalDomains, 'domains');
+            } catch (error: any) {
+                console.error('[ERROR] Failed to fetch referral domains data:', error);
+            }
+        }
+
         return NextResponse.json({
             url: websiteData.url,
             onPageSEO,
             performance: performanceData,
             usability: usabilityData,
             combinedPerformance: combinedPerformanceData,
-            social: websiteData.social
+            social: websiteData.social,
+            backlinks: backlinksData,
+            backlinkList,
+            referralDomains: referralDomainsData
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);

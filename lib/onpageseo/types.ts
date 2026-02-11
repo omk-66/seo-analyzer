@@ -143,4 +143,58 @@ export interface OnPageSEOAnalysis {
         status: 'good' | 'warning' | 'error';
         message: string;
     };
+    // Backlinks data
+    backlinks: {
+        counts: {
+            total: number;
+            doFollow: number;
+            fromHomePage: number;
+            doFollowFromHomePage: number;
+            text: number;
+            toHomePage: number;
+        };
+        domains: {
+            total: number;
+            doFollow: number;
+            fromHomePage: number;
+            toHomePage: number;
+        };
+        ips: number | null;
+        cBlocks: number | null;
+        anchors: number | null;
+        anchorUrls: number | null;
+        topTLD: string | null;
+        topCountry: string | null;
+        topAnchorsByBacklinks: Array<{
+            anchor: string;
+            count: number;
+        }>;
+        topAnchorsByDomains: Array<{
+            anchor: string;
+            domains: number;
+        }>;
+        topAnchorUrlsByBacklinks: Array<{
+            url: string;
+            count: number;
+        }>;
+        topAnchorUrlsByDomains: Array<{
+            url: string;
+            domains: number;
+        }>;
+    };
+    // Individual backlinks list
+    backlinkList: Array<{
+        url_from: string;
+        url_to: string;
+        title: string;
+        anchor: string;
+        alt: string;
+        nofollow: boolean;
+        image: boolean;
+        image_source: string;
+        inlink_rank: number;
+        domain_inlink_rank: number;
+        first_seen: string;
+        last_visited: string;
+    }>;
 }
