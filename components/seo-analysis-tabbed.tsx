@@ -741,7 +741,7 @@ function LanguageCard({ data }: { data: OnPageSEOData['language'] }) {
     );
 }
 
-function StatusCard({ title, data, icon: Icon, showUrl = false }: {
+function StatusCard({ title, data, icon: Icon, showUrl = false, infoContent }: {
     title: string;
     data: {
         status: 'good' | 'warning' | 'error';
@@ -753,7 +753,10 @@ function StatusCard({ title, data, icon: Icon, showUrl = false }: {
     };
     icon?: React.ElementType<React.SVGProps<SVGSVGElement>>;
     showUrl?: boolean;
+    infoContent?: React.ReactNode;
 }) {
+    const [showInfo, setShowInfo] = useState(false);
+
     const getUrl = () => {
         if (data.robotsTxtUrl) return data.robotsTxtUrl;
         if (data.llmsTxtUrl) return data.llmsTxtUrl;
@@ -792,6 +795,30 @@ function StatusCard({ title, data, icon: Icon, showUrl = false }: {
                             {url}
                         </a>
                     </div>
+                )}
+
+                {infoContent && (
+                    <>
+                        <div className="mt-4">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowInfo(!showInfo)}
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                                <Info className="w-4 h-4" />
+                                {showInfo ? 'Less Info' : 'More Info'}
+                                {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </Button>
+
+                            <div
+                                className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                    }`}
+                            >
+                                {infoContent}
+                            </div>
+                        </div>
+                    </>
                 )}
             </CardContent>
         </Card>
@@ -984,6 +1011,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [showInfo, setShowInfo] = useState(false);
     const [showH2Info, setShowH2Info] = useState(false);
     const [showImages, setShowImages] = useState(false);
+    const [showImageInfo, setShowImageInfo] = useState(false);
     const [showAllBacklinks, setShowAllBacklinks] = useState(false);
     const [showAllReferralDomains, setShowAllReferralDomains] = useState(false);
 
@@ -1417,6 +1445,39 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                 )}
                                             </div>
                                         )}
+
+                                        {/* Collapsible Info Section */}
+                                        <div className="mt-4">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowImageInfo(!showImageInfo)}
+                                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                                {showImageInfo ? 'Less Info' : 'More Info'}
+                                                {showImageInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            </Button>
+
+                                            <div
+                                                className={`overflow-hidden transition-all duration-300 ease-in-out ${showImageInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                                    }`}
+                                            >
+                                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                                    <h4 className="font-medium text-blue-900 mb-2">About Alt Text</h4>
+                                                    <p className="text-sm text-blue-800">
+                                                        Alternate Image Text or Alt Text is descriptive text that is displayed in place of an image if it can't be loaded, as well as a label when moused over. Additionally, Search Engines use Alt Text to better understand image content.
+                                                    </p>
+                                                    <p className="text-sm text-blue-800 mt-2">
+                                                        Image SEO is an overlooked way of gaining traffic and backlinks through image searches.
+                                                    </p>
+                                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                        <p>• <strong>Recommendation:</strong> Add useful, keyword-rich Alt Text for main images</p>
+                                                        <p>• <strong>Consideration:</strong> Case by case - UI components or tracking pixels may not need Alt Text</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <p className="text-gray-500">No image alt data available</p>
@@ -1430,11 +1491,43 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         <StatusCard
                             title="Noindex Tag Test"
                             data={onPageSEO?.noindexTag || defaultStatusData}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Noindex Tags</h4>
+                                    <p className="text-sm text-blue-800">
+                                        A critical part of a page's ranking potential is ensuring it can be accessed by Search Engines. The Noindex Tag tells Search Engines to ignore a page, which can destroy its ranking ability.
+                                    </p>
+                                    <p className="text-sm text-blue-800 mt-2">
+                                        Sometimes these tags are left over unintentionally from a theme/template or forgotten to be removed.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>To Fix:</strong> Remove the noindex tag from your page's HTML</p>
+                                        <p>• <strong>CMS Users:</strong> Check for options preventing indexing and turn them off</p>
+                                        <p>• <strong>Developer Help:</strong> May require access to frontend HTML code</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         <StatusCard
                             title="Noindex Header Test"
                             data={onPageSEO?.noindexHeader || defaultStatusData}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Noindex Headers</h4>
+                                    <p className="text-sm text-blue-800">
+                                        The Noindex Header is another Noindexing method that tells Search Engines to ignore a page, which can destroy its ranking ability.
+                                    </p>
+                                    <p className="text-sm text-blue-800 mt-2">
+                                        Sometimes these headers are left over unintentionally from a theme/template or forgotten to be removed.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>To Fix:</strong> Remove the Noindex Header from your page</p>
+                                        <p>• <strong>Backend:</strong> May require access to backend code</p>
+                                        <p>• <strong>CMS Users:</strong> Check for options preventing indexing and turn them off</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         {/* Security */}
@@ -1442,25 +1535,83 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             title="SSL Enabled"
                             data={onPageSEO?.sslEnabled || defaultStatusData}
                             icon={Lock}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About SSL</h4>
+                                    <p className="text-sm text-blue-800">
+                                        SSL (Secure Socket Layer) is a security technology that encrypts data between your website and visitors. It ensures secure transfer of sensitive data like passwords and credit cards.
+                                    </p>
+                                    <p className="text-sm text-blue-800 mt-2">
+                                        Search Engines consider SSL a ranking signal in recent years.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Easy Setup:</strong> Can be enabled simply in WordPress, Wix, etc.</p>
+                                        <p>• <strong>Custom Sites:</strong> May require technical resource to install and configure</p>
+                                        <p>• <strong>Test:</strong> Verify your site loads successfully at HTTPS:// location</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         <StatusCard
                             title="HTTPS Redirect"
                             data={onPageSEO?.httpsRedirect || defaultStatusData}
                             icon={RefreshCw}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About HTTPS Redirect</h4>
+                                    <p className="text-sm text-blue-800">
+                                        SSL ensures sensitive data is sent securely between your website and visitors. If SSL is enabled, it's important to redirect from HTTP to HTTPS to ensure users and Search Engines access the secure version.
+                                    </p>
+                                    <p className="text-sm text-blue-800 mt-2">
+                                        Not doing this means insecure versions may be accessed, reducing your ranking ability.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Easy Systems:</strong> Wix, Shopify often handle this automatically</p>
+                                        <p>• <strong>WordPress/Custom:</strong> May require developer involvement</p>
+                                        <p>• <strong>Configuration:</strong> Can be done in site config or htaccess rules</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         {/* Crawlers */}
                         <StatusCard
-                            title="Robots.txt"
+                            title="Robot txt url"
                             data={onPageSEO?.robotsTxt || defaultStatusData}
                             icon={FileSearch}
                             showUrl={true}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Robots.txt</h4>
+                                    <p className="text-sm text-blue-800">
+                                        Robots.txt is a text file that provides instructions to Search Engine crawlers on how to crawl your site, including which pages to access or not. It is often the gatekeeper of your site and normally the first thing a Search Engine bot will access.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Recommendation:</strong> Always have a robots.txt file in place</p>
+                                        <p>• <strong>Creation:</strong> Can be automatically created using free online utilities</p>
+                                        <p>• <strong>CMS:</strong> Use WordPress plugins or your CMS's robots.txt creation process</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         <StatusCard
                             title="Blocked by Robots.txt"
                             data={onPageSEO?.blockedByRobots || defaultStatusData}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Blocked Pages</h4>
+                                    <p className="text-sm text-blue-800">
+                                        The robots.txt file includes instructions to Search Engines on how to crawl your site, including which pages to ignore. Sometimes these are added intentionally for low value pages, but sometimes left over by mistake when a website goes live.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>To Fix:</strong> Review your robots.txt rules to understand why it's blocked</p>
+                                        <p>• <strong>Developer Help:</strong> May require developer to correct the rules</p>
+                                        <p>• <strong>Caution:</strong> Incorrect rules can exclude more pages than desired</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         {/* Llms.txt & Sitemap */}
@@ -1469,6 +1620,18 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             data={onPageSEO?.llmsTxt || defaultStatusData}
                             icon={Shield}
                             showUrl={true}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Llms.txt</h4>
+                                    <p className="text-sm text-blue-800">
+                                        Llms.txt is a proposed standard file for websites to help large language model (LLM) crawlers understand a site's content more efficiently. The file offers brief background information, guidance, and links to documentation sources.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Recommendation:</strong> Add an llms.txt markdown file to your site</p>
+                                        <p>• <strong>Creation:</strong> Can be automatically created with free utilities, plugins, or CMS</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         <StatusCard
@@ -1476,6 +1639,19 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             data={onPageSEO?.xmlSitemap || defaultStatusData}
                             icon={FileTextIcon}
                             showUrl={true}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About XML Sitemaps</h4>
+                                    <p className="text-sm text-blue-800">
+                                        A Sitemap is an XML data file that lists all of your site's pages available for crawling, with useful information like last update times and crawling priority. Sitemaps help Search Engines find all your pages for indexing and ranking.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Recommendation:</strong> Always have a Sitemap file in place</p>
+                                        <p>• <strong>Creation:</strong> Can be created manually or with utilities, plugins, CMS</p>
+                                        <p>• <strong>Best Practice:</strong> Reference Sitemap in your robots.txt file</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         {/* Analytics & Schema */}
@@ -1493,12 +1669,38 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             title="Schema.org Structured Data"
                             data={onPageSEO?.schemaOrg || defaultStatusData}
                             icon={Code}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Schema.org</h4>
+                                    <p className="text-sm text-blue-800">
+                                        Schema.org Structured Data Markup is a collection of data tags added to your site to help Search Engines interpret content and enhance Search Results.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>Examples:</strong> Local Business info (address, phone), product info for e-commerce</p>
+                                        <p>• <strong>Benefits:</strong> Products displayed in shopping aggregators like Google Shopping</p>
+                                        <p>• <strong>Recommendation:</strong> Incorporate relevant Schema.org tags to improve interpretation</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                         <StatusCard
                             title="Identity Schema"
                             data={onPageSEO?.identitySchema || defaultStatusData}
                             icon={Building}
+                            infoContent={
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="font-medium text-blue-900 mb-2">About Identity Schema</h4>
+                                    <p className="text-sm text-blue-800">
+                                        Organization and Person Schema is Structured Data that signals to Search Engines and LLMs 'who you are'. This helps them confidently answer brand/company/person queries and avoid mixups with similarly named entities.
+                                    </p>
+                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                        <p>• <strong>CMS:</strong> Your CMS may have ability to input this directly</p>
+                                        <p>• <strong>Plugins:</strong> Install a Schema app or plugin</p>
+                                        <p>• <strong>Manual:</strong> Use online Schema Generator tool and copy to site code</p>
+                                    </div>
+                                </div>
+                            }
                         />
 
                     </div>
