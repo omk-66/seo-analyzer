@@ -319,6 +319,18 @@ function analyzeCanonicalTag(canonical: string | undefined): OnPageSEOAnalysis['
         };
     }
 
+    // Check if canonical is a relative URL
+    const isRelative = !canonical.startsWith('http://') && !canonical.startsWith('https://');
+
+    if (isRelative) {
+        return {
+            hasCanonical: true,
+            canonicalUrl: canonical,
+            status: 'warning',
+            message: `Your page has a Canonical Tag but it's relative (${canonical}). For best SEO practice, use an absolute URL like https://example.com${canonical}`,
+        };
+    }
+
     return {
         hasCanonical: true,
         canonicalUrl: canonical,

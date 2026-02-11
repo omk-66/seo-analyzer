@@ -37,7 +37,8 @@ import {
     MapPin,
     Anchor,
     ArrowRight,
-    ChevronRight
+    ChevronRight,
+    Info
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
@@ -463,6 +464,21 @@ function MetricCard({ label, value, unit = '', displayValue }: {
 }
 
 function TitleTagCard({ data }: { data: OnPageSEOData['titleTag'] }) {
+    const [showInfo, setShowInfo] = useState(false);
+
+    const getLengthStatus = () => {
+        if (data.length < data.minLength) {
+            return { color: 'text-orange-500', text: 'Too Short' };
+        } else if (data.length > data.maxLength) {
+            return { color: 'text-red-500', text: 'Too Long' };
+        } else {
+            return { color: 'text-green-500', text: 'Optimal' };
+        }
+    };
+
+    const lengthStatus = getLengthStatus();
+    const idealRange = `${data.minLength}–${data.maxLength} characters`;
+
     return (
         <Card>
             <CardHeader className="pb-3">
@@ -490,22 +506,73 @@ function TitleTagCard({ data }: { data: OnPageSEOData['titleTag'] }) {
                                 </tr>
                                 <tr className="border-b">
                                     <td className="py-2 px-3 font-medium">Length</td>
-                                    <td className="py-2 px-3">{data.length} characters</td>
+                                    <td className="py-2 px-3">
+                                        <span className="font-medium">{data.length}</span> characters
+                                        <span className={`ml-2 ${lengthStatus.color}`}>
+                                            ({lengthStatus.text})
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr className="border-b">
+                                    <td className="py-2 px-3 font-medium">Ideal Range</td>
+                                    <td className="py-2 px-3 text-gray-600">{idealRange}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                <p className="mt-4 text-xs text-gray-500">
-                    Title Tags are very important for search engines to correctly understand and categorize your content.
-                </p>
+                {/* Collapsible Info Section */}
+                <div className="mt-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowInfo(!showInfo)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                        <Info className="w-4 h-4" />
+                        {showInfo ? 'Less Info' : 'More Info'}
+                        {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </Button>
+
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                            }`}
+                    >
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <h4 className="font-medium text-blue-900 mb-2">About Title Tags</h4>
+                            <p className="text-sm text-blue-800">
+                                The Title Tag is an important HTML element that tells users and Search Engines what the topic of the webpage is and the type of keywords the page should rank for. The Title will appear in the Header Bar of a user's browser. It is also one of the most important (and easiest to improve) On-Page SEO factors.
+                            </p>
+                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                <p>• <strong>Ideal Length:</strong> {idealRange} (including spaces)</p>
+                                <p>• <strong>Purpose:</strong> Helps search engines understand your page topic</p>
+                                <p>• <strong>Display:</strong> Shown in browser tabs and search results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );
 }
 
 function MetaDescriptionCard({ data }: { data: OnPageSEOData['metaDescription'] }) {
+    const [showInfo, setShowInfo] = useState(false);
+
+    const getLengthStatus = () => {
+        if (data.length < data.minLength) {
+            return { color: 'text-orange-500', text: 'Too Short' };
+        } else if (data.length > data.maxLength) {
+            return { color: 'text-red-500', text: 'Too Long' };
+        } else {
+            return { color: 'text-green-500', text: 'Optimal' };
+        }
+    };
+
+    const lengthStatus = getLengthStatus();
+    const idealRange = `${data.minLength} - ${data.maxLength} characters`;
+
     return (
         <Card>
             <CardHeader className="pb-3">
@@ -533,16 +600,142 @@ function MetaDescriptionCard({ data }: { data: OnPageSEOData['metaDescription'] 
                                 </tr>
                                 <tr className="border-b">
                                     <td className="py-2 px-3 font-medium">Length</td>
-                                    <td className="py-2 px-3">{data.length} characters</td>
+                                    <td className="py-2 px-3">
+                                        <span className="font-medium">{data.length}</span> characters
+                                        <span className={`ml-2 ${lengthStatus.color}`}>
+                                            ({lengthStatus.text})
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr className="border-b">
+                                    <td className="py-2 px-3 font-medium">Ideal Range</td>
+                                    <td className="py-2 px-3 text-gray-600">{idealRange}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                <p className="mt-4 text-xs text-gray-500">
-                    A Meta Description is important for search engines to understand the content of your page, and is often shown as the description text blurb in search results.
-                </p>
+                {/* Collapsible Info Section */}
+                <div className="mt-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowInfo(!showInfo)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                        <Info className="w-4 h-4" />
+                        {showInfo ? 'Less Info' : 'More Info'}
+                        {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </Button>
+
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                            }`}
+                    >
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <h4 className="font-medium text-blue-900 mb-2">About Meta Descriptions</h4>
+                            <p className="text-sm text-blue-800">
+                                A Meta Description is important for search engines to understand the content of your page,
+                                and is often shown as the description text blurb in search results.
+                            </p>
+                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                <p>• <strong>Ideal Length:</strong> {idealRange} (including spaces)</p>
+                                <p>• <strong>Purpose:</strong> Helps search engines understand your page content</p>
+                                <p>• <strong>Display:</strong> Shown in search engine results below the title</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function LanguageCard({ data }: { data: OnPageSEOData['language'] }) {
+    const [showInfo, setShowInfo] = useState(false);
+
+    // Map of common language codes to full names
+    const languageNames: Record<string, string> = {
+        'en': 'English', 'en-us': 'English (US)', 'en-gb': 'English (UK)',
+        'es': 'Spanish', 'fr': 'French', 'de': 'German', 'it': 'Italian',
+        'pt': 'Portuguese', 'pt-br': 'Portuguese (Brazil)', 'nl': 'Dutch',
+        'ru': 'Russian', 'ja': 'Japanese', 'ko': 'Korean', 'zh': 'Chinese',
+        'zh-cn': 'Chinese (Simplified)', 'zh-tw': 'Chinese (Traditional)',
+        'ar': 'Arabic', 'hi': 'Hindi', 'tr': 'Turkish', 'pl': 'Polish',
+        'uk': 'Ukrainian', 'vi': 'Vietnamese', 'th': 'Thai', 'id': 'Indonesian',
+        'ms': 'Malay', 'fil': 'Filipino', 'fi': 'Finnish', 'sv': 'Swedish',
+        'no': 'Norwegian', 'da': 'Danish', 'cs': 'Czech', 'el': 'Greek',
+        'he': 'Hebrew', 'hu': 'Hungarian', 'ro': 'Romanian', 'sk': 'Slovak',
+        'bg': 'Bulgarian', 'hr': 'Croatian', 'sr': 'Serbian', 'sl': 'Slovenian',
+        'lt': 'Lithuanian', 'lv': 'Latvian', 'et': 'Estonian',
+    };
+
+    const getFullLanguageName = (code: string): string => {
+        return languageNames[code.toLowerCase()] ||
+            languageNames[code.split('-')[0].toLowerCase()] || code;
+    };
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <Globe className="w-5 h-5" />
+                        Language Declaration
+                    </CardTitle>
+                    {getStatusIcon(data.status)}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Badge className={getStatusColor(data.status)}>
+                    {data.status.toUpperCase()}
+                </Badge>
+                <p className="mt-2 text-sm">{data.message}</p>
+
+                {data.hasLangAttribute && data.declaredLanguage && (
+                    <div className="mt-4">
+                        <table className="w-full">
+                            <tbody>
+                                <tr className="border-b">
+                                    <td className="py-2 px-3 font-medium w-32">Declared Language</td>
+                                    <td className="py-2 px-3">{getFullLanguageName(data.declaredLanguage)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {/* Collapsible Info Section */}
+                <div className="mt-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowInfo(!showInfo)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                        <Info className="w-4 h-4" />
+                        {showInfo ? 'Less Info' : 'More Info'}
+                        {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </Button>
+
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                            }`}
+                    >
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <h4 className="font-medium text-blue-900 mb-2">About Language Declaration</h4>
+                            <p className="text-sm text-blue-800">
+                                The Lang Attribute is used to describe the intended language of the current page to user's browsers and Search Engines. Search Engines may use the Lang Attribute to return language specific search results to a searcher, and in the browser, Lang Attribute can signal the need to switch to a different language if it is different to the user's own preferred language.
+                            </p>
+                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                <p>• <strong>Recommendation:</strong> Add the Lang Attribute to the HTML tag of every page</p>
+                                <p>• <strong>Purpose:</strong> Helps search engines serve language-specific results</p>
+                                <p>• <strong>Example:</strong> lang="en" for English pages</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );
@@ -600,6 +793,82 @@ function StatusCard({ title, data, icon: Icon, showUrl = false }: {
                         </a>
                     </div>
                 )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function CanonicalCard({ data, baseUrl }: { data: { status: 'good' | 'warning' | 'error'; message: string; canonicalUrl: string | null }; baseUrl?: string }) {
+    const [showInfo, setShowInfo] = useState(false);
+
+    const displayUrl = data.canonicalUrl || (baseUrl && !data.canonicalUrl ? baseUrl : null);
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <LinkIcon className="w-5 h-5" />
+                        Canonical Tag
+                    </CardTitle>
+                    {getStatusIcon(data.status)}
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Badge className={getStatusColor(data.status)}>
+                    {data.status.toUpperCase()}
+                </Badge>
+                <p className="mt-2 text-sm">{data.message}</p>
+
+                {displayUrl && (
+                    <div className="mt-3">
+                        <a
+                            href={displayUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 text-xs underline break-all"
+                        >
+                            {displayUrl}
+                        </a>
+                    </div>
+                )}
+
+                {!data.canonicalUrl && baseUrl && (
+                    <p className="mt-2 text-xs text-gray-500">
+                        Suggested canonical: {baseUrl}
+                    </p>
+                )}
+
+                {/* Collapsible Info Section */}
+                <div className="mt-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowInfo(!showInfo)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                        <Info className="w-4 h-4" />
+                        {showInfo ? 'Less Info' : 'More Info'}
+                        {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </Button>
+
+                    <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                            }`}
+                    >
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <h4 className="font-medium text-blue-900 mb-2">About Canonical Tags</h4>
+                            <p className="text-sm text-blue-800">
+                                The Canonical Tag is a HTML Tag that tells Search Engines the primary URL of a page. URLs can have multiple versions due to things like parameters being passed or www and non-www versions, resulting in potential duplicate content. Google recommends all pages specify a Canonical for this reason.
+                            </p>
+                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                <p>• <strong>Recommendation:</strong> Specify a canonical URL for every page</p>
+                                <p>• <strong>Purpose:</strong> Prevents duplicate content issues</p>
+                                <p>• <strong>Note:</strong> CMS may manage this automatically</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );
@@ -712,6 +981,7 @@ function AnalyticsCard({ data }: {
 
 export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [activeTab, setActiveTab] = useState('onpage');
+    const [showInfo, setShowInfo] = useState(false);
     const [showImages, setShowImages] = useState(false);
     const [showAllBacklinks, setShowAllBacklinks] = useState(false);
     const [showAllReferralDomains, setShowAllReferralDomains] = useState(false);
@@ -776,16 +1046,23 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             message: 'Your page is missing a Meta Description. Meta descriptions are important for search engines to understand your page content.'
                         }} />
 
-                        {/* Language & Canonical - 2 columns */}
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <StatusCard
-                                title="Language Declaration"
-                                data={onPageSEO?.language || defaultStatusData}
+                        {/* Language & Canonical - Separate Rows */}
+                        <div className="space-y-4">
+                            <LanguageCard
+                                data={onPageSEO?.language || {
+                                    hasLangAttribute: false,
+                                    declaredLanguage: null,
+                                    status: 'warning',
+                                    message: 'No language declaration found'
+                                }}
                             />
-                            <StatusCard
-                                title="Canonical Tag"
-                                data={onPageSEO?.canonicalTag || defaultStatusData}
-                                showUrl={true}
+                            <CanonicalCard
+                                data={{
+                                    status: onPageSEO?.canonicalTag?.status || 'warning',
+                                    message: onPageSEO?.canonicalTag?.message || 'No canonical tag found',
+                                    canonicalUrl: onPageSEO?.canonicalTag?.canonicalUrl || null
+                                }}
+                                baseUrl={url}
                             />
                         </div>
 
@@ -794,38 +1071,83 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg flex items-center gap-2">
+                                        <FileText className="w-5 h-5" />
                                         H1 Header Tag Usage
                                     </CardTitle>
-                                    {onPageSEO ? getStatusIcon(onPageSEO.headers.status) : null}
+                                    {onPageSEO && !onPageSEO.headers.hasH1 && (
+                                        <XCircle className="w-5 h-5 text-red-500" />
+                                    )}
+                                    {onPageSEO && onPageSEO.headers.hasH1 && (
+                                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                    )}
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 {onPageSEO ? (
                                     <>
-                                        <p className="text-sm mb-4">
-                                            {onPageSEO.headers.hasH1
-                                                ? onPageSEO.headers.hasMultipleH1
-                                                    ? `Your page has ${onPageSEO.headers.h1Tags.length} H1 Tags.`
-                                                    : 'Your page has a H1 Tag.'
-                                                : 'Your page is missing an H1 Tag.'}
-                                        </p>
+                                        {!onPageSEO.headers.hasH1 ? (
+                                            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                                                <p className="text-sm text-red-700">
+                                                    Your page is missing an H1 Tag. H1 tags help search engines understand the main topic of your page.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <p className="text-sm">
+                                                    {onPageSEO.headers.hasMultipleH1
+                                                        ? `Your page has ${onPageSEO.headers.h1Tags.length} H1 Tags.`
+                                                        : 'Your page has one H1 Tag.'}
+                                                </p>
+                                                <div className="mt-2">
+                                                    <table className="w-full">
+                                                        <thead>
+                                                            <tr className="border-b bg-gray-50">
+                                                                <th className="text-left py-2 px-3 font-medium">#</th>
+                                                                <th className="text-left py-2 px-3 font-medium">H1 Tag Content</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {onPageSEO.headers.h1Tags.map((tag, index) => (
+                                                                <tr key={index} className="border-b hover:bg-gray-50">
+                                                                    <td className="py-2 px-3 font-medium text-gray-500">{index + 1}</td>
+                                                                    <td className="py-2 px-3">{tag}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Collapsible Info Section */}
                                         <div className="mt-4">
-                                            <table className="w-full">
-                                                <thead>
-                                                    <tr className="border-b bg-gray-50">
-                                                        <th className="text-left py-2 px-3 font-medium">Tag</th>
-                                                        <th className="text-left py-2 px-3 font-medium">Value</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {onPageSEO.headers.h1Tags.map((tag, index) => (
-                                                        <tr key={index} className="border-b">
-                                                            <td className="py-2 px-3 font-medium">H1</td>
-                                                            <td className="py-2 px-3">{tag}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowInfo(!showInfo)}
+                                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                                {showInfo ? 'Less Info' : 'More Info'}
+                                                {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            </Button>
+
+                                            <div
+                                                className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                                    }`}
+                                            >
+                                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                                    <h4 className="font-medium text-blue-900 mb-2">About H1 Tags</h4>
+                                                    <p className="text-sm text-blue-800">
+                                                        The H1 Header Tag is one of the most important ways of signaling to Search Engines the topic of a page and subsequently the keywords it should rank for. The H1 Tag normally appears as visible text in the largest font size on the page.
+                                                    </p>
+                                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                        <p>• <strong>Recommendation:</strong> Add one H1 tag near the top of your page</p>
+                                                        <p>• <strong>Keywords:</strong> Include important keywords you want to rank for</p>
+                                                        <p>• <strong>Count:</strong> Use only one H1 tag per page</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </>
                                 ) : (
@@ -1117,7 +1439,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     <div className="space-y-6">
                         {/* Backlinks Summary Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
+                            <Card className="bg-liner-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-blue-600">
@@ -1128,7 +1450,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
+                            <Card className="bg-liner-to-br from-green-50 to-green-100 border-green-200 hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-green-600">
@@ -1139,7 +1461,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
+                            <Card className="bg-liner-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-purple-600">
@@ -1150,7 +1472,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
+                            <Card className="bg-liner-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-orange-600">
@@ -1161,7 +1483,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="bg-gradient-to-br from-teal-50 to-teal-100 border-teal-200 hover:shadow-md transition-shadow">
+                            <Card className="bg-liner-to-br from-teal-50 to-teal-100 border-teal-200 hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                     <div className="text-center">
                                         <div className="text-3xl font-bold text-teal-600">
@@ -1221,7 +1543,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="flex-1 bg-gray-200 rounded-full h-3">
                                                                         <div
-                                                                            className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300"
+                                                                            className="bg-liner-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300"
                                                                             style={{ width: `${percentage}%` }}
                                                                         />
                                                                     </div>
@@ -1282,7 +1604,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="flex-1 bg-gray-200 rounded-full h-3">
                                                                         <div
-                                                                            className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300"
+                                                                            className="bg-liner-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300"
                                                                             style={{ width: `${percentage}%` }}
                                                                         />
                                                                     </div>
@@ -1506,7 +1828,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                     <div className="flex items-center gap-2">
                                                                         <div className="flex-1 bg-gray-200 rounded-full h-3">
                                                                             <div
-                                                                                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+                                                                                className="bg-liner-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
                                                                                 style={{ width: `${percentage}%` }}
                                                                             />
                                                                         </div>
@@ -1530,7 +1852,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                         {(analysis?.backlinks?.topTLD || analysis?.backlinks?.topCountry) && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {analysis?.backlinks?.topTLD && (
-                                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200">
+                                    <Card className="bg-liner-to-br from-indigo-50 to-indigo-100 border-indigo-200">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-base flex items-center gap-2">
                                                 <Globe className="w-4 h-4 text-indigo-600" />
@@ -1546,7 +1868,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 )}
 
                                 {analysis?.backlinks?.topCountry && (
-                                    <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+                                    <Card className="bg-liner-to-br from-emerald-50 to-emerald-100 border-emerald-200">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-base flex items-center gap-2">
                                                 <MapPin className="w-4 h-4 text-emerald-600" />
