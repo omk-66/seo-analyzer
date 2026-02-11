@@ -982,6 +982,7 @@ function AnalyticsCard({ data }: {
 export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [activeTab, setActiveTab] = useState('onpage');
     const [showInfo, setShowInfo] = useState(false);
+    const [showH2Info, setShowH2Info] = useState(false);
     const [showImages, setShowImages] = useState(false);
     const [showAllBacklinks, setShowAllBacklinks] = useState(false);
     const [showAllReferralDomains, setShowAllReferralDomains] = useState(false);
@@ -1161,6 +1162,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg flex items-center gap-2">
+                                        <FileText className="w-5 h-5" />
                                         H2-H6 Header Tag Usage
                                     </CardTitle>
                                     {onPageSEO ? getStatusIcon(onPageSEO.headers.status) : null}
@@ -1210,6 +1212,37 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        {/* Collapsible Info Section */}
+                                        <div className="mt-4">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowH2Info(!showH2Info)}
+                                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                                {showH2Info ? 'Less Info' : 'More Info'}
+                                                {showH2Info ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            </Button>
+
+                                            <div
+                                                className={`overflow-hidden transition-all duration-300 ease-in-out ${showH2Info ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                                    }`}
+                                            >
+                                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                                    <h4 className="font-medium text-blue-900 mb-2">About H2-H6 Tags</h4>
+                                                    <p className="text-sm text-blue-800">
+                                                        The H2-H6 Header Tags are an important way of organizing the content of your page and signaling to Search Engines the longer tail topics your page should rank for.
+                                                    </p>
+                                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                        <p>• <strong>Recommendation:</strong> Include at least 2 other Header Tag levels (H2, H3) in addition to H1</p>
+                                                        <p>• <strong>Keywords:</strong> Include important keywords in these Header Tags</p>
+                                                        <p>• <strong>Content:</strong> These would be added to the core content section of your page</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <p className="text-gray-500">No header data available</p>
@@ -1222,6 +1255,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg flex items-center gap-2">
+                                        <FileText className="w-5 h-5" />
                                         Content Amount
                                     </CardTitle>
                                     {onPageSEO ? getStatusIcon(onPageSEO.contentAmount.status) : null}
@@ -1236,14 +1270,50 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         <p className="mt-2 text-sm">{onPageSEO.contentAmount.message}</p>
 
                                         <div className="mt-4">
+                                            <p className="text-lg font-semibold">
+                                                Word Count: {onPageSEO.contentAmount.wordCount}
+                                            </p>
                                             <Progress
                                                 value={Math.min((onPageSEO.contentAmount.wordCount / 3500) * 100, 100)}
-                                                className="h-3"
+                                                className="h-3 mt-2"
                                             />
                                             <div className="flex justify-between text-xs mt-1">
                                                 <span>0 words</span>
-                                                <span>{onPageSEO.contentAmount.wordCount} words</span>
+                                                <span>500 words</span>
                                                 <span>3500+ words</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Collapsible Info Section */}
+                                        <div className="mt-4">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setShowInfo(!showInfo)}
+                                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                                {showInfo ? 'Less Info' : 'More Info'}
+                                                {showInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            </Button>
+
+                                            <div
+                                                className={`overflow-hidden transition-all duration-300 ease-in-out ${showInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                                    }`}
+                                            >
+                                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                                    <h4 className="font-medium text-blue-900 mb-2">About Content Length</h4>
+                                                    <p className="text-sm text-blue-800">
+                                                        Numerous studies have shown that there is a relationship between the amount of content on a page (typically measured in word count) and its ranking potential - generally longer content will rank higher. Obviously content also needs to be topically relevant, keyword rich and highly readable for the visitor.
+                                                    </p>
+                                                    <p className="text-sm text-blue-800 mt-2">
+                                                        Note: We assess all selectable text on the page at load time, not hidden content.
+                                                    </p>
+                                                    <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                        <p>• <strong>Minimum:</strong> At least 500 words for ranking potential</p>
+                                                        <p>• <strong>Consideration:</strong> Case by case - not relevant for all pages (e.g., Contact Us)</p>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </>
