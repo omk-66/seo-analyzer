@@ -197,4 +197,15 @@ export interface OnPageSEOAnalysis {
         first_seen: string;
         last_visited: string;
     }>;
+    // Technology data
+    serverIP: {
+        ipAddresses: string[];
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    };
+    dnsServers: {
+        dnsServers: string[];
+        status: 'good' | 'warning' | 'error';
+        message: string;
+    };
 }

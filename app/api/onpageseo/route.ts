@@ -4,6 +4,7 @@ import { runOnPageSEOAnalysis } from '@/lib/onpageseo/server-analysis';
 import { getFullPageSpeedDashboardData, getCombinedPageSpeedData, CombinedPerformanceData } from '@/lib/pagespeed-dashboard';
 import { getAllBacklinks } from '@/lib/links/back-links';
 import { getReferralDomains, TLDStats } from '@/lib/links/referral-domain';
+import { getTechnologyInfo } from '@/lib/technology/tech-info';
 
 export interface UsabilityData {
     desktopScreenshot: {
@@ -430,6 +431,37 @@ export async function POST(request: Request) {
             }
         }
 
+        // Fetch technology data (Server IP and DNS Servers)
+        let technologyData: {
+            serverIP: {
+                ipAddresses: string[];
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+            dnsServers: {
+                dnsServers: string[];
+                status: 'good' | 'warning' | 'error';
+                message: string;
+            };
+        } = {
+            serverIP: {
+                ipAddresses: [],
+                status: 'warning',
+                message: 'Technology data not available'
+            },
+            dnsServers: {
+                dnsServers: [],
+                status: 'warning',
+                message: 'DNS data not available'
+            }
+        };
+        try {
+            const domain = new URL(websiteData.url).hostname;
+            technologyData = await getTechnologyInfo(domain);
+        } catch (error) {
+            console.error('[ERROR] Failed to fetch technology data:', error);
+        }
+
         return NextResponse.json({
             url: websiteData.url,
             onPageSEO,
@@ -439,7 +471,8 @@ export async function POST(request: Request) {
             social: websiteData.social,
             backlinks: backlinksData,
             backlinkList,
-            referralDomains: referralDomainsData
+            referralDomains: referralDomainsData,
+            ...technologyData
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);

@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
+import { TechnologyCard } from './technology-card';
 
 interface OnPageSEOData {
     titleTag: {
@@ -1014,6 +1015,9 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     const [showImageInfo, setShowImageInfo] = useState(false);
     const [showAllBacklinks, setShowAllBacklinks] = useState(false);
     const [showAllReferralDomains, setShowAllReferralDomains] = useState(false);
+    const [showFlashInfo, setShowFlashInfo] = useState(false);
+    const [showIframesInfo, setShowIframesInfo] = useState(false);
+    const [showFaviconInfo, setShowFaviconInfo] = useState(false);
 
     const onPageSEO = analysis?.onPageSEO;
     const defaultStatusData = { status: 'warning' as const, message: 'No data available' };
@@ -2072,7 +2076,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                 <tbody>
                                                     {(showAllReferralDomains ? analysis.referralDomains.referrers : analysis.referralDomains.referrers.slice(0, 5)).map((ref: any, idx: number) => {
                                                         const maxBacklinks = analysis.referralDomains.referrers[0]?.backlinks || 1;
-                                                        const percentage = (ref.backlinks / maxBacklinks) * 100;
+                                                        const percentage = maxBacklinks > 0 ? (ref.backlinks / maxBacklinks) * 100 : 0;
                                                         return (
                                                             <tr key={idx} className="border-b hover:bg-purple-50/50 transition-colors">
                                                                 <td className="py-3 px-3">
@@ -2100,7 +2104,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                     <div className="flex items-center gap-2">
                                                                         <div className="flex-1 bg-gray-200 rounded-full h-3">
                                                                             <div
-                                                                                className="bg-liner-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+                                                                                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
                                                                                 style={{ width: `${percentage}%` }}
                                                                             />
                                                                         </div>
@@ -2554,50 +2558,148 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             </CardContent>
                         </Card>
 
-                        {/* Flash, iFrames, and Favicon Checks */}
+                        {/* Flash Check */}
                         <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <FileSearch className="w-5 h-5" />
-                                    Flash, iFrames & Favicon
-                                </CardTitle>
-                                <CardDescription>
-                                    Additional usability checks for your page
-                                </CardDescription>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <FileText className="w-5 h-5" />
+                                        Flash Usage
+                                    </CardTitle>
+                                    <Badge className={getStatusColor(analysis?.usability?.flash?.status || 'good')}>
+                                        {analysis?.usability?.flash?.status?.toUpperCase() || 'GOOD'}
+                                    </Badge>
+                                </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {/* Flash Check */}
-                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.flash?.status || 'good')}`}>
-                                        <div className="flex items-center gap-2">
-                                            {getStatusIcon(analysis?.usability?.flash?.status || 'good')}
-                                            <span className="font-medium">Flash Used?</span>
-                                        </div>
-                                        <p className="text-sm mt-1">
-                                            {analysis?.usability?.flash?.message || 'No Flash content has been identified on your page.'}
-                                        </p>
-                                    </div>
+                                <p className="text-sm">{analysis?.usability?.flash?.message || 'No Flash content has been identified on your page.'}</p>
 
-                                    {/* iFrames Check */}
-                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.iframes?.status || 'good')}`}>
-                                        <div className="flex items-center gap-2">
-                                            {getStatusIcon(analysis?.usability?.iframes?.status || 'good')}
-                                            <span className="font-medium">iFrames Used?</span>
-                                        </div>
-                                        <p className="text-sm mt-1">
-                                            {analysis?.usability?.iframes?.message || 'There are no iFrames detected on your page.'}
-                                        </p>
-                                    </div>
+                                {/* Collapsible Info Section */}
+                                <div className="mt-4">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowFlashInfo(!showFlashInfo)}
+                                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    >
+                                        <Info className="w-4 h-4" />
+                                        {showFlashInfo ? 'Less Info' : 'More Info'}
+                                        {showFlashInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    </Button>
 
-                                    {/* Favicon Check */}
-                                    <div className={`p-4 rounded-lg border ${getStatusColor(analysis?.usability?.favicon?.status || 'good')}`}>
-                                        <div className="flex items-center gap-2">
-                                            {getStatusIcon(analysis?.usability?.favicon?.status || 'good')}
-                                            <span className="font-medium">Favicon</span>
+                                    <div
+                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showFlashInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                            }`}
+                                    >
+                                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                            <h4 className="font-medium text-blue-900 mb-2">About Flash</h4>
+                                            <p className="text-sm text-blue-800">
+                                                Flash is an older technology that was used for interactive web content. Modern websites should avoid Flash as it's no longer supported by browsers.
+                                            </p>
+                                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                <p>• <strong>Status:</strong> Good - No Flash detected</p>
+                                                <p>• <strong>Recommendation:</strong> Avoid using Flash content</p>
+                                            </div>
                                         </div>
-                                        <p className="text-sm mt-1">
-                                            {analysis?.usability?.favicon?.message || 'Your page has specified a Favicon.'}
-                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* iFrames Check */}
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Code className="w-5 h-5" />
+                                        iFrames Usage
+                                    </CardTitle>
+                                    <Badge className={getStatusColor(analysis?.usability?.iframes?.status || 'good')}>
+                                        {analysis?.usability?.iframes?.status?.toUpperCase() || 'GOOD'}
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm">{analysis?.usability?.iframes?.message || 'There are no iFrames detected on your page.'}</p>
+
+                                {/* Collapsible Info Section */}
+                                <div className="mt-4">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowIframesInfo(!showIframesInfo)}
+                                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    >
+                                        <Info className="w-4 h-4" />
+                                        {showIframesInfo ? 'Less Info' : 'More Info'}
+                                        {showIframesInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    </Button>
+
+                                    <div
+                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showIframesInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                            }`}
+                                    >
+                                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                            <h4 className="font-medium text-blue-900 mb-2">About iFrames</h4>
+                                            <p className="text-sm text-blue-800">
+                                                iFrames are HTML tags that allow you to embed other webpages inside your page in a small frame.
+                                            </p>
+                                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                <p>• <strong>Concerns:</strong> Older coding practice, can complicate mobile navigation</p>
+                                                <p>• <strong>SEO:</strong> Harder for search engines to index</p>
+                                                <p>• <strong>Recommendation:</strong> Remove if not critical, or replace with natural navigation</p>
+                                                <p>• <strong>Exception:</strong> Google Tag Manager may use iFrames internally</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Favicon Check */}
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Monitor className="w-5 h-5" />
+                                        Favicon
+                                    </CardTitle>
+                                    <Badge className={getStatusColor(analysis?.usability?.favicon?.status || 'good')}>
+                                        {analysis?.usability?.favicon?.status?.toUpperCase() || 'GOOD'}
+                                    </Badge>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm">{analysis?.usability?.favicon?.message || 'Your page has specified a Favicon.'}</p>
+
+                                {/* Collapsible Info Section */}
+                                <div className="mt-4">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setShowFaviconInfo(!showFaviconInfo)}
+                                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    >
+                                        <Info className="w-4 h-4" />
+                                        {showFaviconInfo ? 'Less Info' : 'More Info'}
+                                        {showFaviconInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                    </Button>
+
+                                    <div
+                                        className={`overflow-hidden transition-all duration-300 ease-in-out ${showFaviconInfo ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                                            }`}
+                                    >
+                                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                            <h4 className="font-medium text-blue-900 mb-2">About Favicons</h4>
+                                            <p className="text-sm text-blue-800">
+                                                A Favicon is a small icon that serves as branding for your website. It helps visitors locate your page easier when they have multiple tabs open.
+                                            </p>
+                                            <div className="mt-3 space-y-2 text-sm text-blue-700">
+                                                <p>• <strong>Benefits:</strong> Adds legitimacy, boosts branding, builds trust</p>
+                                                <p>• <strong>Creation:</strong> Use online builder tool or graphic designer</p>
+                                                <p>• <strong>Implementation:</strong> Load into website or CMS</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -3128,6 +3230,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 </div>
                             </CardContent>
                         </Card>
+                        <TechnologyCard analysis={analysis} />
                     </div>
                 </TabsContent>
             </Tabs>
