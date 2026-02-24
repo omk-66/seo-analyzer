@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import {
   Search,
   Loader2,
@@ -20,6 +21,55 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
+
+// Text reveal animation component
+const AnimatedText = ({ text }: { text: string }) => {
+  const words = text.match(/[\p{L}\p{N}]+[^\s\p{L}\p{N}]?|[^\s]/gu) || []
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: (i = 1) => ({
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.04 * i },
+    }),
+  }
+
+  const childVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      filter: "blur(10px)",
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+    },
+  }
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      style={{ display: "inline-block" }}
+    >
+      {words.map((word, index) => (
+        <motion.span
+          key={index}
+          variants={childVariants}
+          transition={{
+            duration: 0.8,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+          style={{ marginRight: "0.25em", display: "inline-block" }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </motion.div>
+  )
+}
 
 export default function Home() {
   const [domain, setDomain] = useState('')
@@ -120,16 +170,16 @@ export default function Home() {
             </div>
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4">
-              Find what&apos;s broken.
-              <br className="hidden sm:block" /> Fix what matters — with{' '}
+              <AnimatedText text="Find what's broken." />
+              <br className="hidden sm:block" />{' '}
+              <AnimatedText text="Fix what matters — with" />{' '}
               <span className="bg-linear-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent">
-                WebsiteScore
+                <AnimatedText text="WebsiteScore" />
               </span>
               .
             </h1>
             <p className="text-sm md:text-base text-muted-foreground max-w-xl mb-6">
-              Paste a URL and get a clear, prioritized report: what&apos;s hurting rankings, performance, and trust —
-              plus the exact next steps your team can ship.
+              <AnimatedText text="Paste a URL and get a clear, prioritized report: what's hurting rankings, performance, and trust — plus the exact next steps your team can ship." />
             </p>
 
             <Card className="border border-border/80 bg-card/80 shadow-sm mb-4">
