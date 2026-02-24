@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Search, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,21 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<any>(null)
   const [error, setError] = useState('')
+
+  // Extract domain from input for favicon
+  const extractedDomain = useMemo(() => {
+    if (!domain) return ''
+    // Remove protocol if present
+    let cleanDomain = domain.replace(/^https?:\/\//, '')
+    // Remove path and query params
+    cleanDomain = cleanDomain.split('/')[0]
+    // Remove port if present
+    cleanDomain = cleanDomain.split(':')[0]
+    return cleanDomain
+  }, [domain])
+
+  // Google Favicon API URL
+  const faviconUrl = extractedDomain ? `https://www.google.com/s2/favicons?domain=${extractedDomain}&sz=64` : ''
 
   const handleAnalyze = async () => {
     if (!domain) return
@@ -63,14 +78,29 @@ export default function Home() {
           <Card className="shadow-lg">
             <CardContent className="p-6">
               <div className="flex gap-3">
-                <Input
-                  type="text"
-                  placeholder="Enter domain (e.g., example.com)"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
-                  className="flex-1 h-12 text-base"
-                />
+                {/* Domain Preview with Favicon */}
+                <div className="relative flex-1 flex items-center bg-white border rounded-md">
+                  {extractedDomain && (
+                    <span className="pl-3 flex-shrink-0">
+                      <img
+                        src={faviconUrl}
+                        alt=""
+                        className="w-4 h-4 rounded-sm"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </span>
+                  )}
+                  <Input
+                    type="text"
+                    placeholder="Enter domain (e.g., example.com)"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAnalyze()}
+                    className="flex-1 h-12 text-base border-0 shadow-none focus-visible:ring-0"
+                  />
+                </div>
                 <Button
                   onClick={handleAnalyze}
                   disabled={!domain || isAnalyzing}

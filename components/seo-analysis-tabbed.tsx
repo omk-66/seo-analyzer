@@ -38,7 +38,9 @@ import {
     Anchor,
     ArrowRight,
     ChevronRight,
-    Info
+    Info,
+    Sparkles,
+    Zap
 } from 'lucide-react';
 import { ProgressCircle } from './ui/progressCircle';
 import { JsFile } from './assests/svgs';
@@ -419,6 +421,32 @@ interface SEOAnalysisTabbedProps {
                 percentage: number;
             }>;
         } | null;
+        // AI-powered SEO suggestions
+        suggestions?: {
+            overallScore: number;
+            summary: string;
+            suggestions: Array<{
+                id: string;
+                category: string;
+                priority: string;
+                title: string;
+                description: string;
+                impact: string;
+                recommendation: string;
+                effort: string;
+                estimatedImpact: string;
+            }>;
+            prioritizedActions: string[];
+            categoryBreakdown: {
+                technical: number;
+                onpage: number;
+                content: number;
+                performance: number;
+                backlinks: number;
+                security: number;
+            };
+        } | null;
+        url?: string;
     } | null;
     url?: string;
 }
@@ -1026,7 +1054,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
         <div className="w-full">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 {/* Right side tabs - 5 tabs */}
-                <TabsList className="grid w-full grid-cols-5 mb-6 sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+                <TabsList className="grid w-full grid-cols-6 mb-6 sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
                     <TabsTrigger value="onpage" className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         <span className="hidden sm:inline">On-page SEO</span>
@@ -1049,6 +1077,11 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     <TabsTrigger value="social" className="flex items-center gap-2">
                         <Share2 className="w-4 h-4" />
                         <span>Social</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="suggestions" className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4" />
+                        <span>AI Insights</span>
+                        <Badge variant="secondary" className="ml-1 text-xs">PRO</Badge>
                     </TabsTrigger>
                 </TabsList>
 
@@ -3231,6 +3264,176 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                             </CardContent>
                         </Card>
                         <TechnologyCard analysis={analysis} />
+                    </div>
+                </TabsContent>
+
+                {/* AI Suggestions Tab - Premium Feature */}
+                <TabsContent value="suggestions">
+                    <div className="space-y-6">
+                        {/* Premium Header */}
+                        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-xl flex items-center gap-2">
+                                        <Sparkles className="w-6 h-6 text-purple-600" />
+                                        AI-Powered SEO Insights
+                                    </CardTitle>
+                                    <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                                        PRO
+                                    </Badge>
+                                </div>
+                                <CardDescription>
+                                    Personalized recommendations based on comprehensive analysis
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {analysis?.suggestions ? (
+                                    <div className="space-y-6">
+                                        {/* Overall Score */}
+                                        <div className="flex items-center justify-center">
+                                            <div className="relative w-32 h-32">
+                                                <svg className="w-32 h-32 transform -rotate-90">
+                                                    <circle
+                                                        cx="64"
+                                                        cy="64"
+                                                        r="56"
+                                                        stroke="currentColor"
+                                                        strokeWidth="8"
+                                                        fill="none"
+                                                        className="text-gray-200"
+                                                    />
+                                                    <circle
+                                                        cx="64"
+                                                        cy="64"
+                                                        r="56"
+                                                        stroke="currentColor"
+                                                        strokeWidth="8"
+                                                        fill="none"
+                                                        strokeDasharray={`${(analysis.suggestions.overallScore / 100) * 351} 351`}
+                                                        className={`${analysis.suggestions.overallScore >= 70 ? 'text-green-500' :
+                                                            analysis.suggestions.overallScore >= 50 ? 'text-yellow-500' :
+                                                                'text-red-500'
+                                                            }`}
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <span className="text-3xl font-bold text-gray-800">
+                                                        {analysis.suggestions.overallScore}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Summary */}
+                                        <div className="text-center">
+                                            <p className="text-lg font-medium text-gray-700">
+                                                {analysis.suggestions.summary}
+                                            </p>
+                                        </div>
+
+                                        {/* Category Breakdown */}
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                                <div className="text-2xl font-bold text-blue-600">
+                                                    {analysis.suggestions.categoryBreakdown?.technical || 0}
+                                                </div>
+                                                <div className="text-xs text-gray-500">Technical</div>
+                                            </div>
+                                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                                <div className="text-2xl font-bold text-green-600">
+                                                    {analysis.suggestions.categoryBreakdown?.onpage || 0}
+                                                </div>
+                                                <div className="text-xs text-gray-500">On-Page</div>
+                                            </div>
+                                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                                <div className="text-2xl font-bold text-purple-600">
+                                                    {analysis.suggestions.categoryBreakdown?.content || 0}
+                                                </div>
+                                                <div className="text-xs text-gray-500">Content</div>
+                                            </div>
+                                        </div>
+
+                                        {/* Suggestions List */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-gray-800">
+                                                Recommended Actions
+                                            </h3>
+                                            {analysis.suggestions.suggestions?.slice(0, 8).map((suggestion: any, index: number) => (
+                                                <div
+                                                    key={index}
+                                                    className={`p-4 rounded-lg border-l-4 ${suggestion.priority === 'critical' ? 'border-l-red-500 bg-red-50' :
+                                                        suggestion.priority === 'high' ? 'border-l-orange-500 bg-orange-50' :
+                                                            suggestion.priority === 'medium' ? 'border-l-yellow-500 bg-yellow-50' :
+                                                                'border-l-blue-500 bg-blue-50'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={`${suggestion.priority === 'critical' ? 'text-red-600 border-red-300' :
+                                                                        suggestion.priority === 'high' ? 'text-orange-600 border-orange-300' :
+                                                                            suggestion.priority === 'medium' ? 'text-yellow-600 border-yellow-300' :
+                                                                                'text-blue-600 border-blue-300'
+                                                                        }`}
+                                                                >
+                                                                    {suggestion.priority}
+                                                                </Badge>
+                                                                <Badge variant="outline" className="text-gray-600">
+                                                                    {suggestion.category}
+                                                                </Badge>
+                                                            </div>
+                                                            <h4 className="font-medium text-gray-900">
+                                                                {suggestion.title}
+                                                            </h4>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                {suggestion.description}
+                                                            </p>
+                                                            <p className="text-sm text-gray-700 mt-2 font-medium">
+                                                                💡 {suggestion.recommendation}
+                                                            </p>
+                                                        </div>
+                                                        <div className="ml-4 flex-shrink-0">
+                                                            <div className={`text-xs px-2 py-1 rounded ${suggestion.estimatedImpact === 'high' ? 'bg-green-100 text-green-700' :
+                                                                suggestion.estimatedImpact === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                                                    'bg-gray-100 text-gray-700'
+                                                                }`}>
+                                                                Impact: {suggestion.estimatedImpact}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Prioritized Actions */}
+                                        {analysis.suggestions.prioritizedActions && analysis.suggestions.prioritizedActions.length > 0 && (
+                                            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                                                <h4 className="font-semibold text-purple-800 mb-3 flex items-center gap-2">
+                                                    <Zap className="w-4 h-4" />
+                                                    Top Priority Actions
+                                                </h4>
+                                                <ol className="list-decimal list-inside space-y-2">
+                                                    {analysis.suggestions.prioritizedActions.map((action: string, index: number) => (
+                                                        <li key={index} className="text-sm text-purple-700">
+                                                            {action}
+                                                        </li>
+                                                    ))}
+                                                </ol>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                                        <p className="text-gray-500">
+                                            Analyzing your website to generate personalized insights...
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </TabsContent>
             </Tabs>

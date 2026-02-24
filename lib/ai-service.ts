@@ -1,4 +1,35 @@
+import { generateText } from 'ai';
+import { createCohere } from '@ai-sdk/cohere';
+import { createDeepSeek } from '@ai-sdk/deepseek';
 import { WebsiteContent } from './scraper';
+
+// Interface for AI-powered SEO Suggestions
+export interface SEOSuggestion {
+    id: string;
+    category: 'technical' | 'on-page' | 'content' | 'performance' | 'backlinks' | 'security';
+    priority: 'critical' | 'high' | 'medium' | 'low';
+    title: string;
+    description: string;
+    impact: string;
+    recommendation: string;
+    effort: 'low' | 'medium' | 'high';
+    estimatedImpact: 'high' | 'medium' | 'low';
+}
+
+export interface SEOSuggestionsResponse {
+    overallScore: number;
+    suggestions: SEOSuggestion[];
+    summary: string;
+    prioritizedActions: string[];
+    categoryBreakdown: {
+        technical: number;
+        onpage: number;
+        content: number;
+        performance: number;
+        backlinks: number;
+        security: number;
+    };
+}
 
 // Backward compatible SEOMetrics interface
 export interface SEOMetrics extends ExtendedSEOMetrics { }
@@ -481,4 +512,463 @@ function generateFallbackAnalysis(content: WebsiteContent): SEOAnalysis {
             "Build internal linking structure"
         ]
     };
+}
+
+/**
+ * Generate AI-powered SEO suggestions from all gathered data
+ * This is a simplified version that generates suggestions without calling external LLM
+ * For production, you would integrate with Google AI, OpenAI, or other LLM providers
+ */
+export function generateSEOSuggestions(
+    websiteData: any,
+    onPageSEO: any,
+    performance: any,
+    backlinks: any,
+    social: any
+): SEOSuggestionsResponse {
+    const suggestions: SEOSuggestion[] = [];
+    let score = 70; // Base score
+
+    // Analyze title tag
+    if (!onPageSEO?.titleTag?.exists) {
+        suggestions.push({
+            id: 'title-missing',
+            category: 'on-page',
+            priority: 'critical',
+            title: 'Missing Title Tag',
+            description: 'Your page is missing a title tag, which is crucial for SEO.',
+            impact: 'Search engines cannot understand the page topic without a title.',
+            recommendation: 'Add a descriptive title tag between 50-60 characters.',
+            effort: 'low',
+            estimatedImpact: 'high'
+        });
+        score -= 15;
+    } else if (!onPageSEO?.titleTag?.isOptimalLength) {
+        suggestions.push({
+            id: 'title-length',
+            category: 'on-page',
+            priority: 'high',
+            title: 'Title Tag Not Optimal',
+            description: `Your title is ${onPageSEO.titleTag.length} characters (recommended: 50-60).`,
+            impact: 'Titles that are too long get truncated in search results.',
+            recommendation: 'Optimize title to 50-60 characters with primary keywords.',
+            effort: 'low',
+            estimatedImpact: 'medium'
+        });
+        score -= 5;
+    }
+
+    // Analyze meta description
+    if (!onPageSEO?.metaDescription?.exists) {
+        suggestions.push({
+            id: 'meta-desc-missing',
+            category: 'on-page',
+            priority: 'critical',
+            title: 'Missing Meta Description',
+            description: 'Your page is missing a meta description.',
+            impact: 'Google will create one automatically, but you lose CTR control.',
+            recommendation: 'Add a compelling meta description between 150-160 characters.',
+            effort: 'low',
+            estimatedImpact: 'high'
+        });
+        score -= 10;
+    }
+
+    // Analyze H1 tags
+    if (!onPageSEO?.headers?.hasH1) {
+        suggestions.push({
+            id: 'h1-missing',
+            category: 'on-page',
+            priority: 'critical',
+            title: 'Missing H1 Tag',
+            description: 'Your page does not have an H1 heading tag.',
+            impact: 'H1 helps search engines understand the main topic.',
+            recommendation: 'Add one H1 tag with your primary keyword.',
+            effort: 'low',
+            estimatedImpact: 'high'
+        });
+        score -= 10;
+    } else if (onPageSEO?.headers?.hasMultipleH1) {
+        suggestions.push({
+            id: 'multiple-h1',
+            category: 'on-page',
+            priority: 'high',
+            title: 'Multiple H1 Tags',
+            description: `Your page has ${onPageSEO.headers.h1Tags.length} H1 tags (should be 1).`,
+            impact: 'Multiple H1s dilute the page topic for search engines.',
+            recommendation: 'Keep only one H1 tag per page.',
+            effort: 'low',
+            estimatedImpact: 'medium'
+        });
+        score -= 5;
+    }
+
+    // Analyze content
+    if (onPageSEO?.contentAmount?.wordCount < 300) {
+        suggestions.push({
+            id: 'thin-content',
+            category: 'content',
+            priority: 'high',
+            title: 'Thin Content',
+            description: `Your page has only ${onPageSEO.contentAmount.wordCount} words (recommended: 300+).`,
+            impact: 'Short content may not rank well for competitive keywords.',
+            recommendation: 'Expand content to at least 300-500 words.',
+            effort: 'medium',
+            estimatedImpact: 'high'
+        });
+        score -= 8;
+    }
+
+    // Analyze images
+    if (onPageSEO?.imageAlt?.imagesWithoutAlt > 0) {
+        const percentage = onPageSEO.imageAlt.missingPercentage;
+        suggestions.push({
+            id: 'missing-alt',
+            category: 'on-page',
+            priority: percentage > 50 ? 'critical' : 'high',
+            title: 'Images Missing Alt Text',
+            description: `${onPageSEO.imageAlt.imagesWithoutAlt} images (${percentage}%) are missing alt attributes.`,
+            impact: 'Missed SEO opportunities and accessibility issues.',
+            recommendation: 'Add descriptive alt text to all images.',
+            effort: 'medium',
+            estimatedImpact: 'medium'
+        });
+        score -= percentage > 50 ? 10 : 5;
+    }
+
+    // Analyze SSL
+    if (!onPageSEO?.sslEnabled?.isSSLEnabled) {
+        suggestions.push({
+            id: 'no-ssl',
+            category: 'security',
+            priority: 'critical',
+            title: 'No SSL/HTTPS',
+            description: 'Your website is not using HTTPS.',
+            impact: 'Google penalizes non-HTTPS sites. Users see security warnings.',
+            recommendation: 'Install an SSL certificate and redirect HTTP to HTTPS.',
+            effort: 'medium',
+            estimatedImpact: 'high'
+        });
+        score -= 15;
+    }
+
+    // Analyze canonical
+    if (!onPageSEO?.canonicalTag?.hasCanonical) {
+        suggestions.push({
+            id: 'no-canonical',
+            category: 'technical',
+            priority: 'high',
+            title: 'Missing Canonical Tag',
+            description: 'Your page does not have a canonical URL.',
+            impact: 'May cause duplicate content issues.',
+            recommendation: 'Add a self-referencing canonical URL.',
+            effort: 'low',
+            estimatedImpact: 'medium'
+        });
+        score -= 5;
+    }
+
+    // Analyze XML sitemap
+    if (!onPageSEO?.xmlSitemap?.hasXmlSitemap) {
+        suggestions.push({
+            id: 'no-sitemap',
+            category: 'technical',
+            priority: 'high',
+            title: 'Missing XML Sitemap',
+            description: 'Your website does not have an XML sitemap.',
+            impact: 'Search engines may not discover all pages.',
+            recommendation: 'Create and submit an XML sitemap to Google Search Console.',
+            effort: 'medium',
+            estimatedImpact: 'medium'
+        });
+        score -= 5;
+    }
+
+    // Analyze robots.txt
+    if (!onPageSEO?.robotsTxt?.hasRobotsTxt) {
+        suggestions.push({
+            id: 'no-robots',
+            category: 'technical',
+            priority: 'medium',
+            title: 'Missing Robots.txt',
+            description: 'Your website does not have a robots.txt file.',
+            impact: 'Cannot control which pages search engines should crawl.',
+            recommendation: 'Create a robots.txt file to guide search engine crawlers.',
+            effort: 'low',
+            estimatedImpact: 'low'
+        });
+        score -= 3;
+    }
+
+    // Analyze schema.org
+    if (!onPageSEO?.schemaOrg?.hasJsonLd) {
+        suggestions.push({
+            id: 'no-schema',
+            category: 'technical',
+            priority: 'medium',
+            title: 'No Structured Data',
+            description: 'Your page does not have JSON-LD structured data.',
+            impact: 'Missing rich snippets in search results.',
+            recommendation: 'Add relevant schema markup (Organization, FAQ, Product, etc.).',
+            effort: 'medium',
+            estimatedImpact: 'medium'
+        });
+        score -= 5;
+    }
+
+    // Analyze analytics
+    if (!onPageSEO?.analytics?.hasAnalytics) {
+        suggestions.push({
+            id: 'no-analytics',
+            category: 'performance',
+            priority: 'high',
+            title: 'No Analytics Tracking',
+            description: 'No analytics tools detected on your website.',
+            impact: 'Cannot track website performance and user behavior.',
+            recommendation: 'Install Google Analytics 4 or an alternative.',
+            effort: 'low',
+            estimatedImpact: 'high'
+        });
+        score -= 5;
+    }
+
+    // Analyze Open Graph
+    if (!social?.openGraph?.hasOpenGraph) {
+        suggestions.push({
+            id: 'no-og',
+            category: 'content',
+            priority: 'medium',
+            title: 'Missing Open Graph Tags',
+            description: 'Your page does not have Open Graph meta tags.',
+            impact: 'Poor social media sharing appearance.',
+            recommendation: 'Add Open Graph tags for better social sharing.',
+            effort: 'low',
+            estimatedImpact: 'medium'
+        });
+        score -= 3;
+    }
+
+    // Analyze hreflang
+    if (!onPageSEO?.hreflang?.hasHreflang) {
+        suggestions.push({
+            id: 'no-hreflang',
+            category: 'technical',
+            priority: 'low',
+            title: 'No Hreflang Tags',
+            description: 'Your page does not use hreflang for international SEO.',
+            impact: 'May show wrong language version to users.',
+            recommendation: 'Add hreflang tags if targeting multiple languages.',
+            effort: 'medium',
+            estimatedImpact: 'low'
+        });
+    }
+
+    // Analyze backlinks
+    if (backlinks?.counts?.total < 10) {
+        suggestions.push({
+            id: 'low-backlinks',
+            category: 'backlinks',
+            priority: backlinks?.counts?.total === 0 ? 'high' : 'medium',
+            title: 'Limited Backlinks',
+            description: `Your page has only ${backlinks.counts.total} backlinks.`,
+            impact: 'Low domain authority and ranking potential.',
+            recommendation: 'Build quality backlinks from relevant websites.',
+            effort: 'high',
+            estimatedImpact: 'high'
+        });
+        score -= backlinks?.counts?.total === 0 ? 10 : 5;
+    }
+
+    // Performance suggestions
+    if (performance?.scores?.performance < 50) {
+        suggestions.push({
+            id: 'slow-performance',
+            category: 'performance',
+            priority: 'critical',
+            title: 'Poor Page Speed',
+            description: `Your performance score is ${performance.scores.performance}/100.`,
+            impact: 'Slow pages hurt user experience and rankings.',
+            recommendation: 'Optimize images, minify CSS/JS, enable compression.',
+            effort: 'high',
+            estimatedImpact: 'high'
+        });
+        score -= 10;
+    }
+
+    // Sort by priority
+    const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+    suggestions.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+    // Calculate category breakdown
+    const categoryBreakdown = {
+        technical: suggestions.filter(s => s.category === 'technical').length,
+        onpage: suggestions.filter(s => s.category === 'on-page').length,
+        content: suggestions.filter(s => s.category === 'content').length,
+        performance: suggestions.filter(s => s.category === 'performance').length,
+        backlinks: suggestions.filter(s => s.category === 'backlinks').length,
+        security: suggestions.filter(s => s.category === 'security').length
+    };
+
+    // Generate prioritized actions
+    const prioritizedActions = suggestions
+        .filter(s => s.priority === 'critical' || s.priority === 'high')
+        .slice(0, 5)
+        .map(s => s.recommendation);
+
+    // Generate summary
+    const criticalCount = suggestions.filter(s => s.priority === 'critical').length;
+    const highCount = suggestions.filter(s => s.priority === 'high').length;
+
+    let summary = `We found ${suggestions.length} improvement opportunities`;
+    if (criticalCount > 0) {
+        summary += ` including ${criticalCount} critical issues`;
+    }
+    if (highCount > 0) {
+        summary += ` and ${highCount} high-priority items`;
+    }
+    summary += `. Focus on fixing critical issues first to improve your SEO score.`;
+
+    return {
+        overallScore: Math.max(0, Math.min(100, score)),
+        suggestions,
+        summary,
+        prioritizedActions,
+        categoryBreakdown
+    };
+}
+
+/**
+ * Generate AI-powered SEO suggestions using LLM (DeepSeek)
+ * This function calls the actual LLM to get more intelligent suggestions
+ * Uses the AI SDK with DeepSeek provider - NO FALLBACK, throws error on failure
+ */
+export async function generateSEOSuggestionsWithLLM(
+    websiteData: any,
+    onPageSEO: any,
+    performance: any,
+    backlinks: any,
+    social: any
+): Promise<SEOSuggestionsResponse> {
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+
+    if (!apiKey) {
+        console.error('[AI] No DeepSeek API key found');
+        throw new Error('DeepSeek API key is not configured. Please add DEEPSEEK_API_KEY to your .env file.');
+    }
+
+    try {
+        // Create DeepSeek provider using AI SDK
+        const deepseek = createDeepSeek({
+            apiKey: apiKey,
+        });
+
+        // Build a comprehensive prompt
+        const prompt = `You are an expert SEO analyst. Analyze the following website data and provide detailed SEO improvement suggestions.
+
+WEBSITE DATA:
+- URL: ${websiteData?.url || 'N/A'}
+- Title: ${websiteData?.title || 'Not found'}
+- Meta Description: ${websiteData?.metaDescription || 'Not found'}
+
+ON-PAGE SEO:
+- Title Tag: ${JSON.stringify(onPageSEO?.titleTag)}
+- Meta Description: ${JSON.stringify(onPageSEO?.metaDescription)}
+- Headers: ${JSON.stringify(onPageSEO?.headers)}
+- Content: ${JSON.stringify(onPageSEO?.contentAmount)}
+- Images: ${JSON.stringify(onPageSEO?.imageAlt)}
+- Canonical: ${JSON.stringify(onPageSEO?.canonicalTag)}
+- SSL: ${JSON.stringify(onPageSEO?.sslEnabled)}
+- XML Sitemap: ${JSON.stringify(onPageSEO?.xmlSitemap)}
+- Robots.txt: ${JSON.stringify(onPageSEO?.robotsTxt)}
+- Schema.org: ${JSON.stringify(onPageSEO?.schemaOrg)}
+- Analytics: ${JSON.stringify(onPageSEO?.analytics)}
+
+PERFORMANCE:
+- Score: ${performance?.scores?.performance || 'N/A'}
+- LCP: ${performance?.metrics?.largestContentfulPaint?.displayValue || 'N/A'}
+- FCP: ${performance?.metrics?.firstContentfulPaint?.displayValue || 'N/A'}
+- CLS: ${performance?.metrics?.cumulativeLayoutShift?.displayValue || 'N/A'}
+
+BACKLINKS:
+- Total: ${backlinks?.counts?.total || 0}
+- Domains: ${backlinks?.counts?.domains?.total || 0}
+
+SOCIAL:
+- Open Graph: ${social?.openGraph?.hasOpenGraph || false}
+- Twitter Cards: ${social?.twitterCards?.hasTwitterCards || false}
+
+Please provide your response as a JSON object with this exact structure:
+{
+  "overallScore": number (0-100),
+  "summary": string (2-3 sentences about the overall SEO health),
+  "suggestions": [
+    {
+      "id": string,
+      "category": "technical" | "on-page" | "content" | "performance" | "backlinks" | "security",
+      "priority": "critical" | "high" | "medium" | "low",
+      "title": string (issue name),
+      "description": string (what the issue is),
+      "impact": string (why it matters for SEO),
+      "recommendation": string (how to fix it),
+      "effort": "low" | "medium" | "high",
+      "estimatedImpact": "high" | "medium" | "low"
+    }
+  ],
+  "prioritizedActions": [string] (top 5 actions to take),
+  "categoryBreakdown": {
+    "technical": number,
+    "onpage": number,
+    "content": number,
+    "performance": number,
+    "backlinks": number,
+    "security": number
+  }
+}
+
+Provide ONLY valid JSON, no additional text.`;
+
+        console.log('[AI] Calling DeepSeek LLM for SEO suggestions...');
+
+        const { text } = await generateText({
+            model: deepseek('deepseek-chat'),
+            prompt: prompt,
+        });
+
+        console.log('[AI] Received response from DeepSeek LLM');
+
+        // Parse the JSON response
+        try {
+            // Try to extract JSON from the response (in case there's surrounding text)
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+
+                // Validate and return the parsed response
+                return {
+                    overallScore: parsed.overallScore || 50,
+                    suggestions: parsed.suggestions || [],
+                    summary: parsed.summary || 'Analysis completed.',
+                    prioritizedActions: parsed.prioritizedActions || [],
+                    categoryBreakdown: parsed.categoryBreakdown || {
+                        technical: 0,
+                        onpage: 0,
+                        content: 0,
+                        performance: 0,
+                        backlinks: 0,
+                        security: 0
+                    }
+                };
+            }
+        } catch (parseError) {
+            console.error('[AI] Failed to parse LLM response:', parseError);
+            throw new Error('Failed to parse AI response. Please try again.');
+        }
+
+        // If no JSON found, throw error
+        throw new Error('Invalid response format from AI. Please try again.');
+
+    } catch (error: any) {
+        console.error('[AI] Error calling LLM:', error.message);
+        throw error; // Re-throw the error, NO FALLBACK
+    }
 }

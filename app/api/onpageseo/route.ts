@@ -5,6 +5,7 @@ import { getFullPageSpeedDashboardData, getCombinedPageSpeedData, CombinedPerfor
 import { getAllBacklinks } from '@/lib/links/back-links';
 import { getReferralDomains, TLDStats } from '@/lib/links/referral-domain';
 import { getTechnologyInfo } from '@/lib/technology/tech-info';
+import { generateSEOSuggestionsWithLLM, SEOSuggestionsResponse } from '@/lib/ai-service';
 
 export interface UsabilityData {
     desktopScreenshot: {
@@ -462,6 +463,17 @@ export async function POST(request: Request) {
             console.error('[ERROR] Failed to fetch technology data:', error);
         }
 
+        // Generate AI-powered SEO suggestions using LLM
+        console.log('[DEBUG] Generating AI SEO suggestions with LLM...');
+        const seoSuggestions: SEOSuggestionsResponse = await generateSEOSuggestionsWithLLM(
+            websiteData,
+            onPageSEO,
+            performanceData,
+            backlinksData,
+            websiteData.social
+        );
+        console.log('[DEBUG] SEO suggestions generated with LLM, score:', seoSuggestions.overallScore);
+
         return NextResponse.json({
             url: websiteData.url,
             onPageSEO,
@@ -472,7 +484,8 @@ export async function POST(request: Request) {
             backlinks: backlinksData,
             backlinkList,
             referralDomains: referralDomainsData,
-            ...technologyData
+            ...technologyData,
+            suggestions: seoSuggestions
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);
