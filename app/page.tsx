@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
+import { Marquee } from '@/components/ui/marquee'
 
 // Text reveal animation component
 const AnimatedText = ({ text }: { text: string }) => {
@@ -68,6 +69,78 @@ const AnimatedText = ({ text }: { text: string }) => {
         </motion.span>
       ))}
     </motion.div>
+  )
+}
+
+// Testimonials data for marquee
+const reviews = [
+  {
+    name: "Sarah Chen",
+    username: "@sarahchen",
+    body: "WebsiteScore helped me identify critical SEO issues that were killing my rankings. My organic traffic increased by 40% in just 2 weeks.",
+    img: "https://avatar.vercel.sh/sarah",
+  },
+  {
+    name: "Mike Rodriguez",
+    username: "@mikero",
+    body: "Finally, an SEO audit tool that gives actionable insights instead of confusing data. The prioritized recommendations are pure gold.",
+    img: "https://avatar.vercel.sh/mike",
+  },
+  {
+    name: "Emily Watson",
+    username: "@emilyw",
+    body: "As a developer, I love how WebsiteScore pinpoints exact technical issues. No more guesswork - just clear, actionable fixes.",
+    img: "https://avatar.vercel.sh/emily",
+  },
+  {
+    name: "David Kim",
+    username: "@davidk",
+    body: "The Core Web Vitals analysis alone saved our site from a major ranking drop. Essential tool for any serious website owner.",
+    img: "https://avatar.vercel.sh/david",
+  },
+  {
+    name: "Lisa Thompson",
+    username: "@lisat",
+    body: "WebsiteScore's audit reports are so clear that even non-technical team members can understand and implement the fixes.",
+    img: "https://avatar.vercel.sh/lisa",
+  },
+  {
+    name: "Alex Johnson",
+    username: "@alexj",
+    body: "I've tried dozens of SEO tools. WebsiteScore is the only one that actually tells you what to fix first. Game changer!",
+    img: "https://avatar.vercel.sh/alex",
+  },
+]
+
+const firstRow = reviews.slice(0, reviews.length / 2)
+const secondRow = reviews.slice(reviews.length / 2)
+
+const ReviewCard = ({
+  img,
+  name,
+  username,
+  body,
+}: {
+  img: string
+  name: string
+  username: string
+  body: string
+}) => {
+  return (
+    <figure
+      className="relative h-full w-64 cursor-pointer overflow-hidden rounded-xl border p-4 border-gray-950/10 bg-gray-950/1 hover:bg-gray-950/5 dark:border-gray-50/10 dark:bg-gray-50/10 dark:hover:bg-gray-50/15"
+    >
+      <div className="flex flex-row items-center gap-2">
+        <img className="rounded-full" width="32" height="32" alt="" src={img} />
+        <div className="flex flex-col">
+          <figcaption className="text-sm font-medium dark:text-white">
+            {name}
+          </figcaption>
+          <p className="text-xs font-medium dark:text-white/40">{username}</p>
+        </div>
+      </div>
+      <blockquote className="mt-2 text-sm">{body}</blockquote>
+    </figure>
   )
 }
 
@@ -129,12 +202,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.24),transparent_55%),linear-gradient(to_bottom,#020617,#020617)]">
       {/* Top nav */}
-      <header className="border-b border-border/60 bg-sidebar/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
         <div className="mx-auto max-w-6xl px-4 md:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+          <motion.div 
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div 
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <span className="text-xs font-semibold tracking-tight">WS</span>
-            </div>
+            </motion.div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-tight text-foreground">
                 WebsiteScore
@@ -143,31 +225,107 @@ export default function Home() {
                 AI SEO audit & website health
               </span>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground">
-            <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300">
-              On-page SEO
-            </span>
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 font-medium">
-              Technical checks
-            </span>
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-medium">
-              Core Web Vitals
-            </span>
-          </div>
+          <motion.nav 
+            className="hidden md:flex items-center gap-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <motion.a 
+              href="#features" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              whileHover={{ y: -2 }}
+            >
+              Features
+            </motion.a>
+            <motion.a 
+              href="#pricing" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              whileHover={{ y: -2 }}
+            >
+              Pricing
+            </motion.a>
+            <motion.a 
+              href="#testimonials" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              whileHover={{ y: -2 }}
+            >
+              Testimonials
+            </motion.a>
+            <motion.div className="flex items-center gap-2 text-[11px]">
+              <motion.span 
+                className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300"
+                whileHover={{ scale: 1.05 }}
+              >
+                On-page SEO
+              </motion.span>
+              <motion.span 
+                className="rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 font-medium"
+                whileHover={{ scale: 1.05 }}
+              >
+                Technical checks
+              </motion.span>
+              <motion.span 
+                className="rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-medium"
+                whileHover={{ scale: 1.05 }}
+              >
+                Core Web Vitals
+              </motion.span>
+            </motion.div>
+          </motion.nav>
+
+          <motion.div 
+            className="flex items-center gap-3"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <motion.button
+              className="hidden sm:inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-4"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Sign In
+            </motion.button>
+            <motion.button
+              className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90 h-9 px-4"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Started
+            </motion.button>
+          </motion.div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 md:px-6 py-10 md:py-14">
         {/* Hero + input + value props */}
-        <section className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start mb-10 md:mb-14">
+        <motion.section 
+          className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start mb-10 md:mb-14"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
           {/* Left: hero copy and form */}
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 mb-4">
-              <Sparkles className="h-3.5 w-3.5" />
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 mb-4"
+              whileHover={{ scale: 1.05 }}
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+              </motion.div>
               Instant website audit (SEO, performance, trust)
-            </div>
+            </motion.div>
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4">
               <AnimatedText text="Find what's broken." />
@@ -235,7 +393,7 @@ export default function Home() {
                   </Button>
                 </div>
                 <p className="mt-2 text-[11px] text-muted-foreground">
-                  No signup required. We don’t crawl behind logins or gated content.
+                  No signup required. We don't crawl behind logins or gated content.
                 </p>
               </CardContent>
             </Card>
@@ -260,9 +418,9 @@ export default function Home() {
                 <div className="text-sm font-semibold text-foreground">Core Web Vitals, mobile</div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right: SaaS-style “sample score” panel when idle */}
+          {/* Right: SaaS-style "sample score" panel when idle */}
           {!analysis && (
             <Card className="border border-border/80 bg-card/90 shadow-sm">
               <CardHeader className="pb-4">
@@ -361,14 +519,27 @@ export default function Home() {
               </CardContent>
             </Card>
           )}
-        </section>
+        </motion.section>
 
         {/* Landing v2 sections (shown only before running an audit) */}
         {!analysis && (
           <div className="space-y-14 md:space-y-16">
             {/* Live stats */}
-            <section className="ws-fade-up" style={{ animationDelay: '20ms' }}>
-              <div className="flex items-end justify-between gap-6 mb-6">
+            <motion.section 
+              className="ws-fade-up" 
+              style={{ animationDelay: '20ms' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.div 
+                className="flex items-end justify-between gap-6 mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
                 <div>
                   <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
                     How websites actually perform
@@ -377,12 +548,15 @@ export default function Home() {
                     Benchmarks to set expectations before you optimize.
                   </p>
                 </div>
-                <div className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground">
+                <motion.div 
+                  className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground"
+                  whileHover={{ scale: 1.05 }}
+                >
                   <span className="rounded-full border border-border bg-background/40 px-3 py-1">
                     Updated on demand
                   </span>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
@@ -390,38 +564,69 @@ export default function Home() {
                   { label: 'Avg WebsiteScore', value: '79 / 100', icon: ShieldCheck },
                   { label: 'Avg PageSpeed', value: '92 / 100', icon: Zap },
                   { label: 'Avg Trust & Security', value: '59 / 100', icon: Lock },
-                ].map((s) => (
-                  <Card key={s.label} className="border border-border/70 bg-card/60">
-                    <CardContent className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                          <s.icon className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-xl font-semibold text-foreground leading-tight">
-                            {s.value}
+                ].map((s, index) => (
+                  <motion.div
+                    key={s.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                  >
+                    <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-colors">
+                      <CardContent className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <motion.div 
+                            className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                          >
+                            <s.icon className="h-5 w-5" />
+                          </motion.div>
+                          <div className="min-w-0">
+                            <motion.div 
+                              className="text-xl font-semibold text-foreground leading-tight"
+                              initial={{ opacity: 0 }}
+                              whileInView={{ opacity: 1 }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+                            >
+                              {s.value}
+                            </motion.div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {s.label}
+                            </div>
                           </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {s.label}
-                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
-            </section>
+            </motion.section>
 
             {/* What we check (5 pillars) */}
-            <section className="ws-fade-up" style={{ animationDelay: '60ms' }}>
-              <div className="mb-6">
+            <motion.section 
+              id="features"
+              className="ws-fade-up" 
+              style={{ animationDelay: '60ms' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
                 <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
                   Everything you need to rank higher
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Five pillars, one score, and an action plan you can follow.
                 </p>
-              </div>
+              </motion.div>
 
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
                 {[
@@ -450,28 +655,46 @@ export default function Home() {
                     desc: 'Open Graph, Twitter Cards, profiles, contact info.',
                     icon: Globe2,
                   },
-                ].map((p) => (
-                  <Card key={p.title} className="border border-border/70 bg-card/60">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
-                          <p.icon className="h-4 w-4" />
-                        </span>
-                        {p.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {p.desc}
-                      </p>
-                    </CardContent>
-                  </Card>
+                ].map((p, index) => (
+                  <motion.div
+                    key={p.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                  >
+                    <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/10">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <motion.div 
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                          >
+                            <p.icon className="h-4 w-4" />
+                          </motion.div>
+                          {p.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {p.desc}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
-            </section>
+            </motion.section>
 
             {/* How it works */}
-            <section className="ws-fade-up" style={{ animationDelay: '100ms' }}>
+            <motion.section 
+              className="ws-fade-up" 
+              style={{ animationDelay: '100ms' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               <Card className="border border-border/70 bg-card/60 overflow-hidden">
                 <CardContent className="p-5 md:p-6">
                   <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start">
@@ -499,9 +722,13 @@ export default function Home() {
                           desc: 'Use the report as a ticket list for dev + content.',
                         },
                       ].map((step, i) => (
-                        <div
+                        <motion.div
                           key={step.title}
                           className="flex items-start gap-3 rounded-xl border border-border bg-background/30 p-3"
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6, delay: 0.2 + i * 0.1 }}
                         >
                           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-200 text-xs font-semibold">
                             {i + 1}
@@ -514,7 +741,7 @@ export default function Home() {
                               {step.desc}
                             </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
@@ -534,7 +761,66 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
-            </section>
+            </motion.section>
+
+            {/* Testimonials marquee */}
+            <motion.section 
+              id="testimonials"
+              className="ws-fade-up" 
+              style={{ animationDelay: '140ms' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
+                  Trusted by thousands of users
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  See what website owners and SEO professionals are saying about WebsiteScore.
+                </p>
+              </motion.div>
+
+              <motion.div 
+                className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-card/60 p-8"
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <Marquee pauseOnHover className="[--duration:20s]">
+                  {firstRow.map((review) => (
+                    <motion.div
+                      key={review.username}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ReviewCard {...review} />
+                    </motion.div>
+                  ))}
+                </Marquee>
+                <Marquee reverse pauseOnHover className="[--duration:20s]">
+                  {secondRow.map((review) => (
+                    <motion.div
+                      key={review.username}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ReviewCard {...review} />
+                    </motion.div>
+                  ))}
+                </Marquee>
+                <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r"></div>
+                <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l"></div>
+              </motion.div>
+            </motion.section>
           </div>
         )}
 
