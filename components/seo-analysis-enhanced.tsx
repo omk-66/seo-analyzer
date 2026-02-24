@@ -122,7 +122,7 @@ export function SEOAnalysisEnhanced({ analysis, url }: SEOAnalysisEnhancedProps)
                                 SEO Analysis for {url}
                             </CardTitle>
                             <CardDescription className="text-base">
-                                Comprehensive audit powered by Google AI • Site Type: <span className="font-semibold">{safeAnalysis.siteType}</span>
+                                Comprehensive website audit • Site Type: <span className="font-semibold">{safeAnalysis.siteType}</span>
                             </CardDescription>
                         </div>
                         <div className="text-right">
@@ -641,13 +641,15 @@ export function SEOAnalysisEnhanced({ analysis, url }: SEOAnalysisEnhancedProps)
                 </CardContent>
             </Card>
 
-            {/* Summary Alert */}
+            {/* Summary Alert temporarily disabled – AI suggestion */}
+            {/*
             <Alert>
                 <Star className="h-4 w-4" />
                 <AlertDescription className="text-sm">
                     <strong>Pro Tip:</strong> Focus on fixing critical issues first, then implement quick wins for immediate SEO improvements.
                 </AlertDescription>
             </Alert>
+            */}
         </div>
     );
 }

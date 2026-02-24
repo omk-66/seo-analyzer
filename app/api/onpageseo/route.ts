@@ -463,17 +463,6 @@ export async function POST(request: Request) {
             console.error('[ERROR] Failed to fetch technology data:', error);
         }
 
-        // Generate AI-powered SEO suggestions using LLM
-        console.log('[DEBUG] Generating AI SEO suggestions with LLM...');
-        const seoSuggestions: SEOSuggestionsResponse = await generateSEOSuggestionsWithLLM(
-            websiteData,
-            onPageSEO,
-            performanceData,
-            backlinksData,
-            websiteData.social
-        );
-        console.log('[DEBUG] SEO suggestions generated with LLM, score:', seoSuggestions.overallScore);
-
         return NextResponse.json({
             url: websiteData.url,
             onPageSEO,
@@ -485,7 +474,8 @@ export async function POST(request: Request) {
             backlinkList,
             referralDomains: referralDomainsData,
             ...technologyData,
-            suggestions: seoSuggestions
+            // AI-powered suggestions temporarily disabled on the server side
+            suggestions: null
         });
     } catch (error: any) {
         console.error('[ERROR] On-page SEO analysis error:', error);

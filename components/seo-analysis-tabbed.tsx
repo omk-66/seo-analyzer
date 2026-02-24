@@ -993,7 +993,7 @@ function AnalyticsCard({ data }: {
                                 key={index}
                                 className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
                             >
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getCategoryColor(tool.category)}`}>
+                                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getCategoryColor(tool.category)}`}>
                                     {getCategoryIcon(tool.category)}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -1053,8 +1053,8 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
     return (
         <div className="w-full">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                {/* Right side tabs - 5 tabs */}
-                <TabsList className="grid w-full grid-cols-6 mb-6 sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
+                {/* Right side tabs */}
+                <TabsList className="grid w-full grid-cols-5 mb-6 sticky top-0 z-50 bg-card/80 backdrop-blur-sm border border-border/60 shadow-[0_1px_0_rgba(0,0,0,0.35)]">
                     <TabsTrigger value="onpage" className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         <span className="hidden sm:inline">On-page SEO</span>
@@ -1077,11 +1077,6 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                     <TabsTrigger value="social" className="flex items-center gap-2">
                         <Share2 className="w-4 h-4" />
                         <span>Social</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="suggestions" className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        <span>AI Insights</span>
-                        <Badge variant="secondary" className="ml-1 text-xs">PRO</Badge>
                     </TabsTrigger>
                 </TabsList>
 
@@ -2137,7 +2132,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                     <div className="flex items-center gap-2">
                                                                         <div className="flex-1 bg-gray-200 rounded-full h-3">
                                                                             <div
-                                                                                className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
+                                                                                className="bg-linear-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-300"
                                                                                 style={{ width: `${percentage}%` }}
                                                                             />
                                                                         </div>
@@ -2916,27 +2911,27 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                                                     const getIcon = (type: string) => {
                                                         switch (type) {
-                                                            case 'html': return <FileText className="w-4 h-4 text-orange-500" />;
-                                                            case 'js': return <JsFile width={16} height={16} className="text-yellow-500" />;
-                                                            case 'css': return <FileText className="w-4 h-4 text-blue-500" />;
-                                                            case 'images': return <ImageIcon className="w-4 h-4 text-green-500" />;
-                                                            case 'fonts': return <FileText className="w-4 h-4 text-purple-500" />;
-                                                            case 'media': return <FileText className="w-4 h-4 text-red-500" />;
-                                                            case 'xhr': return <RefreshCw className="w-4 h-4 text-gray-500" />;
-                                                            default: return <FileText className="w-4 h-4 text-gray-400" />;
+                                                            case 'html': return <FileText className="w-4 h-4 text-orange-200" />;
+                                                            case 'js': return <JsFile width={16} height={16} className="text-yellow-200" />;
+                                                            case 'css': return <FileText className="w-4 h-4 text-sky-200" />;
+                                                            case 'images': return <ImageIcon className="w-4 h-4 text-emerald-200" />;
+                                                            case 'fonts': return <FileText className="w-4 h-4 text-violet-200" />;
+                                                            case 'media': return <FileText className="w-4 h-4 text-rose-200" />;
+                                                            case 'xhr': return <RefreshCw className="w-4 h-4 text-muted-foreground" />;
+                                                            default: return <FileText className="w-4 h-4 text-muted-foreground" />;
                                                         }
                                                     };
 
                                                     const getColor = (type: string) => {
                                                         switch (type) {
-                                                            case 'html': return 'bg-orange-100 border-orange-200';
-                                                            case 'js': return 'bg-yellow-100 border-yellow-200';
-                                                            case 'css': return 'bg-blue-100 border-blue-200';
-                                                            case 'images': return 'bg-green-100 border-green-200';
-                                                            case 'fonts': return 'bg-purple-100 border-purple-200';
-                                                            case 'media': return 'bg-red-100 border-red-200';
-                                                            case 'xhr': return 'bg-gray-100 border-gray-200';
-                                                            default: return 'bg-gray-50 border-gray-200';
+                                                            case 'html': return 'bg-orange-500/10 border-orange-500/25';
+                                                            case 'js': return 'bg-yellow-500/10 border-yellow-500/25';
+                                                            case 'css': return 'bg-sky-500/10 border-sky-500/25';
+                                                            case 'images': return 'bg-emerald-500/10 border-emerald-500/25';
+                                                            case 'fonts': return 'bg-violet-500/10 border-violet-500/25';
+                                                            case 'media': return 'bg-rose-500/10 border-rose-500/25';
+                                                            case 'xhr': return 'bg-muted/40 border-border';
+                                                            default: return 'bg-muted/30 border-border';
                                                         }
                                                     };
 
@@ -2946,27 +2941,27 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                 <div className="flex items-center gap-3">
                                                                     {getIcon(resourceType)}
                                                                     <div>
-                                                                        <div className="font-semibold text-gray-800 capitalize">{resourceType}</div>
-                                                                        <div className="text-xs text-gray-500">{(data as any).count} files</div>
+                                                                        <div className="font-semibold text-foreground capitalize">{resourceType}</div>
+                                                                        <div className="text-xs text-muted-foreground">{(data as any).count} files</div>
                                                                     </div>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <div className="font-bold text-gray-800">{(data as any).sizeKB.toFixed(1)} KB</div>
-                                                                    <div className="text-xs text-gray-500">{percentage.toFixed(1)}%</div>
+                                                                    <div className="font-bold text-foreground">{(data as any).sizeKB.toFixed(1)} KB</div>
+                                                                    <div className="text-xs text-muted-foreground">{percentage.toFixed(1)}%</div>
                                                                 </div>
                                                             </div>
 
                                                             {/* Size bar visualization */}
-                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div className="w-full bg-muted/60 rounded-full h-2">
                                                                 <div
                                                                     className={`h-2 rounded-full transition-all duration-300 ${resourceType === 'html' ? 'bg-orange-500' :
                                                                         resourceType === 'js' ? 'bg-yellow-500' :
-                                                                            resourceType === 'css' ? 'bg-blue-500' :
-                                                                                resourceType === 'images' ? 'bg-green-500' :
+                                                                            resourceType === 'css' ? 'bg-sky-500' :
+                                                                                resourceType === 'images' ? 'bg-emerald-500' :
                                                                                     resourceType === 'fonts' ? 'bg-purple-500' :
                                                                                         resourceType === 'media' ? 'bg-red-500' :
-                                                                                            resourceType === 'xhr' ? 'bg-gray-500' :
-                                                                                                'bg-gray-400'
+                                                                                            resourceType === 'xhr' ? 'bg-muted-foreground/60' :
+                                                                                                'bg-muted-foreground/40'
                                                                         }`}
                                                                     style={{ width: `${Math.min(percentage, 100)}%` }}
                                                                 ></div>
@@ -2976,19 +2971,19 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                 })}
 
                                             {/* Summary row */}
-                                            <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                                            <div className="mt-4 p-3 bg-muted/30 rounded-lg border border-border">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        <BarChart className="w-4 h-4 text-gray-600" />
-                                                        <span className="font-medium text-gray-700">Total Resources</span>
+                                                        <BarChart className="w-4 h-4 text-muted-foreground" />
+                                                        <span className="font-medium text-foreground">Total Resources</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="font-bold text-gray-800">
+                                                        <div className="font-bold text-foreground">
                                                             {Object.entries(analysis.performance.resourceBreakdown)
                                                                 .filter(([k]) => k !== 'totalRequests')
                                                                 .reduce((sum, [, d]) => sum + (d as any).count, 0)} files
                                                         </div>
-                                                        <div className="text-sm text-gray-600">
+                                                        <div className="text-sm text-muted-foreground">
                                                             {Object.entries(analysis.performance.resourceBreakdown)
                                                                 .filter(([k]) => k !== 'totalRequests')
                                                                 .reduce((sum, [, d]) => sum + (d as any).sizeKB, 0).toFixed(1)} KB
@@ -3068,7 +3063,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
 
                 {/* Social Tab */}
                 <TabsContent value="social">
-                    <div className="space-y-6">
+                    <div className="space-y-6 animate-fadeIn">
                         {/* Open Graph Card */}
                         <Card>
                             <CardHeader>
@@ -3094,9 +3089,9 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 {analysis?.social?.openGraph?.hasOpenGraph && (
                                     <div className="mt-4 grid grid-cols-2 gap-3">
                                         {Object.entries(analysis.social.openGraph.openGraph || {}).map(([key, value]) => (
-                                            <div key={key} className="p-3 bg-gray-50 rounded text-sm">
-                                                <div className="font-medium text-gray-700 capitalize">{key.replace('og:', '')}</div>
-                                                <div className="text-gray-600 truncate" title={value as string}>{value as string}</div>
+                                            <div key={key} className="p-3 rounded border border-border bg-muted/30 text-sm">
+                                                <div className="font-medium text-foreground capitalize">{key.replace('og:', '')}</div>
+                                                <div className="text-muted-foreground truncate" title={value as string}>{value as string}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -3129,9 +3124,9 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                 {analysis?.social?.twitterCards?.hasTwitterCards && (
                                     <div className="mt-4 grid grid-cols-2 gap-3">
                                         {Object.entries(analysis.social.twitterCards.twitter || {}).map(([key, value]) => (
-                                            <div key={key} className="p-3 bg-gray-50 rounded text-sm">
-                                                <div className="font-medium text-gray-700 capitalize">{key.replace('twitter:', '')}</div>
-                                                <div className="text-gray-600 truncate" title={value as string}>{value as string}</div>
+                                            <div key={key} className="p-3 rounded border border-border bg-muted/30 text-sm">
+                                                <div className="font-medium text-foreground capitalize">{key.replace('twitter:', '')}</div>
+                                                <div className="text-muted-foreground truncate" title={value as string}>{value as string}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -3175,15 +3170,24 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                         return (
                                             <div
                                                 key={key}
-                                                className={`p-3 rounded border ${link ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 opacity-50'}`}
+                                                className={`p-3 rounded border ${
+                                                    link
+                                                        ? 'bg-green-50 border-green-200'
+                                                        : 'bg-red-50 border-red-200'
+                                                }`}
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span>{icon}</span>
                                                     <span className="font-medium text-sm">{label}</span>
                                                 </div>
-                                                <div className="text-xs mt-1 text-gray-600 truncate" title={link || 'Not found'}>
+                                                <div className="text-xs mt-1 text-muted-foreground truncate" title={link || 'Not found'}>
                                                     {link ? (
-                                                        <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                                        <a
+                                                            href={link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-emerald-300 hover:text-emerald-200 underline-offset-4 hover:underline"
+                                                        >
                                                             Found
                                                         </a>
                                                     ) : 'Not found'}
@@ -3268,10 +3272,10 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                 </TabsContent>
 
                 {/* AI Suggestions Tab - Premium Feature */}
-                <TabsContent value="suggestions">
+                <TabsContent value="suggestions-disabled">
                     <div className="space-y-6">
                         {/* Premium Header */}
-                        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+                        <Card className="bg-linear-to-r from-purple-50 to-indigo-50 border-purple-200">
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-xl flex items-center gap-2">
@@ -3394,7 +3398,7 @@ export function SEOAnalysisTabbed({ analysis, url }: SEOAnalysisTabbedProps) {
                                                                 💡 {suggestion.recommendation}
                                                             </p>
                                                         </div>
-                                                        <div className="ml-4 flex-shrink-0">
+                                                        <div className="ml-4 shrink-0">
                                                             <div className={`text-xs px-2 py-1 rounded ${suggestion.estimatedImpact === 'high' ? 'bg-green-100 text-green-700' :
                                                                 suggestion.estimatedImpact === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                                                                     'bg-gray-100 text-gray-700'
