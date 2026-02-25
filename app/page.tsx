@@ -22,6 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
 import { Marquee } from '@/components/ui/marquee'
+import { AvatarGroup } from "@/components/avatar-group";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Text reveal animation component
 const AnimatedText = ({ text }: { text: string }) => {
@@ -204,13 +206,13 @@ export default function Home() {
       {/* Top nav */}
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
         <div className="mx-auto max-w-6xl px-4 md:px-6 flex items-center justify-between h-16">
-          <motion.div 
+          <motion.div
             className="flex items-center gap-2"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.div 
+            <motion.div
               className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
@@ -227,56 +229,44 @@ export default function Home() {
             </div>
           </motion.div>
 
-          <motion.nav 
+          <motion.nav
             className="hidden md:flex items-center gap-6"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <motion.a 
-              href="#features" 
+            <motion.a
+              href="#features"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ y: -2 }}
             >
               Features
             </motion.a>
-            <motion.a 
-              href="#pricing" 
+            <motion.a
+              href="#pricing"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ y: -2 }}
             >
               Pricing
             </motion.a>
-            <motion.a 
-              href="#testimonials" 
+            <motion.a
+              href="#testimonials"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ y: -2 }}
             >
-              Testimonials
+              Reviews
             </motion.a>
             <motion.div className="flex items-center gap-2 text-[11px]">
-              <motion.span 
-                className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300"
-                whileHover={{ scale: 1.05 }}
+              <motion.span
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                whileHover={{ y: -2 }}
               >
-                On-page SEO
-              </motion.span>
-              <motion.span 
-                className="rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 font-medium"
-                whileHover={{ scale: 1.05 }}
-              >
-                Technical checks
-              </motion.span>
-              <motion.span 
-                className="rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 font-medium"
-                whileHover={{ scale: 1.05 }}
-              >
-                Core Web Vitals
+                FAQ
               </motion.span>
             </motion.div>
           </motion.nav>
 
-          <motion.div 
+          <motion.div
             className="flex items-center gap-3"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -302,7 +292,7 @@ export default function Home() {
 
       <main className="mx-auto max-w-6xl px-4 md:px-6 py-10 md:py-14">
         {/* Hero + input + value props */}
-        <motion.section 
+        <motion.section
           className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start mb-10 md:mb-14"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -314,7 +304,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <motion.div 
+            <motion.div
               className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 mb-4"
               whileHover={{ scale: 1.05 }}
             >
@@ -398,7 +388,64 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mt-4">
+            {/* Avatar group with user count */}
+            <motion.div
+              className="flex items-center gap-3 justify-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <AvatarGroup spacing="tight">
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
+                  <AvatarFallback>SA</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/men/76.jpg" />
+                  <AvatarFallback>MK</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/women/68.jpg" />
+                  <AvatarFallback>RP</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/men/11.jpg" />
+                  <AvatarFallback>AK</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/women/22.jpg" />
+                  <AvatarFallback>LT</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/men/45.jpg" />
+                  <AvatarFallback>RS</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/women/33.jpg" />
+                  <AvatarFallback>KM</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/men/67.jpg" />
+                  <AvatarFallback>BJ</AvatarFallback>
+                </Avatar>
+                <Avatar className="border-2 border-background">
+                  <AvatarImage src="https://randomuser.me/api/portraits/women/89.jpg" />
+                  <AvatarFallback>NW</AvatarFallback>
+                </Avatar>
+              </AvatarGroup>
+              <motion.span
+                className="text-sm text-muted-foreground font-medium"
+                whileHover={{ scale: 1.05 }}
+              >
+                Loved by <span className="text-foreground font-semibold">14,453</span> users
+              </motion.span>
+            </motion.div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mt-6">
               <div className="rounded-lg border border-border/70 bg-background/40 px-3 py-2">
                 <div className="text-[11px] font-medium text-muted-foreground mb-0.5">
                   Technical SEO
@@ -421,7 +468,7 @@ export default function Home() {
           </motion.div>
 
           {/* Right: SaaS-style "sample score" panel when idle */}
-          {!analysis && (
+          {/* {!analysis && (
             <Card className="border border-border/80 bg-card/90 shadow-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between text-sm">
@@ -518,22 +565,22 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          )} */}
         </motion.section>
 
         {/* Landing v2 sections (shown only before running an audit) */}
         {!analysis && (
           <div className="space-y-14 md:space-y-16">
             {/* Live stats */}
-            <motion.section 
-              className="ws-fade-up" 
+            <motion.section
+              className="ws-fade-up"
               style={{ animationDelay: '20ms' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div 
+              <motion.div
                 className="flex items-end justify-between gap-6 mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -548,7 +595,7 @@ export default function Home() {
                     Benchmarks to set expectations before you optimize.
                   </p>
                 </div>
-                <motion.div 
+                <motion.div
                   className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground"
                   whileHover={{ scale: 1.05 }}
                 >
@@ -575,14 +622,14 @@ export default function Home() {
                     <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-colors">
                       <CardContent className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <motion.div 
+                          <motion.div
                             className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
                             whileHover={{ scale: 1.1, rotate: 5 }}
                           >
                             <s.icon className="h-5 w-5" />
                           </motion.div>
                           <div className="min-w-0">
-                            <motion.div 
+                            <motion.div
                               className="text-xl font-semibold text-foreground leading-tight"
                               initial={{ opacity: 0 }}
                               whileInView={{ opacity: 1 }}
@@ -604,16 +651,16 @@ export default function Home() {
             </motion.section>
 
             {/* What we check (5 pillars) */}
-            <motion.section 
+            <motion.section
               id="features"
-              className="ws-fade-up" 
+              className="ws-fade-up"
               style={{ animationDelay: '60ms' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div 
+              <motion.div
                 className="mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -666,7 +713,7 @@ export default function Home() {
                     <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/10">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <motion.div 
+                          <motion.div
                             className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300"
                             whileHover={{ scale: 1.1, rotate: 5 }}
                           >
@@ -687,8 +734,8 @@ export default function Home() {
             </motion.section>
 
             {/* How it works */}
-            <motion.section 
-              className="ws-fade-up" 
+            <motion.section
+              className="ws-fade-up"
               style={{ animationDelay: '100ms' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -764,16 +811,16 @@ export default function Home() {
             </motion.section>
 
             {/* Testimonials marquee */}
-            <motion.section 
+            <motion.section
               id="testimonials"
-              className="ws-fade-up" 
+              className="ws-fade-up"
               style={{ animationDelay: '140ms' }}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div 
+              <motion.div
                 className="mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -788,7 +835,7 @@ export default function Home() {
                 </p>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-card/60 p-8"
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
