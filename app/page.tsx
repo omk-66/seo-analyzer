@@ -24,9 +24,120 @@ import { SEOAnalysisTabbed } from '@/components/seo-analysis-tabbed'
 import { Marquee } from '@/components/ui/marquee'
 import { AvatarGroup } from "@/components/avatar-group";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { FeaturedOn } from "@/components/featured-on"
+import { CTASection } from "@/components/cta-section"
+import { Footer } from "@/components/footer"
+import { LeaderboardSection } from "@/components/leaderboard-section"
+import { RatingBadge } from "@/components/foundations/rating-badge"
+import { TestimonialsSection } from "@/components/testimonials-section"
+
+// FAQ Data
+const faqData = [
+  {
+    question: "Starter or Growth?",
+    answer: "Starter tier is for 1 website, 1 team member and 3 years of data retention. It's best for solo founders getting started.\n\nGrowth tier is for 30 websites, 30 team members and 5+ years of data retention. It also includes advanced features like mentions and link attribution for 𝕏. It's best for established businesses."
+  },
+  {
+    question: "10k, 100k, 1M+ events per month?",
+    answer: "If you're just getting started, start with the 10k events per month plan.\n\nIf you already have some traffic (couple hundreds of visitors per day), go for the 100k/200k events per month plan.\n\nIf you have a lot of traffic (1k+ visitors per day), go for the 1M+ events per month."
+  },
+  {
+    question: "What happens if I get more events than my plan?",
+    answer: "No worries! We'll continue tracking your events, but you'll need to upgrade to a larger plan to access your dashboard.\n\nCongrats on all the traffic btw!"
+  },
+  {
+    question: "Is there a free trial?",
+    answer: "Yep! You can try DataFast for free for 14 days and you don't even need a credit card!"
+  },
+  {
+    question: "Is DataFast GDPR compliant?",
+    answer: "Yes, DataFast is GDPR compliant.\n\nWe prioritize data privacy and security, ensuring that all data we collect is processed in accordance with GDPR regulations.\n\nAs a DataFast user, you'll need to obtain explicit consent from your website visitors for data collection."
+  },
+  {
+    question: "Do I need to make money to use DataFast?",
+    answer: "Not at all! You can use DataFast to get insights about your traffic.\n\nAnd we offer no-code solutions for advanced features like revenue attribution."
+  },
+  {
+    question: "Can I migrate my existing data?",
+    answer: "Yes! For now, you can import your data from Plausible.io. Next is Google Analytics.\n\nIn the future, we'll offer direct migration from Google Analytics and other platforms."
+  },
+  {
+    question: "Can I see SEO keywords that drive traffic to my website?",
+    answer: "Yes! You can connect Google Search Console to see keywords that drive traffic to your website.\n\nWith revenue attribution enabled, you can even estimate which keywords drive most revenue."
+  },
+  {
+    question: "Which payment providers are supported?",
+    answer: "We offer native integration with Stripe, LemonSqueezy, Polar, and Shopify (and yes, you can connect multiple payment providers).\n\nYou can also use our Payment API to send your payment data to DataFast."
+  },
+  {
+    question: "Does DataFast track across subdomains?",
+    answer: "Yes, DataFast tracks across any subdomains for maximum accuracy."
+  },
+  {
+    question: "Does DataFast track across different domains?",
+    answer: "Yes! Create a DataFast website under your root domain (e.g., marketing.com) and install tracking script on any subdomains (e.g., app.com, blog.com) you want to track.\n\nThis ensures you get unified analytics across your entire domain ecosystem without any gaps in your data."
+  },
+  {
+    question: "Does DataFast have an API?",
+    answer: "Yes, DataFast has an API.\n\nYou can read more about GDPR compliance in our Terms of Service."
+  },
+  {
+    question: "Is there a mobile app?",
+    answer: "Yes! You can view all your analytics on the go with DataFast mobile app for iOS and Android."
+  },
+  {
+    question: "Can I invite my team to DataFast?",
+    answer: "Yes! You can have unlimited team members on DataFast.\n\nYou can invite your team to DataFast by sharing the link to your dashboard with them."
+  },
+  {
+    question: "Do I have an affiliate program?",
+    answer: "Yep! You get 50% commission for every payment (up to 12 months). You can sign-up here: https://datafast.getrewardful.com/signup"
+  },
+  {
+    question: "Do I need to code to use DataFast?",
+    answer: "You don't need to code to use DataFast! You can set up web analytics and revenue data in just 2 minutes.\n\nAnd we offer no-code solutions for advanced features like revenue attribution."
+  },
+  {
+    question: "Can I migrate my existing data?",
+    answer: "Yes! You can import your data from Plausible.io. Next is Google Analytics.\n\nIn the future, we'll offer direct migration from Google Analytics and other platforms."
+  },
+  {
+    question: "Can I see SEO keywords that drive traffic to my website?",
+    answer: "Yes! You can connect Google Search Console to see keywords that drive traffic to your website.\n\nWith revenue attribution enabled, you can even estimate which keywords drive most revenue."
+  },
+  {
+    question: "Which payment providers are supported?",
+    answer: "We offer native integration with Stripe, LemonSqueezy, Polar, and Shopify (and yes, you can connect multiple payment providers).\n\nYou can also use our Payment API to send your payment data to DataFast."
+  },
+  {
+    question: "Does DataFast track across subdomains?",
+    answer: "Yes, DataFast tracks across any subdomains for maximum accuracy."
+  },
+  {
+    question: "Does DataFast track across different domains?",
+    answer: "Yes! Create a DataFast website under your root domain (e.g., marketing.com) and install tracking script on any subdomains (e.g., app.com, blog.com) you want to track.\n\nThis ensures you get unified analytics across your entire domain ecosystem without any gaps in your data."
+  },
+  {
+    question: "Does DataFast have an API?",
+    answer: "Yes, DataFast has an API.\n\nYou can read more about GDPR compliance in our Terms of Service."
+  },
+  {
+    question: "Is there a mobile app?",
+    answer: "Yes! You can view all your analytics on the go with DataFast mobile app for iOS and Android."
+  },
+  {
+    question: "Can I invite my team to DataFast?",
+    answer: "Yes! You can have unlimited team members on DataFast.\n\nYou can invite your team to DataFast by sharing the link to your dashboard with them."
+  },
+  {
+    question: "Do I have an affiliate program?",
+    answer: "Yep! You get 50% commission for every payment (up to 12 months). You can sign-up here: https://datafast.getrewardful.com/signup"
+  }
+]
 
 // Text reveal animation component
-const AnimatedText = ({ text }: { text: string }) => {
+const AnimatedText = ({ text, className }: { text: string; className?: string }) => {
   const words = text.match(/[\p{L}\p{N}]+[^\s\p{L}\p{N}]?|[^\s]/gu) || []
 
   const containerVariants = {
@@ -66,6 +177,7 @@ const AnimatedText = ({ text }: { text: string }) => {
             ease: [0.25, 0.46, 0.45, 0.94],
           }}
           style={{ marginRight: "0.25em", display: "inline-block" }}
+          className={className}
         >
           {word}
         </motion.span>
@@ -293,104 +405,111 @@ export default function Home() {
       <main className="mx-auto max-w-6xl px-4 md:px-6 py-10 md:py-14">
         {/* Hero + input + value props */}
         <motion.section
-          className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] items-start mb-10 md:mb-14"
+          id="hero-section"
+          className="flex flex-col items-center justify-center gap-10 mb-10 md:mb-14"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          {/* Left: hero copy and form */}
+          {/* Hero content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="w-full max-w-3xl text-center space-y-6"
           >
-            <motion.div
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 mb-4"
-              whileHover={{ scale: 1.05 }}
+            <div
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 justify-center"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-              </motion.div>
               Instant website audit (SEO, performance, trust)
-            </motion.div>
+            </div>
+          </motion.div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="w-full max-w-3xl text-center space-y-6"
+          >
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4 text-center">
               <AnimatedText text="Find what's broken." />
               <br className="hidden sm:block" />{' '}
               <AnimatedText text="Fix what matters — with" />{' '}
-              <span className="bg-linear-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent">
-                <AnimatedText text="WebsiteScore" />
+              <span className="inline-block">
+                <AnimatedText
+                  text="WebsiteScore"
+                  className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent"
+                />
               </span>
               .
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground max-w-xl mb-6">
+            <div className="text-sm md:text-base text-muted-foreground max-w-xl mb-6 text-center mx-auto">
               <AnimatedText text="Paste a URL and get a clear, prioritized report: what's hurting rankings, performance, and trust — plus the exact next steps your team can ship." />
-            </p>
+            </div>
 
-            <Card className="border border-border/80 bg-card/80 shadow-sm mb-4">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-                  <Globe2 className="h-4 w-4 text-emerald-400" />
-                  Run an audit
-                </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
-                  Works with landing pages, blogs, docs, and marketing sites.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 pb-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1 flex items-center rounded-lg border border-input bg-background/60 pr-2 shadow-[0_1px_0_rgba(15,23,42,0.4)]">
-                    {extractedDomain && (
-                      <span className="pl-3 shrink-0">
-                        <img
-                          src={faviconUrl}
-                          alt=""
-                          className="h-4 w-4 rounded-sm"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none'
-                          }}
-                        />
-                      </span>
-                    )}
-                    <Input
-                      type="text"
-                      placeholder="https://your-landing-page.com"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                      className="flex-1 h-11 border-0 bg-transparent text-sm placeholder:text-muted-foreground shadow-none focus-visible:ring-0"
-                    />
+            <div className="relative max-w-2xl mx-auto">
+              <form onSubmit={(e) => { e.preventDefault(); handleAnalyze(); }}>
+                <div className="flex w-full max-w-2xl flex-col justify-center gap-3 sm:mx-auto sm:flex-row sm:items-center sm:gap-4">
+                  <div className="grid gap-2 relative flex-1">
+                    <div className="relative">
+                      <div className="absolute left-3 sm:left-4 top-1/2 flex h-5 w-5 sm:h-6 sm:w-6 -translate-y-1/2 transform items-center justify-center">
+                        {extractedDomain ? (
+                          <img
+                            src={faviconUrl}
+                            alt=""
+                            className="h-5 w-5 sm:h-6 sm:w-6 rounded-sm"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none'
+                            }}
+                          />
+                        ) : (
+                          <Globe2 className="text-muted-foreground h-5 w-5 sm:h-6 sm:w-6" />
+                        )}
+                      </div>
+                      <span className="pointer-events-none absolute left-12 sm:left-14 top-1/2 h-6 sm:h-8 -translate-y-1/2 border-l border-border"></span>
+                      <Input
+                        type="text"
+                        placeholder="website.com"
+                        value={domain}
+                        onChange={(e) => setDomain(e.target.value)}
+                        className="w-full text-left h-10 sm:h-12 md:h-14 border-2 border-border/20 bg-transparent pl-16 sm:pl-16 text-base sm:text-lg md:text-xl focus:border-primary/50 sm:pr-4 file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 flex min-w-0 rounded-md px-3 py-1 shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                      />
+                    </div>
                   </div>
                   <Button
-                    onClick={handleAnalyze}
+                    type="submit"
                     disabled={!domain || isAnalyzing}
-                    className="h-11 px-6 w-full sm:w-auto rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="cursor-pointer text-primary-foreground shadow-xs py-2 h-10 sm:h-12 md:h-14 w-full sm:w-auto px-6 text-sm sm:text-base bg-primary hover:bg-primary/90 font-medium inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                   >
                     {isAnalyzing ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                         Analyzing…
                       </>
                     ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-2" />
-                        Run audit
-                      </>
+                      'Analyze'
                     )}
                   </Button>
                 </div>
-                <p className="mt-2 text-[11px] text-muted-foreground">
-                  No signup required. We don't crawl behind logins or gated content.
-                </p>
-              </CardContent>
-            </Card>
+              </form>
+              <div className="absolute left-1/2 -translate-x-1/2 -top-10 text-center lg:left-0 lg:top-1/2 lg:-translate-y-1/2 lg:-translate-x-full lg:pr-4 text-sm text-foreground whitespace-nowrap">
+                <motion.span
+                  animate={{ x: [0, 10, 0] }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="inline-block"
+                >
+                  Get started <span className="lg:hidden">👇</span><span className="hidden lg:inline">👉</span>
+                </motion.span>
+              </div>
+            </div>
 
             {/* Avatar group with user count */}
             <motion.div
-              className="flex items-center gap-3 justify-center"
+              className="flex items-center justify-center flex-col"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
@@ -424,25 +543,12 @@ export default function Home() {
                   <AvatarImage src="https://randomuser.me/api/portraits/men/45.jpg" />
                   <AvatarFallback>RS</AvatarFallback>
                 </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/women/33.jpg" />
-                  <AvatarFallback>KM</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/men/67.jpg" />
-                  <AvatarFallback>BJ</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/women/89.jpg" />
-                  <AvatarFallback>NW</AvatarFallback>
-                </Avatar>
               </AvatarGroup>
-              <motion.span
-                className="text-sm text-muted-foreground font-medium"
-                whileHover={{ scale: 1.05 }}
+              <div
+                className="text-sm text-muted-foreground font-medium -mt-2"
               >
-                Loved by <span className="text-foreground font-semibold">14,453</span> users
-              </motion.span>
+                Loved by <span className="text-foreground font-semibold">5,453</span> users
+              </div>
             </motion.div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mt-6">
@@ -810,64 +916,8 @@ export default function Home() {
               </Card>
             </motion.section>
 
-            {/* Testimonials marquee */}
-            <motion.section
-              id="testimonials"
-              className="ws-fade-up"
-              style={{ animationDelay: '140ms' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <motion.div
-                className="mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
-                  Trusted by thousands of users
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  See what website owners and SEO professionals are saying about WebsiteScore.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-lg border border-border/70 bg-card/60 p-8"
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <Marquee pauseOnHover className="[--duration:20s]">
-                  {firstRow.map((review) => (
-                    <motion.div
-                      key={review.username}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ReviewCard {...review} />
-                    </motion.div>
-                  ))}
-                </Marquee>
-                <Marquee reverse pauseOnHover className="[--duration:20s]">
-                  {secondRow.map((review) => (
-                    <motion.div
-                      key={review.username}
-                      whileHover={{ scale: 1.05, y: -5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ReviewCard {...review} />
-                    </motion.div>
-                  ))}
-                </Marquee>
-                <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r"></div>
-                <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l"></div>
-              </motion.div>
-            </motion.section>
+            {/* Testimonials Section */}
+            <TestimonialsSection />
           </div>
         )}
 
@@ -906,7 +956,330 @@ export default function Home() {
             </div>
           </section>
         )}
+
+        {/* Pricing Section */}
+        <motion.section
+          className="ws-fade-up py-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="mx-auto max-w-7xl">
+            <motion.header
+              className="mb-12 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500 mb-4">
+                <span className="text-xs font-medium text-emerald-500 uppercase tracking-wider">Pricing</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
+                Get your website to
+                <span className="block text-emerald-500 pb-1">the next level</span>
+              </h2>
+            </motion.header>
+
+            <motion.div
+              className="rounded-2xl border border-border/60 p-8 sm:p-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <div className="grid w-full gap-8 max-[1200px]:grid-cols-1 min-[1200px]:grid-cols-[1fr_2fr]">
+                <div>
+                  <p className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Everything you'll get</p>
+                  <ul className="grid grid-cols-1 gap-4 max-[870px]:grid-cols-1 min-[870px]:max-[1200px]:grid-cols-2 min-[1200px]:grid-cols-1">
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Unlimited website analyses</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">High authority do-follow backlink</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Website score badge</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Daily automated monitoring (up to 10 domains)</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Critical change alerts</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">History tracking</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Certified report page</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-emerald-500 bg-emerald-500/10 text-emerald-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3">
+                          <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                      </span>
+                      <span className="text-sm leading-relaxed text-foreground sm:text-base">Copy to LLM</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="grid gap-6 max-[840px]:grid-cols-1 min-[840px]:grid-cols-2 items-center">
+                  <div className="relative flex flex-col gap-6 rounded-2xl border bg-card/80 p-8 text-center sm:p-10 border-border/60 min-[840px]:p-6 min-[840px]:sm:p-8 min-[840px]:self-center">
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Monthly</h3>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex items-baseline justify-center gap-2">
+                          <span className="text-4xl font-semibold text-foreground sm:text-5xl">$5</span>
+                          <span className="text-base text-muted-foreground">/month</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Button className="w-full rounded-xl text-sm font-medium">
+                        Subscribe Monthly
+                      </Button>
+                      <p className="text-xs text-muted-foreground">Cancel anytime</p>
+                    </div>
+                  </div>
+
+                  <div className="relative flex flex-col gap-6 rounded-2xl border bg-card/80 p-8 text-center sm:p-10 border-emerald-500/60">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500 bg-background text-xs font-medium text-emerald-500 uppercase tracking-wider">Most Popular</span>
+                    </div>
+                    <div className="space-y-3">
+                      <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Lifetime</h3>
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex items-baseline justify-center gap-2">
+                          <span className="text-4xl font-semibold text-foreground sm:text-5xl">$35</span>
+                          <span className="text-sm text-muted-foreground">One time</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <Button className="w-full rounded-xl text-sm font-medium">
+                        Get Lifetime Access
+                      </Button>
+                      <p className="text-xs text-muted-foreground">No subscription • One time payment</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Rating Badge Section */}
+        <motion.div
+          className="flex justify-center mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+        >
+          <RatingBadge rating={4.7} title="Best SEO Tool" subtitle="2,000+ reviews" />
+        </motion.div>
+
+        {/* Testimonials Section */}
+        <motion.section
+          className="ws-fade-up py-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:px-4">
+            <motion.div
+              className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <div className="flex justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="w-5 h-5 lg:w-[22px] lg:h-[22px]">
+                    <defs>
+                      <linearGradient id={`starGradient-${star}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffd119"></stop>
+                        <stop offset="25%" stopColor="#facc15"></stop>
+                        <stop offset="40%" stopColor="#ffeb9d"></stop>
+                        <stop offset="55%" stopColor="#facc15"></stop>
+                        <stop offset="100%" stopColor="#e6ae08"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" fill={`url(#starGradient-${star})`}></path>
+                  </svg>
+                ))}
+              </div>
+              <div className="space-y-2 text-center text-base leading-relaxed lg:text-lg">
+                <span className="bg-yellow-100/80 px-1.5 font-medium text-yellow-950 dark:bg-yellow-900/80 dark:text-yellow-100">WebsiteScore &gt; Google Analytics for simplicity and actual useful metrics.</span> The Revenue per Visitor metric is exactly what founders need.
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:gap-4">
+                <img alt="Wozu testimonial for WebsiteScore" loading="lazy" width="48" height="48" className="h-10 w-10 rounded-full object-cover lg:h-12 lg:w-12" src="https://randomuser.me/api/portraits/men/32.jpg" />
+                <div>
+                  <p className="font-semibold lg:text-lg">Wozu</p>
+                  <p className="text-muted-foreground text-sm lg:text-base">gfluo.com</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="w-5 h-5 lg:w-[22px] lg:h-[22px]">
+                    <defs>
+                      <linearGradient id={`starGradient-testimonial-${star}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffd119"></stop>
+                        <stop offset="25%" stopColor="#facc15"></stop>
+                        <stop offset="40%" stopColor="#ffeb9d"></stop>
+                        <stop offset="55%" stopColor="#facc15"></stop>
+                        <stop offset="100%" stopColor="#e6ae08"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" fill={`url(#starGradient-testimonial-${star})`}></path>
+                  </svg>
+                ))}
+              </div>
+              <div className="space-y-2 text-center text-base leading-relaxed lg:text-lg">
+                Been using WebsiteScore for over a month now. It's amazing! <span className="bg-yellow-100/80 px-1.5 font-medium text-yellow-950 dark:bg-yellow-900/80 dark:text-yellow-100">I've been able to quadruple my conversion rate</span> and increase revenue!
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:gap-4">
+                <img alt="Siya testimonial for WebsiteScore" loading="lazy" width="48" height="48" className="h-10 w-10 rounded-full object-cover lg:h-12 lg:w-12" src="https://randomuser.me/api/portraits/women/44.jpg" />
+                <div>
+                  <p className="font-semibold lg:text-lg">Siya</p>
+                  <p className="text-muted-foreground text-sm lg:text-base">genppt.com</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="flex justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="w-5 h-5 lg:w-[22px] lg:h-[22px]">
+                    <defs>
+                      <linearGradient id={`starGradient-kai-${star}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ffd119"></stop>
+                        <stop offset="25%" stopColor="#facc15"></stop>
+                        <stop offset="40%" stopColor="#ffeb9d"></stop>
+                        <stop offset="55%" stopColor="#facc15"></stop>
+                        <stop offset="100%" stopColor="#e6ae08"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" fill={`url(#starGradient-kai-${star})`}></path>
+                  </svg>
+                ))}
+              </div>
+              <div className="space-y-2 text-center text-base leading-relaxed lg:text-lg">
+                There's <span className="bg-yellow-100/80 px-1.5 font-medium text-yellow-950 dark:bg-yellow-900/80 dark:text-yellow-100">no need for PostHog anymore</span> given how good this is and how little effort it is to attribute revenue to marketing efforts.
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:gap-4">
+                <img alt="Kai testimonial for WebsiteScore" loading="lazy" width="48" height="48" className="h-10 w-10 rounded-full object-cover lg:h-12 lg:w-12" src="https://randomuser.me/api/portraits/men/68.jpg" />
+                <div>
+                  <p className="font-semibold lg:text-lg">Kai</p>
+                  <p className="text-muted-foreground text-sm lg:text-base">blink.new</p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* FAQ Section */}
+        <motion.section
+          className="ws-fade-up py-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            className="text-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Everything you need to know about WebsiteScore and data analytics
+            </p>
+          </motion.div>
+
+          <div className="mx-auto max-w-xl max-md:px-4 py-20">
+            <Accordion type="single" collapsible className="w-full">
+              {faqData.map((item, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger className="text-left text-base font-medium">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base-content">
+                    <div className="space-y-2 pb-4 pt-3 leading-relaxed">
+                      {item.answer.split('\n').map((line, lineIndex) => (
+                        <p key={lineIndex} className="text-sm">{line}</p>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </motion.section>
+
+        {/* Leaderboard Section */}
+        <LeaderboardSection />
+
+        {/* CTA Section */}
+        <CTASection />
+
+        {/* Featured On Section */}
+        <FeaturedOn />
       </main>
-    </div>
+
+      {/* Footer - Outside main container for full width */}
+      <Footer />
+    </div >
   )
 }

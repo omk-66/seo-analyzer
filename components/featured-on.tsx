@@ -1,0 +1,159 @@
+"use client"
+
+import { motion } from "framer-motion"
+
+const platforms = [
+  {
+    name: "Uneed.best",
+    href: "https://www.uneed.best/tool/yourwebsitescore",
+    imgSrc: "https://www.uneed.best/POTW1.png",
+    width: 250,
+    height: 120,
+    alt: "Featured on Uneed.best"
+  },
+  {
+    name: "TinyLaunch",
+    href: "https://tinylaunch.com",
+    imgSrc: "https://tinylaunch.com/tinylaunch_badge_2.svg",
+    width: 202,
+    height: 80,
+    alt: "Featured on TinyLaunch"
+  },
+  {
+    name: "RankinPublic",
+    href: "https://rankinpublic.xyz/",
+    imgSrc: "https://rankinpublic.xyz/api/badges/badge1.png?site=yourwebsitescore.com",
+    width: 200,
+    height: 60,
+    alt: "Featured on RankinPublic"
+  },
+  {
+    name: "Startup Fame",
+    href: "https://startupfa.me/s/yourwebsitescore.com?utm_source=yourwebsitescore.com",
+    imgSrc: "https://startupfa.me/badges/featured-badge.webp",
+    width: 171,
+    height: 54,
+    alt: "yourwebsitescore.com - Featured on Startup Fame"
+  },
+  {
+    name: "Findly Tools",
+    href: "https://findly.tools/yourwebsitescore?utm_source=yourwebsitescore",
+    imgSrc: "https://findly.tools/badges/findly-tools-badge-light.svg",
+    width: 150,
+    height: 50,
+    alt: "Featured on findly.tools"
+  },
+  {
+    name: "Dofollow Tools",
+    href: "https://dofollow.tools",
+    imgSrc: "https://dofollow.tools/badge/badge_light.svg",
+    width: 200,
+    height: 54,
+    alt: "Featured on Dofollow.Tools"
+  },
+  {
+    name: "DRChecker",
+    href: "https://drchecker.net/item/yourwebsitescore.com",
+    imgSrc: "https://drchecker.net/api/badge?domain=yourwebsitescore.com",
+    width: 200,
+    height: 54,
+    alt: "Monitor your Domain Rating with DRChecker"
+  },
+  {
+    name: "Aura++",
+    href: "https://auraplusplus.com/projects/yourwebsitescore",
+    imgSrc: "https://auraplusplus.com/images/badges/featured-on-light.svg",
+    width: 200,
+    height: 54,
+    alt: "Featured on Aura++"
+  },
+  {
+    name: "Twelve Tools",
+    href: "https://twelve.tools",
+    imgSrc: "https://twelve.tools/badge3-white.svg",
+    width: 200,
+    height: 54,
+    alt: "Featured on Twelve Tools"
+  },
+  {
+    name: "Verified Tools",
+    href: "https://www.verifiedtools.info",
+    imgSrc: "https://www.verifiedtools.info/badge.png",
+    width: 200,
+    height: 54,
+    alt: "Verified on Verified Tools"
+  }
+]
+
+export function FeaturedOn() {
+  return (
+    <section className="py-16">
+      <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
+        <motion.div
+          className="text-center mb-12 px-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <div className="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500 mb-4">
+            <span className="text-xs font-medium text-emerald-500 uppercase tracking-wider">Featured on</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-4">
+            Trusted by platforms
+            <span className="block bg-emerald-500 bg-clip-text text-transparent pb-1">developers trust</span>
+          </h2>
+        </motion.div>
+
+        <motion.div
+          className="relative overflow-hidden w-full"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <div className="flex animate-marquee">
+            {[...platforms, ...platforms].map((platform, index) => (
+              <motion.a
+                key={`${platform.name}-${index}`}
+                target="_blank"
+                rel="noopener"
+                className="shrink-0 mx-6 transition-all duration-200 hover:scale-105 opacity-80 hover:opacity-100"
+                aria-label={platform.alt}
+                href={platform.href}
+                whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+              >
+                <img
+                  alt={platform.alt}
+                  width={platform.width}
+                  height={platform.height}
+                  className="h-12 w-auto transition-all duration-300 hover:scale-105"
+                  src={platform.imgSrc}
+                />
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+
+        .animate-marquee:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </section>
+  )
+}
