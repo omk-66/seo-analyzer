@@ -31,6 +31,7 @@ import { Footer } from "@/components/footer"
 import { LeaderboardSection } from "@/components/leaderboard-section"
 import { RatingBadge } from "@/components/foundations/rating-badge"
 import { TestimonialsSection } from "@/components/testimonials-section"
+import { StatsSection } from "@/components/stats-section"
 
 // FAQ Data
 const faqData = [
@@ -626,7 +627,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div
+              {/* <motion.div
                 className="flex items-end justify-between gap-6 mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -649,9 +650,9 @@ export default function Home() {
                     Updated on demand
                   </span>
                 </motion.div>
-              </motion.div>
+              </motion.div> */}
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {/* <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
                   { label: 'Websites analyzed', value: '28,000+', icon: BarChart3 },
                   { label: 'Avg WebsiteScore', value: '79 / 100', icon: ShieldCheck },
@@ -693,7 +694,7 @@ export default function Home() {
                     </Card>
                   </motion.div>
                 ))}
-              </div>
+              </div> */}
             </motion.section>
 
             {/* What we check (5 pillars) */}
@@ -1165,6 +1166,9 @@ export default function Home() {
             </motion.div>
           </div>
         </motion.section>
+
+        {/* Stats Section */}
+        <StatsSection />
 
         {/* FAQ Section */}
         <motion.section
