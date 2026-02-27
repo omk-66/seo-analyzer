@@ -35,106 +35,46 @@ import { TestimonialsSection } from "@/components/testimonials-section"
 // FAQ Data
 const faqData = [
   {
-    question: "Starter or Growth?",
-    answer: "Starter tier is for 1 website, 1 team member and 3 years of data retention. It's best for solo founders getting started.\n\nGrowth tier is for 30 websites, 30 team members and 5+ years of data retention. It also includes advanced features like mentions and link attribution for 𝕏. It's best for established businesses."
+    question: "What is WebsiteScore and how does it work?",
+    answer: "WebsiteScore is an all-in-one SEO analysis tool. Simply enter any domain and we instantly generate a comprehensive report covering On-Page SEO, Backlinks, Performance, Social signals, and AI-powered suggestions — all in one place, in seconds."
   },
   {
-    question: "10k, 100k, 1M+ events per month?",
-    answer: "If you're just getting started, start with the 10k events per month plan.\n\nIf you already have some traffic (couple hundreds of visitors per day), go for the 100k/200k events per month plan.\n\nIf you have a lot of traffic (1k+ visitors per day), go for the 1M+ events per month."
+    question: "What does the On-Page SEO section analyze?",
+    answer: "The On-Page SEO section audits everything that lives on your website — meta titles, descriptions, heading structure (H1–H6), keyword usage, image alt texts, canonical tags, robots.txt, sitemap, and more. You'll get a clear score and actionable fixes for each issue."
   },
   {
-    question: "What happens if I get more events than my plan?",
-    answer: "No worries! We'll continue tracking your events, but you'll need to upgrade to a larger plan to access your dashboard.\n\nCongrats on all the traffic btw!"
+    question: "How does WebsiteScore analyze backlinks?",
+    answer: "The Links section shows your backlink profile — total backlinks, referring domains, domain authority, toxic/spammy links, and anchor text distribution. Understanding your link profile is essential for building SEO authority and outranking competitors."
   },
   {
-    question: "Is there a free trial?",
-    answer: "Yep! You can try DataFast for free for 14 days and you don't even need a credit card!"
+    question: "What does the Performance section measure?",
+    answer: "Performance covers your site's Core Web Vitals (LCP, FID, CLS), page load speed, mobile responsiveness, and technical health. Slow or poorly optimized sites rank lower on Google — our report shows exactly where to improve."
   },
   {
-    question: "Is DataFast GDPR compliant?",
-    answer: "Yes, DataFast is GDPR compliant.\n\nWe prioritize data privacy and security, ensuring that all data we collect is processed in accordance with GDPR regulations.\n\nAs a DataFast user, you'll need to obtain explicit consent from your website visitors for data collection."
+    question: "What does the Social section include?",
+    answer: "The Social section tracks your website's presence and engagement across social platforms — including social shares, signals, and how your content is being distributed. Strong social signals can indirectly boost your SEO rankings."
   },
   {
-    question: "Do I need to make money to use DataFast?",
-    answer: "Not at all! You can use DataFast to get insights about your traffic.\n\nAnd we offer no-code solutions for advanced features like revenue attribution."
+    question: "What are the AI SEO Suggestions?",
+    answer: "After analyzing all sections, our AI generates a personalized action plan for your domain. It prioritizes the highest-impact improvements you can make — from fixing technical issues to content gaps and link-building opportunities — so you know exactly what to do next."
   },
   {
-    question: "Can I migrate my existing data?",
-    answer: "Yes! For now, you can import your data from Plausible.io. Next is Google Analytics.\n\nIn the future, we'll offer direct migration from Google Analytics and other platforms."
+    question: "Do I need to create an account to analyze a website?",
+    answer: "You can run a quick analysis without signing up. Creating a free account unlocks your full detailed report, lets you track multiple domains over time, and gives you access to historical score comparisons."
   },
   {
-    question: "Can I see SEO keywords that drive traffic to my website?",
-    answer: "Yes! You can connect Google Search Console to see keywords that drive traffic to your website.\n\nWith revenue attribution enabled, you can even estimate which keywords drive most revenue."
+    question: "Can I analyze competitor websites?",
+    answer: "Absolutely! You can enter any domain — including your competitors' — and get a full SEO breakdown. Comparing your score against competitors is one of the fastest ways to find gaps and opportunities in your SEO strategy."
   },
   {
-    question: "Which payment providers are supported?",
-    answer: "We offer native integration with Stripe, LemonSqueezy, Polar, and Shopify (and yes, you can connect multiple payment providers).\n\nYou can also use our Payment API to send your payment data to DataFast."
+    question: "How often is the SEO data updated?",
+    answer: "We refresh your website's data regularly so your scores always reflect the latest state of your site. You can also manually trigger a re-analysis anytime to see the impact of recent changes you've made."
   },
   {
-    question: "Does DataFast track across subdomains?",
-    answer: "Yes, DataFast tracks across any subdomains for maximum accuracy."
-  },
-  {
-    question: "Does DataFast track across different domains?",
-    answer: "Yes! Create a DataFast website under your root domain (e.g., marketing.com) and install tracking script on any subdomains (e.g., app.com, blog.com) you want to track.\n\nThis ensures you get unified analytics across your entire domain ecosystem without any gaps in your data."
-  },
-  {
-    question: "Does DataFast have an API?",
-    answer: "Yes, DataFast has an API.\n\nYou can read more about GDPR compliance in our Terms of Service."
-  },
-  {
-    question: "Is there a mobile app?",
-    answer: "Yes! You can view all your analytics on the go with DataFast mobile app for iOS and Android."
-  },
-  {
-    question: "Can I invite my team to DataFast?",
-    answer: "Yes! You can have unlimited team members on DataFast.\n\nYou can invite your team to DataFast by sharing the link to your dashboard with them."
-  },
-  {
-    question: "Do I have an affiliate program?",
-    answer: "Yep! You get 50% commission for every payment (up to 12 months). You can sign-up here: https://datafast.getrewardful.com/signup"
-  },
-  {
-    question: "Do I need to code to use DataFast?",
-    answer: "You don't need to code to use DataFast! You can set up web analytics and revenue data in just 2 minutes.\n\nAnd we offer no-code solutions for advanced features like revenue attribution."
-  },
-  {
-    question: "Can I migrate my existing data?",
-    answer: "Yes! You can import your data from Plausible.io. Next is Google Analytics.\n\nIn the future, we'll offer direct migration from Google Analytics and other platforms."
-  },
-  {
-    question: "Can I see SEO keywords that drive traffic to my website?",
-    answer: "Yes! You can connect Google Search Console to see keywords that drive traffic to your website.\n\nWith revenue attribution enabled, you can even estimate which keywords drive most revenue."
-  },
-  {
-    question: "Which payment providers are supported?",
-    answer: "We offer native integration with Stripe, LemonSqueezy, Polar, and Shopify (and yes, you can connect multiple payment providers).\n\nYou can also use our Payment API to send your payment data to DataFast."
-  },
-  {
-    question: "Does DataFast track across subdomains?",
-    answer: "Yes, DataFast tracks across any subdomains for maximum accuracy."
-  },
-  {
-    question: "Does DataFast track across different domains?",
-    answer: "Yes! Create a DataFast website under your root domain (e.g., marketing.com) and install tracking script on any subdomains (e.g., app.com, blog.com) you want to track.\n\nThis ensures you get unified analytics across your entire domain ecosystem without any gaps in your data."
-  },
-  {
-    question: "Does DataFast have an API?",
-    answer: "Yes, DataFast has an API.\n\nYou can read more about GDPR compliance in our Terms of Service."
-  },
-  {
-    question: "Is there a mobile app?",
-    answer: "Yes! You can view all your analytics on the go with DataFast mobile app for iOS and Android."
-  },
-  {
-    question: "Can I invite my team to DataFast?",
-    answer: "Yes! You can have unlimited team members on DataFast.\n\nYou can invite your team to DataFast by sharing the link to your dashboard with them."
-  },
-  {
-    question: "Do I have an affiliate program?",
-    answer: "Yep! You get 50% commission for every payment (up to 12 months). You can sign-up here: https://datafast.getrewardful.com/signup"
+    question: "Is WebsiteScore suitable for beginners or only SEO experts?",
+    answer: "Both! If you're new to SEO, the AI Suggestions section explains every recommendation in plain English — no jargon. If you're an expert, the detailed technical breakdowns and raw data give you everything you need for deep-dive analysis."
   }
-]
+];
 
 // Text reveal animation component
 const AnimatedText = ({ text, className }: { text: string; className?: string }) => {
