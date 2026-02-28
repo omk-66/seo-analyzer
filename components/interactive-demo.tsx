@@ -11,38 +11,38 @@ import { Maximize2, Play, ArrowRight, ArrowLeft, ZoomIn, Info } from "lucide-rea
 const demoScreenshots = [
   {
     id: 1,
-    title: "Enter Any Domain",
-    description: "Start by entering any website URL to analyze",
-    image: "/screenshots/demo-1-input.png",
-    features: ["Clean interface", "Instant validation", "Auto-suggestions"]
+    title: "Page SEO Analysis",
+    description: "Analyze on-page SEO factors like titles, meta descriptions, and content optimization",
+    image: "/screenshots/Screenshot 2026-02-28 164115.png",
+    features: ["Meta tags", "Content analysis", "Keyword optimization"]
   },
   {
     id: 2,
-    title: "Real-time Analysis",
-    description: "Watch as we analyze your website in real-time",
-    image: "/screenshots/demo-2-analyzing.png",
-    features: ["Live progress", "Multiple metrics", "Fast processing"]
+    title: "Links Analysis",
+    description: "Evaluate backlinks, internal linking structure, and domain authority",
+    image: "/screenshots/Screenshot 2026-02-28 160109.png",
+    features: ["Backlink profile", "Internal links", "Link quality"]
   },
   {
     id: 3,
-    title: "Overall Score",
-    description: "Get your comprehensive SEO score instantly",
-    image: "/screenshots/demo-3-score.png",
-    features: ["Overall rating", "Grade system", "Quick insights"]
+    title: "Usability Analysis",
+    description: "Check user experience, navigation, accessibility, and mobile responsiveness",
+    image: "/screenshots/Screenshot 2026-02-28 164157.png",
+    features: ["UX audit", "Mobile testing", "Accessibility"]
   },
   {
     id: 4,
-    title: "Detailed Breakdown",
-    description: "Deep dive into Technical SEO, Performance, and more",
-    image: "/screenshots/demo-4-details.png",
-    features: ["Category scores", "Issue tracking", "Action items"]
+    title: "Performance Analysis",
+    description: "Measure page speed, core web vitals, and loading optimization",
+    image: "/screenshots/Screenshot 2026-02-28 164224.png",
+    features: ["Page speed", "Core Web Vitals", "Optimization"]
   },
   {
     id: 5,
-    title: "Actionable Insights",
-    description: "Get specific recommendations to improve your SEO",
-    image: "/screenshots/demo-5-recommendations.png",
-    features: ["Priority tasks", "Step-by-step guides", "Impact estimates"]
+    title: "Social Analysis",
+    description: "Review social media integration, sharing metrics, and social signals",
+    image: "/screenshots/Screenshot 2026-02-28 164355.png",
+    features: ["Social signals", "Sharing analysis", "Social integration"]
   }
 ]
 
@@ -66,11 +66,11 @@ function ScreenshotCard({ screenshot, isActive, index }: {
         }`}>
         <CardContent className="p-0">
           {/* Screenshot Image */}
-          <div className="relative aspect-video bg-gradient-to-br from-primary/5 to-secondary/5">
+          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
             <img
               src={screenshot.image}
               alt={screenshot.title}
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain bg-liner-to-br from-primary/5 to-secondary/5"
               onError={(e) => {
                 // Fallback placeholder if image not found
                 const target = e.target as HTMLImageElement
@@ -91,7 +91,7 @@ function ScreenshotCard({ screenshot, isActive, index }: {
             />
 
             {/* Overlay with Features */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
               <div className="absolute bottom-4 left-4 right-4">
                 <h3 className="text-white font-semibold mb-2">{screenshot.title}</h3>
                 <div className="flex flex-wrap gap-1">
@@ -123,9 +123,12 @@ function ScreenshotCard({ screenshot, isActive, index }: {
   )
 }
 
-function FeatureHighlight({ screenshot }: { screenshot: typeof demoScreenshots[0] }) {
+function FeatureHighlight({ screenshot }: { screenshot: typeof demoScreenshots[0] | null }) {
+  if (!screenshot) return null
+
   return (
     <motion.div
+      key={screenshot.id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -158,12 +161,35 @@ export function InteractiveDemo() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % demoScreenshots.length)
+    setCurrentSlide((prev) => {
+      if (prev === demoScreenshots.length - 1) {
+        // When reaching the end, go to cloned first slide
+        return demoScreenshots.length
+      }
+      return prev + 1
+    })
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + demoScreenshots.length) % demoScreenshots.length)
+    setCurrentSlide((prev) => {
+      if (prev === 0) {
+        // When at the start, go to cloned last slide
+        return -1
+      }
+      return prev - 1
+    })
   }
+
+  // Handle seamless loop transitions
+  React.useEffect(() => {
+    if (currentSlide === demoScreenshots.length) {
+      // When on cloned first slide, reset to actual first slide
+      setTimeout(() => setCurrentSlide(0), 50)
+    } else if (currentSlide === -1) {
+      // When on cloned last slide, reset to actual last slide
+      setTimeout(() => setCurrentSlide(demoScreenshots.length - 1), 50)
+    }
+  }, [currentSlide])
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index)
@@ -177,10 +203,12 @@ export function InteractiveDemo() {
     }
   }, [isAutoPlaying])
 
-  const currentScreenshot = demoScreenshots[currentSlide]
+  const currentScreenshot = demoScreenshots[currentSlide] ||
+    (currentSlide === -1 ? demoScreenshots[demoScreenshots.length - 1] :
+      currentSlide === demoScreenshots.length ? demoScreenshots[0] : null)
 
   return (
-    <div className="rounded-[1.3rem] border border-border/20 bg-card/30 p-1.5 dark:bg-card/50 w-full max-w-6xl 2xl:max-w-7xl mx-auto">
+    <div className="rounded-[1.3rem] border border-border/20 bg-card/30 p-1 dark:bg-card/50 w-full max-w-4xl mx-auto">
       {/* Interactive Demo Badge */}
       <div className="absolute -top-4 right-4 flex -translate-y-full animate-pulse items-center gap-2 z-10">
         <svg className="fill-muted-foreground mt-2 w-8 -rotate-24 opacity-60" viewBox="0 0 219 41" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -197,7 +225,7 @@ export function InteractiveDemo() {
       </div>
 
       {/* Main Demo Container */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Feature Highlight */}
         <FeatureHighlight screenshot={currentScreenshot} />
 
@@ -225,9 +253,17 @@ export function InteractiveDemo() {
           {/* Screenshots */}
           <div className="overflow-hidden">
             <div className="flex transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+              style={{ transform: `translateX(-${(currentSlide + 1) * 100}%)` }}>
+              {/* Clone last slide at the beginning for seamless loop */}
+              <div className="w-full shrink-0 px-8">
+                <ScreenshotCard
+                  screenshot={demoScreenshots[demoScreenshots.length - 1]}
+                  isActive={false}
+                  index={-1}
+                />
+              </div>
               {demoScreenshots.map((screenshot, index) => (
-                <div key={screenshot.id} className="w-full flex-shrink-0 px-12">
+                <div key={screenshot.id} className="w-full shrink-0 px-8">
                   <ScreenshotCard
                     screenshot={screenshot}
                     isActive={index === currentSlide}
@@ -235,6 +271,14 @@ export function InteractiveDemo() {
                   />
                 </div>
               ))}
+              {/* Clone first slide at the end for seamless loop */}
+              <div className="w-full shrink-0 px-8">
+                <ScreenshotCard
+                  screenshot={demoScreenshots[0]}
+                  isActive={false}
+                  index={demoScreenshots.length}
+                />
+              </div>
             </div>
           </div>
         </div>
