@@ -374,13 +374,13 @@ export default function Home() {
             className="w-full max-w-3xl text-center space-y-6"
           >
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4 text-center">
-              <AnimatedText text="Find what's broken." />
+              <AnimatedText text="Find what's broken" />
               <br className="hidden sm:block" />{' '}
               <AnimatedText text="Fix what matters with" />{' '}
               <span className="inline-block">
                 <AnimatedText
                   text="WebsiteScore"
-                  className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent"
+                  className="bg-linear-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent"
                 />
               </span>
               {/* . */}
