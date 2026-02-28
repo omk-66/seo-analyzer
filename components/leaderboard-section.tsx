@@ -4,107 +4,116 @@ import { motion } from "framer-motion"
 import { Trophy, Medal, ExternalLink, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// Mock data for leaderboard
+// Mock data for leaderboard with 5 sections
 const leaderboardData = [
   {
     rank: 1,
     site: "launchigniter.com",
     favicon: "https://www.google.com/s2/favicons?domain=launchigniter.com&sz=48",
-    overallScore: 97,
-    speed: 95,
-    quality: 100,
-    security: 96,
+    pageSeo: 98,
+    links: 95,
+    usability: 97,
+    performance: 96,
+    social: 94,
     timeAgo: "23 h ago"
   },
   {
     rank: 2,
     site: "apppage.co",
     favicon: "https://www.google.com/s2/favicons?domain=apppage.co&sz=48",
-    overallScore: 96,
-    speed: 97,
-    quality: 100,
-    security: 92,
+    pageSeo: 96,
+    links: 94,
+    usability: 98,
+    performance: 97,
+    social: 92,
     timeAgo: "23 h ago"
   },
   {
     rank: 3,
     site: "apppa.ge",
     favicon: "https://www.google.com/s2/favicons?domain=apppa.ge&sz=48",
-    overallScore: 89,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 92,
+    links: 88,
+    usability: 95,
+    performance: 98,
+    social: 90,
     timeAgo: "23 h ago"
   },
   {
     rank: 4,
     site: "quattroespacios.com",
     favicon: "https://www.google.com/s2/favicons?domain=quattroespacios.com&sz=48",
-    overallScore: 92,
-    speed: 100,
-    security: 70,
-    quality: 100,
-    security: 96,
+    pageSeo: 90,
+    links: 85,
+    usability: 92,
+    performance: 100,
+    social: 88,
     timeAgo: "23 h ago"
   },
   {
     rank: 5,
     site: "lilirosas.com",
     favicon: "https://www.google.com/s2/favicons?domain=lilirosas.com&sz=48",
-    overallScore: 89,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 88,
+    links: 86,
+    usability: 90,
+    performance: 98,
+    social: 85,
     timeAgo: "23 h ago"
   },
   {
     rank: 6,
     site: "saasgrow.app",
     favicon: "https://www.google.com/s2/favicons?domain=saasgrow.app&sz=48",
-    overallScore: 87,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 87,
+    links: 84,
+    usability: 89,
+    performance: 96,
+    social: 82,
     timeAgo: "23 h ago"
   },
   {
     rank: 7,
     site: "viajesbalmoral.mx",
     favicon: "https://www.google.com/s2/favicons?domain=viajesbalmoral.mx&sz=48",
-    overallScore: 89,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 85,
+    links: 82,
+    usability: 88,
+    performance: 94,
+    social: 80,
     timeAgo: "23 h ago"
   },
   {
     rank: 8,
     site: "ginecologanatalia.com",
     favicon: "https://www.google.com/s2/favicons?domain=ginecologanatalia.com&sz=48",
-    overallScore: 89,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 84,
+    links: 80,
+    usability: 86,
+    performance: 92,
+    social: 78,
     timeAgo: "23 h ago"
   },
   {
     rank: 9,
     site: "startuptrusted.com",
     favicon: "https://www.google.com/s2/favicons?domain=startuptrusted.com&sz=48",
-    overallScore: 87,
-    speed: 98,
-    quality: 100,
-    security: 96,
+    pageSeo: 82,
+    links: 78,
+    usability: 85,
+    performance: 90,
+    social: 76,
     timeAgo: "23 h ago"
   },
   {
     rank: 10,
     site: "homeprosite.com",
     favicon: "https://www.google.com/s2/favicons?domain=homeprosite.com&sz=48",
-    overallScore: 85,
-    speed: 96,
-    quality: 100,
-    security: 96,
+    pageSeo: 80,
+    links: 76,
+    usability: 83,
+    performance: 88,
+    social: 74,
     timeAgo: "23 h ago"
   }
 ]
@@ -175,10 +184,12 @@ export function LeaderboardSection() {
           <thead>
             <tr className="hover:bg-muted/50 border-b transition-colors">
               <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[6%] text-sm">#</th>
-              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[40%] text-sm">Site</th>
-              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[18%] text-sm">Overall</th>
-              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[24%] text-sm">Scores</th>
-              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Date</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[26%] text-sm">Site</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Page SEO</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Links</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Usability</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Performance</th>
+              <th className="text-foreground h-10 px-4 text-left align-middle font-medium whitespace-nowrap w-[14%] text-sm">Social</th>
             </tr>
           </thead>
           <tbody>
@@ -216,36 +227,34 @@ export function LeaderboardSection() {
                 </td>
                 <td className="py-2 px-4 align-middle whitespace-nowrap">
                   <div className="inline-flex items-baseline gap-1">
-                    <span className="font-black leading-none text-base sm:text-lg">{row.overallScore}</span>
-                    <span className="text-[10px] sm:text-xs leading-none">/100</span>
+                    <span className="font-black leading-none text-base sm:text-lg text-primary">{row.pageSeo}</span>
+                    <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
                   </div>
                 </td>
                 <td className="py-2 px-4 align-middle whitespace-nowrap">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="min-w-[56px]">
-                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground/70 leading-none">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-                        <span>Speed</span>
-                      </div>
-                      <div className="font-semibold text-foreground/90 text-sm sm:text-base leading-tight">{row.speed}</div>
-                    </div>
-                    <div className="min-w-[56px]">
-                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground/70 leading-none">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-                        <span>Quality</span>
-                      </div>
-                      <div className="font-semibold text-foreground/90 text-sm sm:text-base leading-tight">{row.quality}</div>
-                    </div>
-                    <div className="min-w-[56px]">
-                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground/70 leading-none">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>
-                        <span>Security</span>
-                      </div>
-                      <div className="font-semibold text-foreground/90 text-sm sm:text-base leading-tight">{row.security}</div>
-                    </div>
+                  <div className="inline-flex items-baseline gap-1">
+                    <span className="font-black leading-none text-base sm:text-lg text-blue-600">{row.links}</span>
+                    <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
                   </div>
                 </td>
-                <td className="py-2 px-4 align-middle whitespace-nowrap text-xs text-muted-foreground sm:text-sm">{row.timeAgo}</td>
+                <td className="py-2 px-4 align-middle whitespace-nowrap">
+                  <div className="inline-flex items-baseline gap-1">
+                    <span className="font-black leading-none text-base sm:text-lg text-green-600">{row.usability}</span>
+                    <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
+                  </div>
+                </td>
+                <td className="py-2 px-4 align-middle whitespace-nowrap">
+                  <div className="inline-flex items-baseline gap-1">
+                    <span className="font-black leading-none text-base sm:text-lg text-orange-600">{row.performance}</span>
+                    <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
+                  </div>
+                </td>
+                <td className="py-2 px-4 align-middle whitespace-nowrap">
+                  <div className="inline-flex items-baseline gap-1">
+                    <span className="font-black leading-none text-base sm:text-lg text-purple-600">{row.social}</span>
+                    <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
+                  </div>
+                </td>
               </motion.tr>
             ))}
           </tbody>

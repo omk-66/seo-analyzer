@@ -32,6 +32,7 @@ import { LeaderboardSection } from "@/components/leaderboard-section"
 import { RatingBadge } from "@/components/foundations/rating-badge"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { StatsSection } from "@/components/stats-section"
+import { InteractiveDemo } from "@/components/interactive-demo"
 
 // FAQ Data
 const faqData = [
@@ -707,7 +708,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <motion.div
+              {/* <motion.div
                 className="mb-6"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -777,11 +778,11 @@ export default function Home() {
                     </Card>
                   </motion.div>
                 ))}
-              </div>
+              </div> */}
             </motion.section>
 
             {/* How it works */}
-            <motion.section
+            {/* <motion.section
               className="ws-fade-up"
               style={{ animationDelay: '100ms' }}
               initial={{ opacity: 0, y: 30 }}
@@ -855,7 +856,10 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.section>
+            </motion.section> */}
+
+            {/* Interactive Demo Section */}
+            <InteractiveDemo />
 
             {/* Testimonials Section */}
             <TestimonialsSection />
@@ -906,7 +910,7 @@ export default function Home() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="mx-auto max-w-7xl">
+          {/* <div className="mx-auto max-w-7xl">
             <motion.header
               className="mb-12 text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -1041,7 +1045,7 @@ export default function Home() {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </div> */}
         </motion.section>
 
         {/* Rating Badge Section */}

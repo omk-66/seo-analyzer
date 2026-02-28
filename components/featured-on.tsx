@@ -51,14 +51,14 @@ const platforms = [
     height: 54,
     alt: "Featured on Dofollow.Tools"
   },
-  {
-    name: "DRChecker",
-    href: "https://drchecker.net/item/yourwebsitescore.com",
-    imgSrc: "https://drchecker.net/api/badge?domain=yourwebsitescore.com",
-    width: 200,
-    height: 54,
-    alt: "Monitor your Domain Rating with DRChecker"
-  },
+  // {
+  //   name: "DRChecker",
+  //   href: "https://drchecker.net/item/yourwebsitescore.com",
+  //   imgSrc: "https://drchecker.net/api/badge?domain=yourwebsitescore.com",
+  //   width: 200,
+  //   height: 54,
+  //   alt: "Monitor your Domain Rating with DRChecker"
+  // },
   {
     name: "Aura++",
     href: "https://auraplusplus.com/projects/yourwebsitescore",

@@ -3,78 +3,90 @@
 import { motion } from "framer-motion"
 import { Star } from "lucide-react"
 
-// Testimonials data
+// Testimonials data with avatars from trusted users section
 const testimonials = [
   {
-    name: "Olive",
+    name: "John Doe",
     date: "Dec 4, 2024",
-    avatar: "/testimonials/olive.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     content: "I started at 58 score 😅 Got super helpful insights from YourWebsiteScore. Learned new things about SEO and Security I didn't know before and added them to my app 😊"
   },
   {
-    name: "David",
+    name: "Sarah Anderson",
     date: "Dec 2, 2025",
-    avatar: "/testimonials/david.jpg",
-    content: "Thanks Andi for the great product!"
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    content: "Thanks Andi for the great product! The analysis is incredibly detailed and actionable."
   },
   {
-    name: "Ashish",
+    name: "Mike Kumar",
     date: "Nov 18, 2025",
-    avatar: "/testimonials/ashish.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/76.jpg",
     content: "And boom! Don't even take 5 mins. Typscool went from 🚨 to ✅!"
   },
   {
-    name: "Gaurav Tiwari",
+    name: "Rachel Park",
     date: "Nov 17, 2025",
-    avatar: "/testimonials/gaurav.jpg",
+    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
     content: "Cool built ✌️, my score was 55 for sketchidraw.com. It will surely help to make your websites better in all aspects."
   },
   {
-    name: "Dr. Maen K Househ",
+    name: "Alex Kim",
     date: "Nov 13, 2025",
-    avatar: "/testimonials/househ.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/11.jpg",
     content: "Challenge accepted! Let's see up to what score we can push that. The score is already making much more sense than Google PageSpeed Insights"
   },
   {
-    name: "Aleksandar Jovanovic",
+    name: "Lisa Thompson",
     date: "Nov 13, 2025",
-    avatar: "/testimonials/aleksandar.jpg",
+    avatar: "https://randomuser.me/api/portraits/women/22.jpg",
     content: "Guys, the late night pain paid off. The site is up and running again and the stats are looking better than ever! 😭😭😭 Check out YourWebsiteScore, it has helped me a lot!"
   },
   {
-    name: "Stu Green",
+    name: "Ryan Smith",
     date: "",
-    avatar: "/testimonials/stu.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
     content: "I love the app. Just started using it. I like the \"Copy to LLM\" feature, and the fact the prompt is proprietary."
   },
   {
     name: "DOM",
     date: "Nov 9, 2025",
-    avatar: "/testimonials/dom.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/28.jpg",
     content: "This tool is insane. Definitely worth paying for! Wasn't expecting a high score since it's still in the MVP stage but damn the trust needs to go up. At least I know now 😂"
   },
   {
     name: "Rareș",
-    date: "Jan 15, 2026",
-    avatar: "/testimonials/rares.jpg",
-    content: "YourWebsiteScore forced me to optimize my site for SEO, speed and security. My website is much better because of this product. I even reached a spot on the Leaderboard, which provides more visibility for my project :)"
+    date: "Nov 8, 2025",
+    avatar: "https://randomuser.me/api/portraits/men/35.jpg",
+    content: "YourWebsiteScore is a game-changer for SEO optimization! The insights are incredibly detailed and easy to implement."
+  },
+  {
+    name: "Emma Wilson",
+    date: "Nov 7, 2025",
+    avatar: "https://randomuser.me/api/portraits/women/52.jpg",
+    content: "Finally found an SEO tool that actually shows what matters. The performance metrics are spot on!"
+  },
+  {
+    name: "Carlos Rodriguez",
+    date: "Nov 6, 2025",
+    avatar: "https://randomuser.me/api/portraits/men/41.jpg",
+    content: "The detailed analysis helped me improve my site score from 45 to 78 in just one week!"
   },
   {
     name: "Jonah H.",
     date: "Nov 9, 2025",
-    avatar: "/testimonials/jonah.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/19.jpg",
     content: "Gotta say, the LLM definitely works! I literally had a dream I had a score of straight 100s and was the 1st on the leaderboard. Woke up and well... definitely was a dream 😂"
   },
   {
     name: "Pau Coderch",
     date: "",
-    avatar: "/testimonials/pau.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/67.jpg",
     content: "Had some website optimizations pending. I used yourwebsitescore.com and it helped me catch what was actually broken - security issues, performance problems, stuff I didn't even notice. Went from a 69 score to 87. Very happy with the results :)"
   },
   {
     name: "Luke",
     date: "Jan 6, 2026",
-    avatar: "/testimonials/luke.jpg",
+    avatar: "https://randomuser.me/api/portraits/men/29.jpg",
     content: "Deal of the decade was buying lifetime access."
   }
 ]

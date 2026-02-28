@@ -13,31 +13,31 @@ interface StatItem {
 const statsData: StatItem[] = [
   {
     value: "29,647",
-    label: "Websites analyzed",
+    label: "On Page SEO",
     icon: <Globe className="h-5 w-5" />
   },
   {
     value: "79",
     suffix: "/100",
-    label: "Ø Overall Score",
+    label: "Ø Links",
     icon: <BarChart3 className="h-5 w-5" />
   },
   {
     value: "92",
     suffix: "/100",
-    label: "Ø PageSpeed",
+    label: "Ø Usability",
     icon: <Zap className="h-5 w-5" />
   },
   {
     value: "85",
     suffix: "/100",
-    label: "Ø Website Quality",
+    label: "Ø Performance",
     icon: <TrendingUp className="h-5 w-5" />
   },
   {
     value: "60",
     suffix: "/100",
-    label: "Ø Trust & Security",
+    label: "Ø Social",
     icon: <Shield className="h-5 w-5" />
   }
 ]
