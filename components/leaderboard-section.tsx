@@ -120,7 +120,7 @@ const leaderboardData = [
 
 export function LeaderboardSection() {
   return (
-    <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-12">
+    <section data-fast-scroll="scroll_to_leaderboard" className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-12">
       {/* Header */}
       <motion.div
         className="flex flex-col items-center gap-2 text-center"

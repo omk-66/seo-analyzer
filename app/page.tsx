@@ -28,6 +28,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { FeaturedOn } from "@/components/featured-on"
 import { CTASection } from "@/components/cta-section"
 import { Footer } from "@/components/footer"
+import { Navbar } from "@/components/navbar"
+import { Footer as ModernFooter } from "@/components/footer-new"
 import { LeaderboardSection } from "@/components/leaderboard-section"
 import { RatingBadge } from "@/components/foundations/rating-badge"
 import { TestimonialsSection } from "@/components/testimonials-section"
@@ -257,94 +259,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.24),transparent_55%),linear-gradient(to_bottom,#020617,#020617)]">
-      {/* Top nav */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/60">
-        <div className="mx-auto max-w-6xl px-4 md:px-6 flex items-center justify-between h-16">
-          <motion.div
-            className="flex items-center gap-2"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="text-xs font-semibold tracking-tight">WS</span>
-            </motion.div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold tracking-tight text-foreground">
-                WebsiteScore
-              </span>
-              <span className="text-[11px] text-muted-foreground">
-                AI SEO audit & website health
-              </span>
-            </div>
-          </motion.div>
+      {/* Modern Navbar */}
+      <Navbar />
 
-          <motion.nav
-            className="hidden md:flex items-center gap-6"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <motion.a
-              href="#features"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              whileHover={{ y: -2 }}
-            >
-              Features
-            </motion.a>
-            {/* <motion.a
-              href="#pricing"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              whileHover={{ y: -2 }}
-            >
-              Pricing
-            </motion.a> */}
-            <motion.a
-              href="#testimonials"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              whileHover={{ y: -2 }}
-            >
-              Reviews
-            </motion.a>
-            <motion.div className="flex items-center gap-2 text-[11px]">
-              <motion.span
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                whileHover={{ y: -2 }}
-              >
-                FAQ
-              </motion.span>
-            </motion.div>
-          </motion.nav>
-
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            {/* <motion.button
-              className="hidden sm:inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-4"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Sign In
-            </motion.button>
-            <motion.button
-              className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-colors hover:bg-primary/90 h-9 px-4"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started
-            </motion.button> */}
-          </motion.div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 md:px-6 py-10 md:py-14">
+      <main className="mx-auto max-w-6xl px-4 md:px-6 pt-24 pb-10 md:pb-14">
         {/* Hero + input + value props */}
         <motion.section
           id="hero-section"
@@ -1060,7 +978,7 @@ export default function Home() {
 
         {/* Testimonials Section */}
         <motion.section
-          className="ws-fade-up py-16"
+          className="ws-fade-up py-16 -mt-20"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -1172,7 +1090,9 @@ export default function Home() {
         </motion.section>
 
         {/* Stats Section */}
-        <StatsSection />
+        <div className='-mt-20'>
+          <StatsSection />
+        </div>
 
         {/* FAQ Section */}
         <motion.section
@@ -1226,8 +1146,8 @@ export default function Home() {
         <FeaturedOn />
       </main>
 
-      {/* Footer - Outside main container for full width */}
-      <Footer />
+      {/* Modern Footer - Outside main container for full width */}
+      <ModernFooter />
     </div >
   )
 }
