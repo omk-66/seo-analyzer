@@ -295,13 +295,13 @@ export default function Home() {
             >
               Features
             </motion.a>
-            <motion.a
+            {/* <motion.a
               href="#pricing"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               whileHover={{ y: -2 }}
             >
               Pricing
-            </motion.a>
+            </motion.a> */}
             <motion.a
               href="#testimonials"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -325,7 +325,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <motion.button
+            {/* <motion.button
               className="hidden sm:inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 px-4"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -338,7 +338,7 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
             >
               Get Started
-            </motion.button>
+            </motion.button> */}
           </motion.div>
         </div>
       </header>
@@ -375,14 +375,14 @@ export default function Home() {
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4 text-center">
               <AnimatedText text="Find what's broken." />
               <br className="hidden sm:block" />{' '}
-              <AnimatedText text="Fix what matters — with" />{' '}
+              <AnimatedText text="Fix what matters with" />{' '}
               <span className="inline-block">
                 <AnimatedText
                   text="WebsiteScore"
                   className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent"
                 />
               </span>
-              .
+              {/* . */}
             </h1>
             <div className="text-sm md:text-base text-muted-foreground max-w-xl mb-6 text-center mx-auto">
               <AnimatedText text="Paste a URL and get a clear, prioritized report: what's hurting rankings, performance, and trust — plus the exact next steps your team can ship." />
@@ -434,7 +434,7 @@ export default function Home() {
                 </div>
               </form>
               <div className="absolute left-1/2 -translate-x-1/2 -top-10 text-center lg:left-0 lg:top-1/2 lg:-translate-y-1/2 lg:-translate-x-full lg:pr-4 text-sm text-foreground whitespace-nowrap">
-                <motion.span
+                {/* <motion.span
                   animate={{ x: [0, 10, 0] }}
                   transition={{
                     duration: 2,
@@ -444,7 +444,7 @@ export default function Home() {
                   className="inline-block"
                 >
                   Get started <span className="lg:hidden">👇</span><span className="hidden lg:inline">👉</span>
-                </motion.span>
+                </motion.span> */}
               </div>
             </div>
 
