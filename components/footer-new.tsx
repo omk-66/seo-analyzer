@@ -285,31 +285,19 @@ export function Footer() {
 
             <div className="flex items-center space-x-6">
               <a
-                href="#terms"
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection('terms')
-                }}
+                href="/terms"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
               >
                 Terms
               </a>
               <a
-                href="#privacy"
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection('privacy')
-                }}
+                href="/privacy"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
               >
                 Privacy
               </a>
               <a
-                href="#cookies"
-                onClick={(e) => {
-                  e.preventDefault()
-                  scrollToSection('cookies')
-                }}
+                href="/cookies"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
               >
                 Cookies
