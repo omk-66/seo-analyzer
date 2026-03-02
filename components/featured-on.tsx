@@ -89,13 +89,7 @@ export function FeaturedOn() {
   return (
     <section className="py-16">
       <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen">
-        <motion.div
-          className="text-center mb-12 px-4"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
+        <div className="text-center mb-12 px-4">
           <div className="inline-flex items-center px-3 py-1 rounded-full border border-emerald-500 mb-4">
             <span className="text-xs font-medium text-emerald-500 uppercase tracking-wider">Featured on</span>
           </div>
@@ -103,7 +97,7 @@ export function FeaturedOn() {
             Trusted by platforms
             <span className="block bg-emerald-500 bg-clip-text text-transparent pb-1">developers trust</span>
           </h2>
-        </motion.div>
+        </div>
 
         <motion.div
           className="relative overflow-hidden w-full"

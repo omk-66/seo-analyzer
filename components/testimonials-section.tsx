@@ -137,13 +137,7 @@ export function TestimonialsSection() {
       data-fast-scroll="scroll_to_testimonials"
       className="py-16 overflow-hidden relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="text-center mb-12"
-      >
+      <div className="text-center mb-12">
         <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary mb-4">
           <span className="text-xs font-semibold text-primary">Testimonials</span>
         </div>
@@ -153,7 +147,7 @@ export function TestimonialsSection() {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           See how users discover and fix critical website issues
         </p>
-      </motion.div>
+      </div>
 
       <div className="testimonials-container relative w-full">
         {/* First row - moving left */}
