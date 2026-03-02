@@ -9,7 +9,7 @@ const navigation = [
   {
     name: "Product",
     items: [
-      { name: "Features", href: "#features" },
+      // { name: "Features", href: "#features" },
       { name: "Demo", href: "#demo" },
       { name: "Reviews", href: "#testimonials" },
     ]
@@ -25,8 +25,8 @@ const navigation = [
   {
     name: "Company",
     items: [
-      { name: "About", href: "#about" },
-      { name: "Contact", href: "#contact" },
+      { name: "About", href: "https://www.laughlogiclabs.com/" },
+      { name: "Contact", href: "https://www.laughlogiclabs.com/" },
     ]
   }
 ]
@@ -194,10 +194,19 @@ export function Navbar() {
                             key={subItem.name}
                             href={subItem.href}
                             onClick={(e) => {
-                              e.preventDefault()
-                              scrollToSection(subItem.href)
+                              // Check if it's an external link
+                              if (subItem.href.startsWith('http')) {
+                                // Let external links work normally
+                                return
+                              } else {
+                                // Handle internal scroll links
+                                e.preventDefault()
+                                scrollToSection(subItem.href)
+                              }
                             }}
                             className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors duration-200"
+                            target={subItem.href.startsWith('http') ? '_blank' : '_self'}
+                            rel={subItem.href.startsWith('http') ? 'noopener noreferrer' : ''}
                           >
                             {subItem.name}
                           </a>
@@ -271,10 +280,19 @@ export function Navbar() {
                               key={subItem.name}
                               href={subItem.href}
                               onClick={(e) => {
-                                e.preventDefault()
-                                scrollToSection(subItem.href)
+                                // Check if it's an external link
+                                if (subItem.href.startsWith('http')) {
+                                  // Let external links work normally
+                                  return
+                                } else {
+                                  // Handle internal scroll links
+                                  e.preventDefault()
+                                  scrollToSection(subItem.href)
+                                }
                               }}
                               className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors duration-200"
+                              target={subItem.href.startsWith('http') ? '_blank' : '_self'}
+                              rel={subItem.href.startsWith('http') ? 'noopener noreferrer' : ''}
                             >
                               {subItem.name}
                             </a>

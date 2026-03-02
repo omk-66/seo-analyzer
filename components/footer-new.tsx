@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Github, Twitter, Linkedin, Mail, ArrowRight, Heart } from "lucide-react"
+import { Github, Twitter, Linkedin, Mail, ArrowRight, Heart, Globe, Instagram, Facebook } from "lucide-react"
 
 const scrollToSection = (sectionId: string) => {
   // Handle special cases for landing page sections
@@ -69,18 +69,18 @@ const footerLinks = [
   {
     title: "Resources",
     links: [
-      { name: "Documentation", href: "#docs", action: "scroll" },
+      // { name: "Documentation", href: "#docs", action: "scroll" },
       { name: "FAQ", href: "#faq", action: "scroll" },
       { name: "Support", href: "#support", action: "scroll" },
-      { name: "Blog", href: "#blog", action: "scroll" },
+      // { name: "Blog", href: "#blog", action: "scroll" },
     ]
   },
   {
     title: "Company",
     links: [
       { name: "About", href: "#about", action: "scroll" },
-      { name: "Contact", href: "#contact", action: "scroll" },
-      { name: "Careers", href: "#careers", action: "scroll" },
+      { name: "Contact", href: "https://www.laughlogiclabs.com/contact", action: "scroll" },
+      // { name: "Careers", href: "#careers", action: "scroll" },
     ]
   },
   {
@@ -95,10 +95,12 @@ const footerLinks = [
 ]
 
 const socialLinks = [
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Github, href: "#", label: "GitHub" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Mail, href: "#", label: "Email" },
+  { icon: Globe, href: "https://www.laughlogiclabs.com/", label: "Website" },
+  { icon: Twitter, href: "https://x.com/rudaniyash", label: "Twitter" },
+  // { icon: Github, href: "#", label: "GitHub" },
+  { icon: Linkedin, href: "https://www.linkedin.com/company/laughlogiclabs/", label: "LinkedIn" },
+  { icon: Facebook, href: "https://www.facebook.com/people/Laugh-Logic-Labs/61561912963372/", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/laughlogiclabs/", label: "Instagram" },
 ]
 
 export function Footer() {
@@ -284,7 +286,7 @@ export function Footer() {
             className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
           >
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span> 2024 WebsiteScore. All rights reserved.</span>
+              <span> 2026 Laugh Logic Labs. All rights reserved.</span>
             </div>
 
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
