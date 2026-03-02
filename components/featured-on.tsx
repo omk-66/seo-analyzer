@@ -5,7 +5,7 @@ import { motion } from "framer-motion"
 const platforms = [
   {
     name: "Uneed.best",
-    href: "https://www.uneed.best/tool/yourwebsitescore",
+    href: "https://www.uneed.best",
     imgSrc: "https://www.uneed.best/POTW1.png",
     width: 250,
     height: 120,
@@ -22,14 +22,14 @@ const platforms = [
   {
     name: "RankinPublic",
     href: "https://rankinpublic.xyz/",
-    imgSrc: "https://rankinpublic.xyz/api/badges/badge1.png?site=yourwebsitescore.com",
+    imgSrc: "https://rankinpublic.xyz/api/badges/badge1.png",
     width: 200,
     height: 60,
     alt: "Featured on RankinPublic"
   },
   {
     name: "Startup Fame",
-    href: "https://startupfa.me/s/yourwebsitescore.com?utm_source=yourwebsitescore.com",
+    href: "https://startupfa.me/",
     imgSrc: "https://startupfa.me/badges/featured-badge.webp",
     width: 171,
     height: 54,
@@ -37,7 +37,7 @@ const platforms = [
   },
   {
     name: "Findly Tools",
-    href: "https://findly.tools/yourwebsitescore?utm_source=yourwebsitescore",
+    href: "https://findly.tools",
     imgSrc: "https://findly.tools/badges/findly-tools-badge-light.svg",
     width: 150,
     height: 50,
@@ -61,7 +61,7 @@ const platforms = [
   // },
   {
     name: "Aura++",
-    href: "https://auraplusplus.com/projects/yourwebsitescore",
+    href: "https://auraplusplus.com",
     imgSrc: "https://auraplusplus.com/images/badges/featured-on-light.svg",
     width: 200,
     height: 54,

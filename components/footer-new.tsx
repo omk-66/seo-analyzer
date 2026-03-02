@@ -1,8 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Github, Twitter, Linkedin, Mail, ArrowRight, Heart } from "lucide-react"
 
 const scrollToSection = (sectionId: string) => {
@@ -101,6 +102,49 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!email || !email.includes('@')) {
+      setMessage('Please enter a valid email address')
+      setTimeout(() => setMessage(''), 3000)
+      return
+    }
+
+    setIsLoading(true)
+    setMessage('')
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage('Successfully subscribed! 🎉')
+        setEmail('')
+      } else if (response.status === 409) {
+        setMessage('Email already subscribed')
+      } else {
+        setMessage(data.error || 'Something went wrong')
+      }
+    } catch (error) {
+      setMessage('Network error. Please try again.')
+    } finally {
+      setIsLoading(false)
+      setTimeout(() => setMessage(''), 5000)
+    }
+  }
+
   return (
     <footer className="bg-background/50 backdrop-blur-sm border-t border-border/20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -200,17 +244,33 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               Get the latest SEO tips, feature updates, and industry news delivered to your inbox.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
+            <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <Input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2 text-sm bg-card/50 border border-border/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all duration-200"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1"
+                disabled={isLoading}
               />
-              <Button className="bg-gradient-to-r from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white">
-                Subscribe
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-gradient-to-r from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white"
+              >
+                {isLoading ? 'Subscribing...' : 'Subscribe'}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </div>
+            </form>
+            {message && (
+              <motion.p
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`text-sm ${message.includes('Successfully') ? 'text-emerald-600' : 'text-red-600'}`}
+              >
+                {message}
+              </motion.p>
+            )}
           </motion.div>
         </div>
 
@@ -224,7 +284,7 @@ export function Footer() {
             className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
           >
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>© 2024 WebsiteScore. All rights reserved.</span>
+              <span> 2024 WebsiteScore. All rights reserved.</span>
             </div>
 
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
