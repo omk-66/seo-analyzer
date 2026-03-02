@@ -155,11 +155,7 @@ export function Footer() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Brand Section */}
             <div className="lg:col-span-4">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
+              <div
                 className="space-y-6"
               >
                 <div className="flex items-center space-x-2">
@@ -175,31 +171,25 @@ export function Footer() {
 
                 <div className="flex items-center space-x-4">
                   {socialLinks.map((social) => (
-                    <motion.a
+                    <a
                       key={social.label}
                       href={social.href}
                       aria-label={social.label}
                       className="flex items-center justify-center w-10 h-10 rounded-lg border border-border/20 bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground transition-all duration-200"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                     >
                       <social.icon className="h-5 w-5" />
-                    </motion.a>
+                    </a>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* Links Sections */}
             <div className="lg:col-span-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 {footerLinks.map((section, sectionIndex) => (
-                  <motion.div
+                  <div
                     key={section.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: sectionIndex * 0.1 }}
                     className="space-y-4"
                   >
                     <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
@@ -224,7 +214,7 @@ export function Footer() {
                         </li>
                       ))}
                     </ul>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -233,11 +223,7 @@ export function Footer() {
 
         {/* Newsletter Section */}
         <div data-fast-scroll="scroll_to_newsletter" className="border-t border-border/20 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <div
             className="max-w-2xl mx-auto text-center space-y-6"
           >
             <h3 className="text-2xl font-bold text-foreground">
@@ -265,24 +251,18 @@ export function Footer() {
               </Button>
             </form>
             {message && (
-              <motion.p
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <p
                 className={`text-sm ${message.includes('Successfully') ? 'text-emerald-600' : 'text-red-600'}`}
               >
                 {message}
-              </motion.p>
+              </p>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Bottom Footer */}
         <div className="border-t border-border/20 py-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+          <div
             className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
           >
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -327,7 +307,7 @@ export function Footer() {
                 Cookies
               </a>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </footer>

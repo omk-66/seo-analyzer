@@ -44,11 +44,7 @@ const statsData: StatItem[] = [
 
 function StatCard({ stat, index }: { stat: StatItem; index: number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+    <div
       className="flex-1 px-5 py-3 sm:py-4 lg:px-6 lg:py-5 relative group"
     >
       <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg" />
@@ -70,7 +66,7 @@ function StatCard({ stat, index }: { stat: StatItem; index: number }) {
           {stat.label}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -83,11 +79,7 @@ export function StatsSection() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-5xl">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+          <div
             className="text-center mb-8"
           >
             <div className="inline-flex items-center px-3 py-1 rounded-full border border-primary mb-4">
@@ -101,14 +93,10 @@ export function StatsSection() {
             <p className="mt-3 text-muted-foreground">
               Average scores across all analyzed websites
             </p>
-          </motion.div>
+          </div>
 
           {/* Stats Grid */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <div
             className="rounded-xl border border-border/40 overflow-hidden bg-card/30 backdrop-blur-sm"
           >
             <div className="flex flex-col sm:flex-col lg:flex-row items-stretch justify-center text-center divide-y divide-border/60 lg:divide-y-0 lg:divide-x lg:divide-border/60">
@@ -116,14 +104,10 @@ export function StatsSection() {
                 <StatCard key={index} stat={stat} index={index} />
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Call to Action */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+          <div
             className="text-center mt-8"
           >
             <p className="text-sm text-muted-foreground mb-4">
@@ -133,7 +117,7 @@ export function StatsSection() {
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               <span>Real-time data updated hourly</span>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

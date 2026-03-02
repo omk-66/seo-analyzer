@@ -81,53 +81,8 @@ const faqData = [
 ];
 
 // Text reveal animation component
-const AnimatedText = ({ text, className }: { text: string; className?: string }) => {
-  const words = text.match(/[\p{L}\p{N}]+[^\s\p{L}\p{N}]?|[^\s]/gu) || []
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.04 * i },
-    }),
-  }
-
-  const childVariants = {
-    hidden: {
-      opacity: 0,
-      y: 20,
-      filter: "blur(10px)",
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-    },
-  }
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      style={{ display: "inline-block" }}
-    >
-      {words.map((word, index) => (
-        <motion.span
-          key={index}
-          variants={childVariants}
-          transition={{
-            duration: 0.8,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          }}
-          style={{ marginRight: "0.25em", display: "inline-block" }}
-          className={className}
-        >
-          {word}
-        </motion.span>
-      ))}
-    </motion.div>
-  )
+const AnimatedText = ({ text, className = "" }: { text: string; className?: string }) => {
+  return <span className={className}>{text}</span>
 }
 
 // Testimonials data for marquee
@@ -264,47 +219,32 @@ export default function Home() {
 
       <main className="mx-auto max-w-6xl px-4 md:px-6 pt-24 pb-10 md:pb-14">
         {/* Hero + input + value props */}
-        <motion.section
+        <section
           id="hero-section"
           className="flex flex-col items-center justify-center gap-10 mb-10 md:mb-14"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
         >
           {/* Hero content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="w-full max-w-3xl text-center space-y-6"
-          >
+          <div className="w-full max-w-3xl text-center space-y-6">
             <div
               className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 justify-center"
             >
               Instant website audit (SEO, performance, trust)
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="w-full max-w-3xl text-center space-y-6"
-          >
+          <div className="w-full max-w-2xl mx-auto space-y-6">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground mb-4 text-center">
-              <AnimatedText text="Find what's broken" />
+              Find what's broken
               <br className="hidden sm:block" />{' '}
-              <AnimatedText text="Fix what matters with" />{' '}
+              Fix what matters with{' '}
               <span className="inline-block">
-                <AnimatedText
-                  text="WebsiteScore"
-                  className="bg-linear-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent"
-                />
+                <span className="bg-linear-to-r from-emerald-400 via-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+                  WebsiteScore
+                </span>
               </span>
-              {/* . */}
             </h1>
             <div className="text-sm md:text-base text-muted-foreground max-w-xl mb-6 text-center mx-auto">
-              <AnimatedText text="Paste a URL and get a clear, prioritized report: what's hurting rankings, performance, and trust — plus the exact next steps your team can ship." />
+              Paste a URL and get a clear, prioritized report: what's hurting rankings, performance, and trust — plus the exact next steps your team can ship.
             </div>
 
             <div className="relative max-w-2xl mx-auto">
@@ -353,63 +293,40 @@ export default function Home() {
                 </div>
               </form>
               <div className="absolute left-1/2 -translate-x-1/2 -top-10 text-center lg:left-0 lg:top-1/2 lg:-translate-y-1/2 lg:-translate-x-full lg:pr-4 text-sm text-foreground whitespace-nowrap">
-                {/* <motion.span
-                  animate={{ x: [0, 10, 0] }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="inline-block"
-                >
+                {/* <span className="inline-block">
                   Get started <span className="lg:hidden">👇</span><span className="hidden lg:inline">👉</span>
-                </motion.span> */}
+                </span> */}
               </div>
             </div>
 
             {/* Avatar group with user count */}
-            <motion.div
-              className="flex items-center justify-center flex-col"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <AvatarGroup spacing="tight">
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
-                  <AvatarFallback>SA</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/men/76.jpg" />
-                  <AvatarFallback>MK</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/women/68.jpg" />
-                  <AvatarFallback>RP</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/men/11.jpg" />
-                  <AvatarFallback>AK</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/women/22.jpg" />
-                  <AvatarFallback>LT</AvatarFallback>
-                </Avatar>
-                <Avatar className="border-2 border-background">
-                  <AvatarImage src="https://randomuser.me/api/portraits/men/45.jpg" />
-                  <AvatarFallback>RS</AvatarFallback>
-                </Avatar>
-              </AvatarGroup>
+            <div className="flex items-center justify-center flex-col">
+              <div className="flex -space-x-2">
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/men/76.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/men/11.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/women/22.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div className="border-2 border-background rounded-full w-8 h-8 bg-gray-200 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="User" className="w-full h-full object-cover" />
+                </div>
+              </div>
               <div
                 className="text-sm text-muted-foreground font-medium -mt-2"
               >
                 Loved by <span className="text-foreground font-semibold">5,453</span> users
               </div>
-            </motion.div>
+            </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs mt-6">
               <div className="rounded-lg border border-border/70 bg-background/40 px-3 py-2">
@@ -431,7 +348,7 @@ export default function Home() {
                 <div className="text-sm font-semibold text-foreground">Core Web Vitals, mobile</div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Right: SaaS-style "sample score" panel when idle */}
           {/* {!analysis && (
@@ -532,26 +449,14 @@ export default function Home() {
               </CardContent>
             </Card>
           )} */}
-        </motion.section>
+        </section>
 
         {/* Landing v2 sections (shown only before running an audit) */}
         {!analysis && (
           <div className="space-y-14 md:space-y-16">
             {/* Live stats */}
-            <motion.section
-              className="ws-fade-up"
-              style={{ animationDelay: '20ms' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* <motion.div
-                className="flex items-end justify-between gap-6 mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+            <section>
+              {/* <div className="flex items-end justify-between gap-6 mb-6">
               >
                 <div>
                   <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
@@ -561,15 +466,12 @@ export default function Home() {
                     Benchmarks to set expectations before you optimize.
                   </p>
                 </div>
-                <motion.div
-                  className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground"
-                  whileHover={{ scale: 1.05 }}
+                <div className="hidden md:flex items-center gap-2 text-[11px] text-muted-foreground">
                 >
                   <span className="rounded-full border border-border bg-background/40 px-3 py-1">
                     Updated on demand
                   </span>
-                </motion.div>
-              </motion.div> */}
+              </div> */}
 
               {/* <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
@@ -578,12 +480,9 @@ export default function Home() {
                   { label: 'Avg PageSpeed', value: '92 / 100', icon: Zap },
                   { label: 'Avg Trust & Security', value: '59 / 100', icon: Lock },
                 ].map((s, index) => (
-                  <motion.div
+                  <div
                     key={s.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                    className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-colors"
                   >
                     <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-colors">
                       <CardContent className="px-4 py-4">
@@ -614,24 +513,11 @@ export default function Home() {
                   </motion.div>
                 ))}
               </div> */}
-            </motion.section>
+            </section>
 
             {/* What we check (5 pillars) */}
-            <motion.section
-              id="features"
-              className="ws-fade-up"
-              style={{ animationDelay: '60ms' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              {/* <motion.div
-                className="mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+            <section id="features" className="ws-fade-up" style={{ animationDelay: '60ms' }}>
+              {/* <div className="mb-6">
               >
                 <h2 className="text-lg md:text-xl font-semibold tracking-tight text-foreground">
                   Everything you need to rank higher
@@ -669,12 +555,9 @@ export default function Home() {
                     icon: Globe2,
                   },
                 ].map((p, index) => (
-                  <motion.div
+                  <div
                     key={p.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
+                    className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/10"
                   >
                     <Card className="border border-border/70 bg-card/60 hover:border-emerald-500/30 transition-all hover:shadow-lg hover:shadow-emerald-500/10">
                       <CardHeader className="pb-2">
@@ -697,7 +580,7 @@ export default function Home() {
                   </motion.div>
                 ))}
               </div> */}
-            </motion.section>
+            </section>
 
             {/* How it works */}
             {/* <motion.section
@@ -735,13 +618,7 @@ export default function Home() {
                           desc: 'Use the report as a ticket list for dev + content.',
                         },
                       ].map((step, i) => (
-                        <motion.div
-                          key={step.title}
-                          className="flex items-start gap-3 rounded-xl border border-border bg-background/30 p-3"
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.6, delay: 0.2 + i * 0.1 }}
+                        <div key={step.title} className="flex items-start gap-3 rounded-xl border border-border bg-background/30 p-3">
                         >
                           <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-200 text-xs font-semibold">
                             {i + 1}
@@ -774,7 +651,7 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
-            </motion.section> */}
+            </section> */}
 
             {/* Interactive Demo Section */}
             <InteractiveDemo />
@@ -821,12 +698,8 @@ export default function Home() {
         )}
 
         {/* Pricing Section */}
-        <motion.section
+        <section
           className="ws-fade-up py-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           {/* <div className="mx-auto max-w-7xl">
             <motion.header
@@ -844,11 +717,7 @@ export default function Home() {
               </h2>
             </motion.header>
 
-            <motion.div
-              className="rounded-2xl border border-border/60 p-8 sm:p-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
+            <div className="rounded-2xl border border-border/60 p-8 sm:p-12">
             >
               <div className="grid w-full gap-8 max-[1200px]:grid-cols-1 min-[1200px]:grid-cols-[1fr_2fr]">
                 <div>
@@ -964,33 +833,21 @@ export default function Home() {
               </div>
             </motion.div>
           </div> */}
-        </motion.section>
+        </section>
 
         {/* Rating Badge Section */}
-        <motion.div
+        <div
           className="flex justify-center -mt-25"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.7 }}
         >
           <RatingBadge rating={4.7} title="Best SEO Tool" subtitle="2,000+ reviews" />
-        </motion.div>
+        </div>
 
         {/* Testimonials Section */}
-        <motion.section
+        <section
           className="ws-fade-up py-16 -mt-20"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:px-4">
-            <motion.div
-              className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
+            <div className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg">
               <div className="flex justify-center">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg key={star} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="w-5 h-5 lg:w-[22px] lg:h-[22px]">
@@ -1017,14 +874,9 @@ export default function Home() {
                   <p className="text-muted-foreground text-sm lg:text-base">gfluo.com</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <div className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg">
               <div className="flex justify-center">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg key={star} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" className="w-5 h-5 lg:w-[22px] lg:h-[22px]">
@@ -1051,13 +903,10 @@ export default function Home() {
                   <p className="text-muted-foreground text-sm lg:text-base">genppt.com</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
+            <div
               className="mx-auto my-12 max-w-md space-y-4 max-lg:px-4 md:my-24 md:space-y-6 lg:max-w-lg"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div className="flex justify-center">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -1085,9 +934,9 @@ export default function Home() {
                   <p className="text-muted-foreground text-sm lg:text-base">blink.new</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* Stats Section */}
         <div className='-mt-20'>
@@ -1095,26 +944,17 @@ export default function Home() {
         </div>
 
         {/* FAQ Section */}
-        <motion.section
+        <section
           className="ws-fade-up py-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
-          <motion.div
-            className="text-center mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               Frequently Asked Questions
             </h2>
             <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
               Everything you need to know about WebsiteScore and data analytics
             </p>
-          </motion.div>
+          </div>
 
           <div className="mx-auto max-w-xl max-md:px-4 py-20">
             <Accordion type="single" collapsible className="w-full">
@@ -1134,7 +974,7 @@ export default function Home() {
               ))}
             </Accordion>
           </div>
-        </motion.section>
+        </section>
 
         {/* Leaderboard Section */}
         <LeaderboardSection />

@@ -138,9 +138,7 @@ export function Navbar() {
   }
 
   return (
-    <motion.header
-      initial={{ y: 0 }}
-      animate={{ y: 0 }}
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
         ? 'bg-primary-foreground/95 backdrop-blur-lg border-b border-border/20'
         : 'bg-primary-foreground/95 backdrop-blur-lg border-b border-border/20'
@@ -150,16 +148,12 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center space-x-2"
-            >
+            <div className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">WS</span>
               </div>
               <span className="text-xl font-bold text-foreground">WebsiteScore</span>
-            </motion.div>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -180,11 +174,7 @@ export function Navbar() {
 
                 <AnimatePresence>
                   {activeDropdown === item.name && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.2 }}
+                    <div
                       className="absolute top-full left-0 mt-2 w-48 rounded-lg border border-border/20 bg-card/90 backdrop-blur-lg shadow-lg"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -212,7 +202,7 @@ export function Navbar() {
                           </a>
                         ))}
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </AnimatePresence>
               </div>
@@ -247,11 +237,7 @@ export function Navbar() {
         {/* Mobile Navigation */}
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
+            <div
               className="lg:hidden border-t border-border/20 bg-card/90 backdrop-blur-lg"
             >
               <div className="px-2 py-4 space-y-2">
@@ -268,11 +254,7 @@ export function Navbar() {
 
                     <AnimatePresence>
                       {activeDropdown === item.name && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
+                        <div
                           className="px-3 py-2 space-y-1"
                         >
                           {item.items.map((subItem) => (
@@ -297,7 +279,7 @@ export function Navbar() {
                               {subItem.name}
                             </a>
                           ))}
-                        </motion.div>
+                        </div>
                       )}
                     </AnimatePresence>
                   </div>
@@ -313,10 +295,10 @@ export function Navbar() {
                   </Button>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </nav>
-    </motion.header>
+    </header>
   )
 }

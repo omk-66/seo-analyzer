@@ -73,32 +73,20 @@ export function CTASection() {
     <section className="py-24 max-md:px-4 md:py-28">
       <div className="rounded-[1.3rem] border border-border/5 bg-neutral/5 p-1.5 dark:bg-neutral/50 relative mx-auto max-w-3xl bg-background">
         <div className="relative z-10 bg-background/5 px-6 py-16 text-center backdrop-blur-[2px] md:px-14 md:py-28">
-          <motion.h2
+          <h2
             className="mx-auto mb-6 text-3xl font-extrabold tracking-tight md:mb-8 md:text-4xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
           >
             Find SEO opportunities hiding in your website
-          </motion.h2>
+          </h2>
 
-          <motion.p
+          <p
             className="text-muted-foreground mx-auto mb-8 max-w-124 leading-relaxed md:mb-12 md:text-xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
           >
             Discover which technical issues are hurting your rankings so you can fix them and grow your organic traffic, fast.
-          </motion.p>
+          </p>
 
-          <motion.div
+          <div
             className="space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
           >
             <Button
               size="lg"
@@ -130,13 +118,11 @@ export function CTASection() {
                 </div>
 
                 {message && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                  <p
                     className={`text-sm ${message.includes('Successfully') ? 'text-emerald-600' : 'text-red-600'}`}
                   >
                     {message}
-                  </motion.p>
+                  </p>
                 )}
               </form>
             </div>
@@ -154,7 +140,7 @@ export function CTASection() {
                 Loved by <span className="font-medium text-foreground">5,453</span> users
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Background decoration */}

@@ -122,12 +122,8 @@ export function LeaderboardSection() {
   return (
     <section data-fast-scroll="scroll_to_leaderboard" className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-12">
       {/* Header */}
-      <motion.div
+      <div
         className="flex flex-col items-center gap-2 text-center"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
       >
         <div className="inline-flex items-center px-3 py-1 rounded-full border border-primary mb-4">
           <span className="text-xs font-medium text-primary uppercase tracking-wider">Leaderboard</span>
@@ -142,15 +138,11 @@ export function LeaderboardSection() {
         <Button className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-primary hover:bg-primary/80 rounded-lg transition-colors">
           Start Free Analysis
         </Button>
-      </motion.div>
+      </div>
 
       {/* Time Filter */}
-      <motion.nav
+      <nav
         className="mt-2 flex items-center justify-center gap-1 text-xs"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
       >
         <button
           type="button"
@@ -170,15 +162,11 @@ export function LeaderboardSection() {
         >
           All time
         </button>
-      </motion.nav>
+      </nav>
 
       {/* Leaderboard Table */}
-      <motion.div
+      <div
         className="w-full overflow-x-auto rounded-md border"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.4 }}
       >
         <table className="w-full caption-bottom text-sm">
           <thead>
@@ -194,14 +182,11 @@ export function LeaderboardSection() {
           </thead>
           <tbody>
             {leaderboardData.map((row, index) => (
-              <motion.tr
+              <tr
                 key={row.rank}
                 className="data-[state=selected]:bg-muted border-b cursor-pointer hover:bg-muted/40 h-16 transition-all duration-300"
                 role="link"
                 tabIndex={0}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
               >
                 <td className="py-2 px-4 align-middle whitespace-nowrap text-muted-foreground font-medium">
                   <span className="inline-flex items-center justify-center w-6">
@@ -255,11 +240,11 @@ export function LeaderboardSection() {
                     <span className="text-[10px] sm:text-xs leading-none text-muted-foreground">/100</span>
                   </div>
                 </td>
-              </motion.tr>
+              </tr>
             ))}
           </tbody>
         </table>
-      </motion.div>
+      </div>
     </section>
   )
 }
