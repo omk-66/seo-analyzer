@@ -208,7 +208,7 @@ export function InteractiveDemo() {
       currentSlide === demoScreenshots.length ? demoScreenshots[0] : null)
 
   return (
-    <div className="rounded-[1.3rem] border border-border/20 bg-card/30 p-1 dark:bg-card/50 w-full max-w-4xl mx-auto">
+    <div className="rounded-[1.3rem] border border-border/20 bg-card/30 p-1 dark:bg-card/50 w-full max-w-4xl mx-auto" data-fast-scroll="scroll_to_demo">
       {/* Interactive Demo Badge */}
       <div className="absolute -top-4 right-4 flex -translate-y-full animate-pulse items-center gap-2 z-10">
         <svg className="fill-muted-foreground mt-2 w-8 -rotate-24 opacity-60" viewBox="0 0 219 41" fill="none" xmlns="http://www.w3.org/2000/svg">

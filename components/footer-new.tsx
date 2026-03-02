@@ -71,25 +71,25 @@ const footerLinks = [
     links: [
       // { name: "Documentation", href: "#docs", action: "scroll" },
       { name: "FAQ", href: "#faq", action: "scroll" },
-      { name: "Support", href: "#support", action: "scroll" },
+      // { name: "Support", href: "#support", action: "scroll" },
       // { name: "Blog", href: "#blog", action: "scroll" },
     ]
   },
   {
     title: "Company",
     links: [
-      { name: "About", href: "#about", action: "scroll" },
-      { name: "Contact", href: "https://www.laughlogiclabs.com/contact", action: "scroll" },
+      { name: "About", href: "https://www.laughlogiclabs.com/", action: "navigate" },
+      { name: "Contact", href: "https://www.laughlogiclabs.com/contact", action: "navigate" },
       // { name: "Careers", href: "#careers", action: "scroll" },
     ]
   },
   {
     title: "Legal",
     links: [
-      { name: "Terms of Service", href: "#terms", action: "scroll" },
-      { name: "Privacy Policy", href: "#privacy", action: "scroll" },
-      { name: "Cookie Policy", href: "#cookies", action: "scroll" },
-      { name: "GDPR", href: "#gdpr", action: "scroll" },
+      { name: "Terms of Service", href: "/terms", action: "navigate" },
+      { name: "Privacy Policy", href: "/privacy", action: "navigate" },
+      { name: "Cookie Policy", href: "/cookies", action: "navigate" },
+      { name: "GDPR", href: "/gdpr", action: "navigate" },
     ]
   }
 ]
@@ -201,8 +201,16 @@ export function Footer() {
                           <a
                             href={link.href}
                             onClick={(e) => {
-                              e.preventDefault()
-                              if (link.action === 'scroll') {
+                              // Check if it's an external link (starts with http)
+                              if (link.href.startsWith('http')) {
+                                // Let external links work normally
+                                return
+                              } else if (link.action === 'navigate') {
+                                // Let page navigation work normally
+                                return
+                              } else if (link.action === 'scroll' || link.href.startsWith('#')) {
+                                // Handle internal scroll links
+                                e.preventDefault()
                                 const sectionId = link.href.replace('#', '')
                                 scrollToSection(sectionId)
                               }

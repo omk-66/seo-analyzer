@@ -322,7 +322,7 @@ export default function Home() {
                 </div>
               </div>
               <div
-                className="text-sm text-muted-foreground font-medium -mt-2"
+                className="text-sm text-muted-foreground font-medium mt-2"
               >
                 Loved by <span className="text-foreground font-semibold">5,453</span> users
               </div>
@@ -946,6 +946,7 @@ export default function Home() {
         {/* FAQ Section */}
         <section
           className="ws-fade-up py-16"
+          data-fast-scroll="scroll_to_faq"
         >
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
