@@ -258,10 +258,10 @@ export function InteractiveDemo() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "good": return "bg-green-500/10 text-green-500 border-green-500/20"
-      case "warning": return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
-      case "error": return "bg-red-500/10 text-red-500 border-red-500/20"
-      default: return "bg-gray-500/10 text-gray-500 border-gray-500/20"
+      case "good": return "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+      case "warning": return "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800"
+      case "error": return "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+      default: return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800"
     }
   }
 
@@ -272,9 +272,9 @@ export function InteractiveDemo() {
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-green-600"
-    if (score >= 70) return "text-yellow-600"
-    return "text-red-600"
+    if (score >= 90) return "text-green-600 dark:text-green-400"
+    if (score >= 70) return "text-yellow-600 dark:text-yellow-400"
+    return "text-red-600 dark:text-red-400"
   }
 
   return (
@@ -284,16 +284,16 @@ export function InteractiveDemo() {
         <Badge className="mb-4 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
           Interactive Demo
         </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
           See WebsiteScore in Action
         </h2>
-        <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           Comprehensive SEO audit powered by Google AI • {demoAnalysisData.siteType}
         </p>
       </div>
 
       {/* Demo Container with Browser Frame */}
-      <div className="rounded-[1.3rem] border border-base-content/5 bg-neutral/5 p-1.5 dark:bg-neutral/50 w-full max-w-6xl 2xl:max-w-7xl mx-auto">
+      <div className="rounded-[1.3rem] border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 p-1.5 w-full max-w-6xl 2xl:max-w-7xl mx-auto">
         <div className="relative hidden md:block">
           {/* Speech Bubble - Top */}
           <div className="absolute -top-4 right-4 flex -translate-y-full animate-pulse items-center gap-2 z-10">
@@ -310,7 +310,7 @@ export function InteractiveDemo() {
           <div className="custom-card group relative mx-auto flex flex-col overflow-hidden bg-base-100 rounded-[1rem]" style={{ aspectRatio: '5 / 3.6' }}>
 
             {/* Browser Header */}
-            <div className="relative z-10 flex w-full items-center border-b-[0.5px] border-base-content/5 bg-base-100 px-4 py-2 shadow-[0_1px_1px_rgba(0,0,0,0.08)]">
+            <div className="relative z-10 flex w-full items-center border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 shadow-sm">
               {/* Traffic Lights */}
               <div className="absolute left-4 top-1/2 flex -translate-y-1/2 items-center justify-start space-x-1.5">
                 <span className="size-2.5 rounded-full bg-red-400"></span>
@@ -320,8 +320,8 @@ export function InteractiveDemo() {
 
               {/* URL Bar */}
               <div className="w-full text-center text-sm flex items-center justify-center">
-                <span className="text-base-content/50">https://</span>
-                <span className="text-base-content font-medium">{demoAnalysisData.url}</span>
+                <span className="text-gray-500 dark:text-gray-400">https://</span>
+                <span className="text-gray-900 dark:text-white font-medium">{demoAnalysisData.url}</span>
               </div>
 
               {/* Fullscreen Button */}
@@ -333,7 +333,7 @@ export function InteractiveDemo() {
             </div>
 
             {/* Main Content Area - Scrollable */}
-            <div className="flex-1 overflow-y-auto bg-base-300">
+            <div className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-800">
 
               {isLoading ? (
                 // Loading Animation
@@ -345,8 +345,8 @@ export function InteractiveDemo() {
                         <Globe className="w-8 h-8 text-emerald-500" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-base-content mb-2">Analyzing {demoAnalysisData.url}...</h3>
-                    <p className="text-base-content/60 text-center max-w-md mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Analyzing {demoAnalysisData.url}...</h3>
+                    <p className="text-gray-600 dark:text-gray-300 text-center max-w-md mb-6">
                       Comprehensive audit powered by Google AI • {demoAnalysisData.siteType}
                     </p>
                     <div className="flex flex-col gap-2 text-sm w-full max-w-xs">
@@ -358,7 +358,7 @@ export function InteractiveDemo() {
                         "Analyzing backlinks profile",
                         "Checking social signals"
                       ].map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-base-content/70">
+                        <div key={idx} className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" style={{ animationDelay: `${idx * 200}ms` }}></div>
                           {item}
                         </div>
@@ -370,12 +370,12 @@ export function InteractiveDemo() {
                 // Results - with padding
                 <div className="p-4">
                   {/* Domain Header */}
-                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-base-content/10 bg-base-100 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                     <div className="flex items-center gap-3">
                       <Globe className="w-6 h-6 text-emerald-500" />
                       <div>
-                        <h3 className="font-semibold text-base-content">{demoAnalysisData.url}</h3>
-                        <p className="text-sm text-base-content/60">Full SEO Analysis Report</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{demoAnalysisData.url}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Full SEO Analysis Report</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -385,15 +385,15 @@ export function InteractiveDemo() {
                       </Button>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-emerald-500">{demoAnalysisData.overallScore}</div>
-                        <div className="text-xs text-base-content/60">Overall Score</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Overall Score</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Tabs */}
-                  <div className="bg-base-100 rounded-lg p-2 mb-4 border border-gray-300">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 mb-4 border border-gray-200 dark:border-gray-700">
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
-                      <TabsList className="grid w-full grid-cols-5 mb-2 bg-base-200/50">
+                      <TabsList className="grid w-full grid-cols-5 mb-2 bg-gray-200 dark:bg-gray-700">
                         {[
                           { id: "onpage", icon: FileText, label: "Page SEO" },
                           { id: "links", icon: Link2, label: "Links" },
@@ -426,7 +426,7 @@ export function InteractiveDemo() {
 
                           <Card className="mb-3">
                             <CardHeader className="pb-2">
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between ">
                                 <CardTitle className="text-sm flex items-center gap-2">
                                   <FileText className="w-4 h-4" />
                                   Title Tag
@@ -435,8 +435,8 @@ export function InteractiveDemo() {
                               </div>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-xs bg-green-50 p-2 rounded border border-green-200">{demoAnalysisData.onPageSEO.titleTag.title}</p>
-                              <p className="text-xs text-green-600 mt-1">{demoAnalysisData.onPageSEO.titleTag.length} chars • Optimal</p>
+                              <p className="text-xs text-primary p-2 rounded border border-gray-200 bg-muted">{demoAnalysisData.onPageSEO.titleTag.title}</p>
+                              <p className="text-xs text-green-700 dark:text-green-400 mt-1">{demoAnalysisData.onPageSEO.titleTag.length} chars • Optimal</p>
                             </CardContent>
                           </Card>
 
@@ -451,8 +451,8 @@ export function InteractiveDemo() {
                               </div>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-xs bg-green-50 p-2 rounded border border-green-200">{demoAnalysisData.onPageSEO.metaDescription.description.slice(0, 100)}...</p>
-                              <p className="text-xs text-green-600 mt-1">{demoAnalysisData.onPageSEO.metaDescription.length} chars • Optimal</p>
+                              <p className="text-xs text-primary bg-muted p-2 rounded border border-gray-200">{demoAnalysisData.onPageSEO.metaDescription.description.slice(0, 100)}...</p>
+                              <p className="text-xs text-green-700 dark:text-green-400 mt-1">{demoAnalysisData.onPageSEO.metaDescription.length} chars • Optimal</p>
                             </CardContent>
                           </Card>
 
@@ -465,21 +465,21 @@ export function InteractiveDemo() {
                             </CardHeader>
                             <CardContent>
                               <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="flex justify-between p-2 bg-green-50 rounded">
-                                  <span>Words</span>
-                                  <span className="font-medium">{demoAnalysisData.onPageSEO.contentAmount.wordCount.toLocaleString()}</span>
+                                <div className="flex justify-between p-2 bg-muted rounded border border-gray-200">
+                                  <span className="text-primary">Words</span>
+                                  <span className="font-medium text-gray-900 dark:text-white">{demoAnalysisData.onPageSEO.contentAmount.wordCount.toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between p-2 bg-green-50 rounded">
-                                  <span>H1</span>
-                                  <span className="font-medium">{demoAnalysisData.onPageSEO.headers.h1Tags.length}</span>
+                                <div className="flex justify-between p-2 bg-muted rounded border border-gray-200">
+                                  <span className="text-primary">H1</span>
+                                  <span className="font-medium text-gray-900 dark:text-white">{demoAnalysisData.onPageSEO.headers.h1Tags.length}</span>
                                 </div>
-                                <div className="flex justify-between p-2 bg-green-50 rounded">
-                                  <span>H2-H6</span>
-                                  <span className="font-medium">{demoAnalysisData.onPageSEO.headers.headerFrequency.h2 + demoAnalysisData.onPageSEO.headers.headerFrequency.h3}</span>
+                                <div className="flex justify-between p-2 bg-muted rounded border border-gray-200">
+                                  <span className="text-primary">H2-H6</span>
+                                  <span className="font-medium text-gray-900 dark:text-white">{demoAnalysisData.onPageSEO.headers.headerFrequency.h2 + demoAnalysisData.onPageSEO.headers.headerFrequency.h3}</span>
                                 </div>
-                                <div className="flex justify-between p-2 bg-yellow-50 rounded">
-                                  <span>Images no alt</span>
-                                  <span className="font-medium">{demoAnalysisData.onPageSEO.imageAlt.imagesWithoutAlt}</span>
+                                <div className="flex justify-between p-2 rounded border border-gray-200 bg-muted">
+                                  <span className="text-primary">Images no alt</span>
+                                  <span className="font-medium text-gray-900 dark:text-white">{demoAnalysisData.onPageSEO.imageAlt.imagesWithoutAlt}</span>
                                 </div>
                               </div>
                             </CardContent>
@@ -499,8 +499,8 @@ export function InteractiveDemo() {
                                   { label: "Canonical", status: demoAnalysisData.onPageSEO.canonicalTag.status, value: "✓" },
                                   { label: "Schema.org", status: demoAnalysisData.onPageSEO.schemaOrg.status, value: "✓" },
                                 ].map((item, idx) => (
-                                  <div key={idx} className="flex items-center justify-between p-1.5 bg-gray-50 rounded">
-                                    <span>{item.label}</span>
+                                  <div key={idx} className="flex items-center justify-between p-1.5 rounded border border-gray-200 bg-muted">
+                                    <span className="text-primary">{item.label}</span>
                                     {getStatusIcon(item.status)}
                                   </div>
                                 ))}
@@ -530,9 +530,9 @@ export function InteractiveDemo() {
                               { label: "Domains", value: demoAnalysisData.backlinks.domains.total, color: "purple" },
                               { label: "IPs", value: demoAnalysisData.backlinks.ips, color: "teal" }
                             ].map((item, idx) => (
-                              <Card key={idx} className="text-center py-2">
-                                <div className="text-lg font-bold">{item.value.toLocaleString()}</div>
-                                <div className="text-xs text-base-content/60">{item.label}</div>
+                              <Card key={idx} className="text-center py-2 bg-muted border border-gray-200">
+                                <div className="text-lg font-bold text-gray-900 dark:text-white">{item.value.toLocaleString()}</div>
+                                <div className="text-xs text-primary">{item.label}</div>
                               </Card>
                             ))}
                           </div>
@@ -542,11 +542,11 @@ export function InteractiveDemo() {
                               <CardTitle className="text-sm">Authority Metrics</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                                <div><div className="font-bold text-green-600">{demoAnalysisData.backlinks.authority.domainAuthority}</div><div>DA</div></div>
-                                <div><div className="font-bold text-green-600">{demoAnalysisData.backlinks.authority.pageAuthority}</div><div>PA</div></div>
-                                <div><div className="font-bold text-blue-600">{demoAnalysisData.backlinks.authority.citationFlow}</div><div>CF</div></div>
-                                <div><div className="font-bold text-purple-600">{demoAnalysisData.backlinks.authority.trustFlow}</div><div>TF</div></div>
+                              <div className="grid grid-cols-4 gap-2 text-center text-xs bg-muted p-3 rounded border border-gray-200">
+                                <div><div className="font-bold text-green-600 dark:text-green-400">{demoAnalysisData.backlinks.authority.domainAuthority}</div><div className="text-primary">DA</div></div>
+                                <div><div className="font-bold text-green-600 dark:text-green-400">{demoAnalysisData.backlinks.authority.pageAuthority}</div><div className="text-primary">PA</div></div>
+                                <div><div className="font-bold text-blue-600 dark:text-blue-400">{demoAnalysisData.backlinks.authority.citationFlow}</div><div className="text-primary">CF</div></div>
+                                <div><div className="font-bold text-purple-600 dark:text-purple-400">{demoAnalysisData.backlinks.authority.trustFlow}</div><div className="text-primary">TF</div></div>
                               </div>
                             </CardContent>
                           </Card>
@@ -567,17 +567,25 @@ export function InteractiveDemo() {
                           </Card>
 
                           <div className="grid grid-cols-2 gap-3 mb-3">
-                            <Card className="text-center py-4">
-                              <ProgressCircle value={demoAnalysisData.usability.desktopScore} variant="success" radius={35} strokeWidth={5}>
-                                <span className="text-xl font-bold text-green-600">{demoAnalysisData.usability.desktopScore}</span>
-                              </ProgressCircle>
-                              <div className="text-xs mt-2">Desktop</div>
+                            <Card className="text-center py-4 bg-muted border border-gray-200 flex flex-col items-center justify-start">
+                              <div className="relative inline-flex">
+                                <ProgressCircle value={demoAnalysisData.usability.desktopScore} variant="success" radius={35} strokeWidth={5}>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-xl font-bold text-green-600 dark:text-green-400">{demoAnalysisData.usability.desktopScore}</span>
+                                  </div>
+                                </ProgressCircle>
+                              </div>
+                              <div className="text-xs text-primary mt-1">Desktop</div>
                             </Card>
-                            <Card className="text-center py-4">
-                              <ProgressCircle value={demoAnalysisData.usability.mobileScore} variant="warning" radius={35} strokeWidth={5}>
-                                <span className="text-xl font-bold text-yellow-600">{demoAnalysisData.usability.mobileScore}</span>
-                              </ProgressCircle>
-                              <div className="text-xs mt-2">Mobile</div>
+                            <Card className="text-center py-4 bg-muted border border-gray-200 flex flex-col items-center justify-start">
+                              <div className="relative inline-flex">
+                                <ProgressCircle value={demoAnalysisData.usability.mobileScore} variant="warning" radius={35} strokeWidth={5}>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{demoAnalysisData.usability.mobileScore}</span>
+                                  </div>
+                                </ProgressCircle>
+                              </div>
+                              <div className="text-xs text-primary mt-1">Mobile</div>
                             </Card>
                           </div>
                         </div>
@@ -603,11 +611,15 @@ export function InteractiveDemo() {
                               { label: "Best Prac", score: demoAnalysisData.performance.scores.bestPractices },
                               { label: "SEO", score: demoAnalysisData.performance.scores.seo }
                             ].map((item, idx) => (
-                              <div key={idx} className="text-center p-2 bg-gray-50 rounded">
-                                <ProgressCircle value={item.score} variant={getScoreVariant(item.score)} radius={25} strokeWidth={4}>
-                                  <span className={`text-sm font-bold ${getScoreColor(item.score)}`}>{item.score}</span>
-                                </ProgressCircle>
-                                <div className="text-xs mt-1">{item.label}</div>
+                              <div key={idx} className="text-center p-2 bg-muted rounded border border-gray-200">
+                                <div className="relative inline-flex">
+                                  <ProgressCircle value={item.score} variant={getScoreVariant(item.score)} radius={25} strokeWidth={4}>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <span className={`text-sm font-bold ${getScoreColor(item.score)}`}>{item.score}</span>
+                                    </div>
+                                  </ProgressCircle>
+                                </div>
+                                <div className="text-xs text-primary mt-1">{item.label}</div>
                               </div>
                             ))}
                           </div>
@@ -618,17 +630,17 @@ export function InteractiveDemo() {
                             </CardHeader>
                             <CardContent>
                               <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                                <div className="p-2 bg-yellow-50 rounded">
-                                  <div className="font-bold">{(demoAnalysisData.performance.performance.largestContentfulPaintMs / 1000).toFixed(1)}s</div>
-                                  <div>LCP</div>
+                                <div className="p-2 bg-muted rounded border border-gray-200">
+                                  <div className="font-bold text-yellow-600 dark:text-yellow-400">{(demoAnalysisData.performance.performance.largestContentfulPaintMs / 1000).toFixed(1)}s</div>
+                                  <div className="text-primary">LCP</div>
                                 </div>
-                                <div className="p-2 bg-green-50 rounded">
-                                  <div className="font-bold">{demoAnalysisData.performance.performance.cumulativeLayoutShift}</div>
-                                  <div>CLS</div>
+                                <div className="p-2 bg-muted rounded border border-gray-200">
+                                  <div className="font-bold text-green-600 dark:text-green-400">{demoAnalysisData.performance.performance.cumulativeLayoutShift}</div>
+                                  <div className="text-primary">CLS</div>
                                 </div>
-                                <div className="p-2 bg-yellow-50 rounded">
-                                  <div className="font-bold">{demoAnalysisData.performance.performance.totalBlockingTimeMs}ms</div>
-                                  <div>TBT</div>
+                                <div className="p-2 bg-muted rounded border border-gray-200">
+                                  <div className="font-bold text-yellow-600 dark:text-yellow-400">{demoAnalysisData.performance.performance.totalBlockingTimeMs}ms</div>
+                                  <div className="text-primary">TBT</div>
                                 </div>
                               </div>
                             </CardContent>
@@ -657,15 +669,15 @@ export function InteractiveDemo() {
                               { platform: "Instagram", data: demoAnalysisData.social.instagram, icon: Instagram, color: "text-pink-500", found: demoAnalysisData.social.instagram.found },
                               { platform: "YouTube", data: demoAnalysisData.social.youtube, icon: Youtube, color: "text-red-600", found: demoAnalysisData.social.youtube.found },
                             ].map((item, idx) => (
-                              <div key={idx} className={`flex items-center justify-between p-2 rounded ${item.found ? 'bg-green-50' : 'bg-red-50'}`}>
+                              <div key={idx} className={`flex items-center justify-between p-2 rounded ${item.found ? 'bg-muted border-gray-200' : 'bg-red-200 border-red-200'}`}>
                                 <div className="flex items-center gap-2">
                                   <item.icon className={`w-4 h-4 ${item.color}`} />
-                                  <span className="text-sm font-medium">{item.platform}</span>
+                                  <span className="text-sm font-medium text-primary">{item.platform}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {item.found ? (
                                     <>
-                                      <span className="text-xs">{(item.data as any).followers?.toLocaleString()}</span>
+                                      <span className="text-xs text-primary">{(item.data as any).followers?.toLocaleString()}</span>
                                       <CheckCircle className="w-4 h-4 text-green-500" />
                                     </>
                                   ) : (
@@ -680,9 +692,9 @@ export function InteractiveDemo() {
                     </Tabs>
 
                     {/* CTA */}
-                    <div className="mt-3 pt-3 border-t border-base-content/10 flex items-center justify-between bg-base-100 rounded-lg p-2">
-                      <div className="text-xs text-base-content/60">
-                        Want detailed report? <span className="text-emerald-500 font-medium">Create free account</span>
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                      <div className="text-xs text-primary">
+                        Want detailed report? <span className="text-emerald-500 font-medium">Add your Domain</span>
                       </div>
                       <Button className="bg-emerald-500 hover:bg-emerald-600 gap-1 h-8 text-xs">
                         <span>Analyze</span>
@@ -703,7 +715,7 @@ export function InteractiveDemo() {
               </g>
               <defs><clipPath id="clip0_3_248"><rect width="219" height="41"></rect></clipPath></defs>
             </svg>
-            <span className="text-base-secondary text-center text-sm">Try this ✨<br /> (people are addicted)</span>
+            {/* <span className="text-base-secondary text-center text-sm">Try this ✨<br /> (people are addicted)</span> */}
           </div>
         </div>
 
